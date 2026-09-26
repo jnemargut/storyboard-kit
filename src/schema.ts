@@ -1,0 +1,149 @@
+import {
+  ACCESSORIES, AGES, ANGLES, BODY, BUBBLES, DEVICES, DIRECTIONS, FACING, GESTURES, HAIR, HAIR_SHADE, MOODS,
+  OUTFITS, POSES, SCENES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
+} from "./vocab";
+
+const oneOf = (list: readonly Entry[]) => ({ enum: ids(list), description: list.map((x) => `${x.id}: ${x.desc}`).join("\n") });
+
+const layoutOverride = {
+  type: "object",
+  description: "Manual nudges written by the editor. Leave these alone unless asked to reset a layout.",
+  additionalProperties: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      dx: { type: "number" }, dy: { type: "number" }, scale: { type: "number", exclusiveMinimum: 0 },
+      rotate: { type: "number" }, hidden: { type: "boolean" },
+    },
+  },
+};
+
+const base = {
+  id: { type: "string", pattern: "^[a-z0-9][a-z0-9-]*$", description: "Stable panel id, e.g. p1 or order-late." },
+  label: { type: "string", description: "Short caption under the panel (optional)." },
+  notes: { type: "string", description: "Designer/research notes. Not drawn." },
+  layout: layoutOverride,
+};
+
+const device = { type: "string", ...oneOf(DEVICES) };
+
+export function buildSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    title: "Storyboard",
+    description: "A low-fi service-design storyboard. Describe what happens; the renderer decides where things go.",
+    type: "object",
+    required: ["schemaVersion", "title", "cast", "panels"],
+    additionalProperties: false,
+    properties: {
+      $schema: { type: "string" },
+      schemaVersion: { const: 1 },
+      title: { type: "string" },
+      subtitle: { type: "string" },
+      persona: { type: "string", description: "Who this is about, e.g. 'Maya, busy commuter'." },
+      notes: { type: "string" },
+      page: { type: "object", additionalProperties: false, properties: { columns: { type: "integer", minimum: 1, maximum: 6 } } },
+      cast: {
+        type: "object",
+        description: "Everyone who appears, keyed by id (lowercase).",
+        additionalProperties: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            name: { type: "string" },
+            skin: oneOf(SKIN), hair: oneOf(HAIR), hairShade: oneOf(HAIR_SHADE), body: oneOf(BODY),
+            outfit: oneOf(OUTFITS), age: oneOf(AGES),
+            accessories: { type: "array", items: oneOf(ACCESSORIES), uniqueItems: true },
+          },
+        },
+      },
+      panels: {
+        type: "array",
+        minItems: 1,
+        items: {
+          oneOf: [
+            {
+              type: "object",
+              required: ["id", "type", "title"],
+              additionalProperties: false,
+              properties: { ...base, type: { const: "title" }, title: { type: "string" }, subtitle: { type: "string" } },
+            },
+            {
+              type: "object",
+              required: ["id", "type", "text"],
+              additionalProperties: false,
+              properties: { ...base, type: { const: "time" }, text: { type: "string" }, icon: oneOf(TIME_ICONS) },
+            },
+            {
+              type: "object",
+              required: ["id", "type", "text"],
+              additionalProperties: false,
+              properties: { ...base, type: { const: "text" }, text: { type: "string" } },
+            },
+            {
+              type: "object",
+              required: ["id", "scene"],
+              additionalProperties: false,
+              properties: {
+                ...base,
+                type: { const: "scene" },
+                scene: oneOf(SCENES),
+                shot: oneOf(SHOTS),
+                focus: { type: "string", description: "Id of the character or device the camera frames." },
+                caption: { type: "string", description: "Narration box in the top-left corner." },
+                characters: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    required: ["who"],
+                    additionalProperties: false,
+                    properties: {
+                      who: { type: "string", description: "Key from `cast`." },
+                      id: { type: "string" },
+                      pose: oneOf(POSES), mood: oneOf(MOODS), angle: oneOf(ANGLES),
+                      facing: { enum: [...FACING] },
+                      at: { type: "string", description: "A mark in the scene (see `storyboard vocab marks`)." },
+                      device: {
+                        description: "Device in their hands.",
+                        oneOf: [device, { type: "object", required: ["type"], additionalProperties: false, properties: { type: device, screen: { type: "string" }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn grey, not teal. Default true." } } }],
+                      },
+                    },
+                  },
+                },
+                devices: {
+                  type: "array",
+                  items: {
+                    type: "object", required: ["type"], additionalProperties: false,
+                    properties: { id: { type: "string" }, type: device, at: { type: "string" }, screen: { type: "string", description: "Path to a screen image, relative to the storyboard file." }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn grey, not teal. Default true." } },
+                  },
+                },
+                bubbles: {
+                  type: "array",
+                  items: {
+                    type: "object", required: ["type", "text"], additionalProperties: false,
+                    properties: { id: { type: "string" }, type: oneOf(BUBBLES), from: { type: "string" }, text: { type: "string" } },
+                  },
+                },
+                callouts: {
+                  type: "array",
+                  items: { type: "object", required: ["text"], additionalProperties: false, properties: { id: { type: "string" }, text: { type: "string" }, target: { type: "string" } } },
+                },
+                gestures: {
+                  type: "array",
+                  items: {
+                    type: "object", required: ["type"], additionalProperties: false,
+                    properties: {
+                      id: { type: "string" }, type: oneOf(GESTURES), on: { type: "string" },
+                      at: { type: "array", items: { type: "number", minimum: 0, maximum: 1 }, minItems: 2, maxItems: 2 },
+                      direction: { enum: [...DIRECTIONS] },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+  };
+}

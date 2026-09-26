@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision 2: Storyboard Art Style — Storyboarding Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=IBM+Plex+Sans:wght@400;600&family=Permanent+Marker&family=Patrick+Hand&family=Work+Sans:wght@400;600&family=Gaegu:wght@400;700&family=Nunito:wght@400;600&family=Caveat+Brush&family=Comic+Neue:wght@700&family=Karla:wght@400;600&display=swap" rel="stylesheet">
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    .hl { font-style: italic; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.technical { background: #e6f0f3; color: #1b5e74; }
+    .triage-badge { display:inline-block; padding:4px 12px; border-radius:999px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; margin-top:0.5rem; margin-left:6px; }
+    .triage-badge.one-way { background:#fef2f2; color:#dc2626; }
+    .triage-badge.stakes-high { background:#fff7ed; color:#c2410c; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 720px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eef5f7; color: #1b5e74; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #b9d5de; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #1f6f8b; box-shadow: 0 4px 16px rgba(31,111,139,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #a23b72; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .confidence-badge { padding:3px 10px; border-radius:999px; font-size:0.65rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; color:white; }
+    .confidence-badge.strong { background:#059669; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .card-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+
+    .visual-preview { padding: 1.25rem; background: #f8fafc; min-height: 360px; display: flex; flex-direction: column; gap: 10px; align-items: stretch; flex: 1; }
+    .file-tab { display: inline-flex; align-self: flex-start; gap: 6px; align-items: center; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.68rem; color: #cbd5e1; background: #1e293b; padding: 5px 12px; border-radius: 8px 8px 0 0; margin-bottom: -10px; }
+    pre.code { background: #0f172a; color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.7rem; line-height: 1.55; padding: 12px 14px; border-radius: 0 10px 10px 10px; overflow-x: auto; white-space: pre; flex: 1; }
+    .k { color: #93c5fd; } .s { color: #86efac; } .c { color: #8a9bb0; } .t { color: #f9a8d4; } .n { color: #fcd34d; }
+    .pipeline { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 0.66rem; font-weight: 600; color: #334155; }
+    .pipe-box { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 4px 9px; }
+    .pipe-box.ok { border-color: #059669; color: #047857; }
+    .pipe-box.warn { border-color: #d97706; color: #b45309; }
+    .pipe-box.bad { border-color: #e11d48; color: #be123c; }
+    .pipe-arrow { color: #94a3b8; }
+
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; } .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0 0.15rem 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-ai { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+    .case-against { max-width:1200px; margin:0 auto 3rem; background:white; border-left:4px solid #e11d48; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .case-against h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#e11d48; margin-bottom:0.5rem; }
+    .case-against p { font-size:0.9rem; color:#334155; line-height:1.65; }
+    .assumptions { max-width:1200px; margin:0 auto 3rem; font-size:0.85rem; color:#475569; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:1rem 1.5rem; }
+    .assumptions h2 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#64748b; margin-bottom:0.4rem; }
+    .assumptions ul { padding-left:1.1rem; }
+
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #a23b72; } .comparison-table th.col-b { color: #0891b2; } .comparison-table th.col-c { color: #059669; } .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: top; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; white-space: nowrap; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table tr td.col-recommended, .comparison-table tr th.col-recommended { background: #fffbeb; }
+    .comparison-table tr td.col-chosen, .comparison-table tr th.col-chosen { background: #ecfdf5; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+
+    .research-context { max-width:1200px; margin:0 auto 3rem; background:white; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .research-context h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#1f6f8b; margin-bottom:0.75rem; }
+    .findings { list-style:none; padding:0; }
+    .findings li { font-size:0.875rem; color:#334155; line-height:1.6; padding:0.35rem 0 0.35rem 1.1rem; position:relative; }
+    .findings li::before { content:"→"; position:absolute; left:0; color:#1f6f8b; font-weight:700; }
+    .cite { color:#1f6f8b; font-size:0.8rem; text-decoration:none; border-bottom:1px dotted #1f6f8b; margin-left:4px; }
+    .experts-disagree { margin-top:1rem; border-top:3px solid #f59e0b; background:#fffbeb; border-radius:0 0 8px 8px; padding:0.85rem 1.1rem; }
+    .experts-disagree h3 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#b45309; margin-bottom:0.35rem; }
+    .experts-disagree p { font-size:0.85rem; color:#451a03; line-height:1.6; }
+
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #1f6f8b; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  
+.ga-title{font-family:'Kalam',cursive;font-weight:700;fill:#3d3a36;letter-spacing:.04em}
+.ga-hand{font-family:'Kalam',cursive;fill:#3d3a36}
+.ga-capbox{fill:#f3efe6;stroke:#3d3a36;stroke-width:1;filter:url(#ga-pencil)}
+.mk-title{font-family:'Permanent Marker',cursive;fill:#1c1c1e}
+.mk-hand{font-family:'Patrick Hand',cursive;fill:#1c1c1e}
+.mk-capbox{fill:#fff6bf;stroke:#1c1c1e;stroke-width:1.6}
+.rw-title{font-family:'Gaegu',cursive;font-weight:700;fill:#1e1e1e}
+.rw-hand{font-family:'Gaegu',cursive;fill:#1e1e1e;font-weight:700}
+.rw-capbox{fill:#fff9db;stroke:#1e1e1e;stroke-width:1.2;filter:url(#rw-rough)}
+.iw-title{font-family:'Caveat Brush',cursive;fill:#1f1a17}
+.iw-hand{font-family:'Comic Neue',cursive;font-weight:700;fill:#1f1a17;text-transform:uppercase;letter-spacing:.02em}
+.iw-capbox{fill:#f6e7a8;stroke:#1f1a17;stroke-width:1.8}
+.visual-preview{justify-content:center}
+.frame{width:100%;overflow:hidden;position:relative}
+.chrome{padding:6px 10px;display:flex;gap:5px}
+.chrome span{width:8px;height:8px;border-radius:50%;display:block}
+.apphead{display:flex;justify-content:space-between;align-items:center;padding:8px 14px}
+.apphead b{font-size:17px;font-weight:400}
+.apphead nav{display:flex;gap:14px;font-size:12px}
+.boardtitle{font-size:11px;padding:8px 14px 0}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px}
+.panel{width:100%;height:auto;display:block}
+.tokens{display:flex;flex-wrap:wrap;gap:4px 12px;padding:4px 14px 2px;font-size:10.5px}
+.sw{display:inline-flex;align-items:center;gap:5px}
+.sw i{width:12px;height:12px;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.2)}
+.fontline{font-size:10.5px;padding:2px 14px 12px}
+.triage-badge.two-way{background:#ecfeff;color:#0891b2}
+.category-badge.visual{background:#fce7f3;color:#be185d}
+.confidence-badge.lean{background:#d97706}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-link">← All Decisions</a>
+<header>
+  <span class="decision-number">Decision 2 of 8</span>
+  <h1>Storyboard Art Style</h1>
+  <span class="category-badge visual">Visual</span><span class="triage-badge two-way">🔁 Two-way door</span><span class="triage-badge stakes-high">High stakes</span>
+  <p class="decision-description">
+    This is the look of every board your tool will ever produce, and it sets the design tokens for the editor around it.
+    Below, the <strong>same four-panel story</strong> is drawn in four real storyboard traditions: a title card, Maya waiting in line, a close-up of the order screen with a tap, and a "time passes" card.
+    Look at two things: <strong>does it feel low-fi enough that people argue about the journey rather than the art</strong>, and does the product moment stand out from the rest of her morning?
+    Changing styles later is cheap because the file format is style-agnostic, but the drawing library gets built around this choice.
+  </p>
+  <p class="instruction">Respond with: <strong>"Option B"</strong> · <strong>"Option A but [change]"</strong> · <strong>"more options"</strong></p>
+</header>
+<main class="options-grid"><article class="option-card option-a not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option A</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Graphite Thumbnails</h2></div>
+      <div class="visual-preview"><div class="frame" style="background:#e9e4d8;border-radius:3px;border:1px solid #cfc6b3;font-family:'IBM Plex Sans', sans-serif">
+      <svg width="0" height="0" style="position:absolute"><defs><filter id="ga-pencil" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="1" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.8"/></filter>
+      <pattern id="ga-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><line x1="0" y1="0" x2="0" y2="5" stroke="#8e8a83" stroke-width=".7"/></pattern>
+      <pattern id="ga-hatch-dense" width="2.6" height="2.6" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><line x1="0" y1="0" x2="0" y2="2.6" stroke="#5e5a54" stroke-width=".8"/></pattern></defs></svg>
+      <div class="chrome" style="background:#ddd6c6;border-bottom:1px solid #cfc6b3"><span style="background:#ef4444"></span><span style="background:#eab308"></span><span style="background:#22c55e"></span></div>
+      <div class="apphead" style="border-bottom:1px solid #cfc6b3">
+        <b style="font-family:'Kalam', cursive;color:#3d3a36">Storyboard</b>
+        <nav style="color:#6f6a61"><span>Cast</span><span>Scenes</span><span>Devices</span><span style="color:#3d3a36;font-weight:600">Export ↓</span></nav>
+      </div>
+      <div class="boardtitle" style="color:#6f6a61">late-latte.storyboard.json · 4 panels</div>
+      <div class="grid4"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#f3efe6"/>
+      
+      <g><text x="120" y="66" text-anchor="middle" class="ga-title" font-size="18">THE LATE LATTE</text>
+                 <text x="120" y="90" text-anchor="middle" class="ga-hand" font-size="12">Maya · Tuesday · 8:14 am</text>
+                 <text x="120" y="112" text-anchor="middle" class="ga-hand" font-size="10" opacity=".75">ordered ahead on the app, 4 min ETA</text></g>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#3d3a36" stroke-width="1.2" filter="url(#ga-pencil)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#f3efe6"/>
+      <g stroke="#8db7d8" stroke-width=".6" fill="none" opacity=".8"><path d="M0 128 L240 110 M69 30 V132 M40 100 L110 60"/><ellipse cx="69" cy="84" rx="24" ry="44"/></g>
+      <g transform=""  opacity="1"><rect x="138" y="14" width="88" height="32" rx="2" fill="url(#ga-hatch)" stroke="none"/><rect x="128" y="86" width="112" height="42" fill="url(#ga-hatch)" stroke="none"/><rect x="176" y="62" width="38" height="24" rx="3" fill="url(#ga-hatch-dense)" stroke="none"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z" fill="url(#ga-hatch)" stroke="none"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z" fill="url(#ga-hatch)" stroke="none"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z" fill="url(#ga-hatch-dense)" stroke="none"/><circle cx="60" cy="42" r="5" fill="url(#ga-hatch-dense)" stroke="none"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)" fill="#f3d9d2" stroke="none"/></g><g fill="none" stroke="#3d3a36" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#ga-pencil)"><line x1="0" y1="128" x2="240" y2="128"/><rect x="138" y="14" width="88" height="32" rx="2"/><path d="M146 24 h40 M146 31 h52 M146 38 h30 M204 24 h14 M206 31 h12"/><rect x="128" y="86" width="112" height="42"/><rect x="176" y="62" width="38" height="24" rx="3"/><path d="M186 86 v-6 M204 86 v-6"/><circle cx="152" cy="66" r="8"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z"/><path d="M55 104 L57 128 M79 104 L82 128"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z"/><circle cx="69" cy="52" r="11"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z"/><circle cx="60" cy="42" r="5"/><path d="M57 68 L52 96"/><path d="M79 68 L88 86 L80 80"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)"/><path d="M52 128 h10 M77 128 h10"/></g><rect x="6" y="6" width="96" height="30" class="ga-capbox"/>
+                 <text x="12" y="19" class="ga-hand" font-size="9.5">In line anyway. Is my</text>
+                 <text x="12" y="30" class="ga-hand" font-size="9.5">order even started?</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#3d3a36" stroke-width="1.2" filter="url(#ga-pencil)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#f3efe6"/>
+      <g stroke="#8db7d8" stroke-width=".6" fill="none" opacity=".8"><path d="M0 128 L240 110 M69 30 V132 M40 100 L110 60"/><ellipse cx="69" cy="84" rx="24" ry="44"/></g>
+      <g transform=""  opacity="1"><circle cx="34" cy="102" r="19" fill="url(#ga-hatch-dense)" stroke="none"/><circle cx="22" cy="86" r="6" fill="url(#ga-hatch-dense)" stroke="none"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z" fill="url(#ga-hatch)" stroke="none"/><rect x="92" y="18" width="74" height="140" rx="11" fill="url(#ga-hatch-dense)" stroke="none"/><rect x="98" y="30" width="62" height="112" rx="3" fill="#f3d9d2" stroke="none"/><rect x="104" y="78" width="50" height="6" rx="3" fill="#f3efe6" stroke="none"/><rect x="104" y="78" width="18" height="6" rx="3" fill="url(#ga-hatch-dense)" stroke="none"/><rect x="108" y="116" width="42" height="14" rx="4" fill="#f3efe6" stroke="none"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z" fill="#f3efe6" stroke="none"/><circle cx="44" cy="70" r="3.6" fill="#f3efe6" stroke="none"/><circle cx="40" cy="77" r="2.2" fill="#f3efe6" stroke="none"/></g><g fill="none" stroke="#3d3a36" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#ga-pencil)"><circle cx="34" cy="102" r="19"/><circle cx="22" cy="86" r="6"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z"/><rect x="92" y="18" width="74" height="140" rx="11"/><rect x="98" y="30" width="62" height="112" rx="3"/><path d="M104 72 h50"/><rect x="104" y="78" width="50" height="6" rx="3"/><rect x="104" y="78" width="18" height="6" rx="3"/><rect x="108" y="116" width="42" height="14" rx="4"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z"/><circle cx="44" cy="70" r="3.6"/><circle cx="40" cy="77" r="2.2"/></g><g stroke="#c2412d" fill="none" stroke-width="1.1" stroke-linecap="round">
+      <circle cx="129" cy="123" r="5"/><circle cx="129" cy="123" r="10" opacity=".6"/>
+      <path d="M114 110 l-5 -5 M129 106 v-7 M144 110 l5 -5"/></g><text x="47" y="34" text-anchor="middle" class="ga-hand" font-size="9">It said 4 min.</text>
+                 <text x="47" y="46" text-anchor="middle" class="ga-hand" font-size="9">That was 12 min</text>
+                 <text x="47" y="56" text-anchor="middle" class="ga-hand" font-size="9">ago…</text>
+                 <text x="129" y="46" text-anchor="middle" class="ga-hand" font-size="8">Order #214</text>
+                 <text x="129" y="64" text-anchor="middle" class="ga-hand" font-size="8">Preparing…</text>
+                 <text x="129" y="95" text-anchor="middle" class="ga-hand" font-size="8">ETA 4 min</text>
+                 <text x="129" y="126" text-anchor="middle" class="ga-hand" font-size="7.5">I'm here</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#3d3a36" stroke-width="1.2" filter="url(#ga-pencil)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#f3efe6"/>
+      <g stroke="#8db7d8" stroke-width=".6" fill="none" opacity=".8"><path d="M0 128 L240 110 M69 30 V132 M40 100 L110 60"/><ellipse cx="69" cy="84" rx="24" ry="44"/></g>
+      <g transform=""  opacity="1"><circle cx="120" cy="62" r="30" fill="#f3efe6" stroke="none"/></g><g fill="none" stroke="#3d3a36" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#ga-pencil)"><circle cx="120" cy="62" r="30"/><path d="M120 62 L120 40 M120 62 L136 70"/><path d="M120 34 v4 M148 62 h-4 M120 90 v-4 M92 62 h4"/><path d="M150 36 q8 -6 14 2 M154 28 q10 -4 16 6"/></g><text x="120" y="120" text-anchor="middle" class="ga-title" font-size="15">12 MINUTES LATER…</text>
+                 <text x="120" y="138" text-anchor="middle" class="ga-hand" font-size="9.5" opacity=".75">still no latte</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#3d3a36" stroke-width="1.2" filter="url(#ga-pencil)"/>
+    </svg></div>
+      <div class="tokens" style="color:#6f6a61"><span class="sw"><i style="background:#f3efe6"></i>paper</span><span class="sw"><i style="background:#3d3a36"></i>graphite</span><span class="sw"><i style="background:#8e8a83"></i>hatch</span><span class="sw"><i style="background:#8db7d8"></i>non-photo blue</span><span class="sw"><i style="background:#c2412d"></i>red pencil: product</span></div>
+      <div class="fontline" style="color:#6f6a61">Kalam (lettering) · IBM Plex Sans (editor)</div>
+    </div></div>
+      <div class="option-summary">The classic film-storyboard look: pencil on toothy paper, hatching for shadows, and faint <strong>non-photo-blue construction lines</strong> left in, the way real board artists work. Only the product moments (the order screen, the tap) pick up a red pencil. It looks like a <strong>draft that invites argument</strong>, which is ideal for early discovery crits.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>You want boards to feel unmistakably unfinished, so people critique the journey instead of the drawings</li><li>Teams already know film and animation storyboards</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Low contrast gets muddy when shrunk into slides or Slack</li><li>Hatching on many parts can make scenes busy</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option A"</code></div>
+    </article><article class="option-card option-b chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option B</span>
+        <div class="card-badges"><span class="recommended-badge">My pick</span><span class="confidence-badge lean">Lean</span><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Marker Comp</h2></div>
+      <div class="visual-preview"><div class="frame" style="background:#ffffff;border-radius:0;border:1px solid #1c1c1e;font-family:'Work Sans', sans-serif">
+      <svg width="0" height="0" style="position:absolute"><defs><filter id="mk-wobble"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter>
+      <filter id="mk-bleed"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter></defs></svg>
+      <div class="chrome" style="background:#f1f1ef;border-bottom:1px solid #1c1c1e"><span style="background:#ef4444"></span><span style="background:#eab308"></span><span style="background:#22c55e"></span></div>
+      <div class="apphead" style="border-bottom:1px solid #1c1c1e">
+        <b style="font-family:'Permanent Marker', cursive;color:#1c1c1e">Storyboard</b>
+        <nav style="color:#5c5c60"><span>Cast</span><span>Scenes</span><span>Devices</span><span style="color:#1c1c1e;font-weight:600">Export ↓</span></nav>
+      </div>
+      <div class="boardtitle" style="color:#5c5c60">late-latte.storyboard.json · 4 panels</div>
+      <div class="grid4"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g><text x="120" y="66" text-anchor="middle" class="mk-title" font-size="19">THE LATE LATTE</text>
+                 <text x="120" y="90" text-anchor="middle" class="mk-hand" font-size="12">Maya · Tuesday · 8:14 am</text>
+                 <text x="120" y="112" text-anchor="middle" class="mk-hand" font-size="10" opacity=".75">ordered ahead on the app, 4 min ETA</text></g>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><rect x="138" y="14" width="88" height="32" rx="2" fill="#d7dade" stroke="none"/><rect x="128" y="86" width="112" height="42" fill="#d7dade" stroke="none"/><rect x="176" y="62" width="38" height="24" rx="3" fill="#6f777f" stroke="none"/><circle cx="152" cy="66" r="8" fill="#eceae6" stroke="none"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z" fill="#d7dade" stroke="none"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z" fill="#d7dade" stroke="none"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z" fill="#b9bec4" stroke="none"/><circle cx="69" cy="52" r="11" fill="#eceae6" stroke="none"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z" fill="#6f777f" stroke="none"/><circle cx="60" cy="42" r="5" fill="#6f777f" stroke="none"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)" fill="#8fd6dc" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><line x1="0" y1="128" x2="240" y2="128"/><rect x="138" y="14" width="88" height="32" rx="2"/><path d="M146 24 h40 M146 31 h52 M146 38 h30 M204 24 h14 M206 31 h12"/><rect x="128" y="86" width="112" height="42"/><rect x="176" y="62" width="38" height="24" rx="3"/><path d="M186 86 v-6 M204 86 v-6"/><circle cx="152" cy="66" r="8"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z"/><path d="M55 104 L57 128 M79 104 L82 128"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z"/><circle cx="69" cy="52" r="11"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z"/><circle cx="60" cy="42" r="5"/><path d="M57 68 L52 96"/><path d="M79 68 L88 86 L80 80"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)"/><path d="M52 128 h10 M77 128 h10"/></g><rect x="6" y="6" width="96" height="30" class="mk-capbox"/>
+                 <text x="12" y="19" class="mk-hand" font-size="9.5">In line anyway. Is my</text>
+                 <text x="12" y="30" class="mk-hand" font-size="9.5">order even started?</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="34" cy="102" r="19" fill="#6f777f" stroke="none"/><circle cx="22" cy="86" r="6" fill="#6f777f" stroke="none"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z" fill="#b9bec4" stroke="none"/><rect x="92" y="18" width="74" height="140" rx="11" fill="#6f777f" stroke="none"/><rect x="98" y="30" width="62" height="112" rx="3" fill="#8fd6dc" stroke="none"/><rect x="104" y="78" width="50" height="6" rx="3" fill="#fbfaf7" stroke="none"/><rect x="104" y="78" width="18" height="6" rx="3" fill="#6f777f" stroke="none"/><rect x="108" y="116" width="42" height="14" rx="4" fill="#fbfaf7" stroke="none"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z" fill="#eceae6" stroke="none"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z" fill="#fbfaf7" stroke="none"/><circle cx="44" cy="70" r="3.6" fill="#fbfaf7" stroke="none"/><circle cx="40" cy="77" r="2.2" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="34" cy="102" r="19"/><circle cx="22" cy="86" r="6"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z"/><rect x="92" y="18" width="74" height="140" rx="11"/><rect x="98" y="30" width="62" height="112" rx="3"/><path d="M104 72 h50"/><rect x="104" y="78" width="50" height="6" rx="3"/><rect x="104" y="78" width="18" height="6" rx="3"/><rect x="108" y="116" width="42" height="14" rx="4"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z"/><circle cx="44" cy="70" r="3.6"/><circle cx="40" cy="77" r="2.2"/></g><g stroke="#0e9aa7" fill="none" stroke-width="2.1" stroke-linecap="round">
+      <circle cx="129" cy="123" r="5"/><circle cx="129" cy="123" r="10" opacity=".6"/>
+      <path d="M114 110 l-5 -5 M129 106 v-7 M144 110 l5 -5"/></g><text x="47" y="34" text-anchor="middle" class="mk-hand" font-size="9">It said 4 min.</text>
+                 <text x="47" y="46" text-anchor="middle" class="mk-hand" font-size="9">That was 12 min</text>
+                 <text x="47" y="56" text-anchor="middle" class="mk-hand" font-size="9">ago…</text>
+                 <text x="129" y="46" text-anchor="middle" class="mk-hand" font-size="8">Order #214</text>
+                 <text x="129" y="64" text-anchor="middle" class="mk-hand" font-size="8">Preparing…</text>
+                 <text x="129" y="95" text-anchor="middle" class="mk-hand" font-size="8">ETA 4 min</text>
+                 <text x="129" y="126" text-anchor="middle" class="mk-hand" font-size="7.5">I'm here</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="120" cy="62" r="30" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="120" cy="62" r="30"/><path d="M120 62 L120 40 M120 62 L136 70"/><path d="M120 34 v4 M148 62 h-4 M120 90 v-4 M92 62 h4"/><path d="M150 36 q8 -6 14 2 M154 28 q10 -4 16 6"/></g><text x="120" y="120" text-anchor="middle" class="mk-title" font-size="16">12 MINUTES LATER…</text>
+                 <text x="120" y="138" text-anchor="middle" class="mk-hand" font-size="9.5" opacity=".75">still no latte</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg></div>
+      <div class="tokens" style="color:#5c5c60"><span class="sw"><i style="background:#fbfaf7"></i>paper</span><span class="sw"><i style="background:#1c1c1e"></i>fineliner</span><span class="sw"><i style="background:#d7dade"></i>cool grey 2</span><span class="sw"><i style="background:#b9bec4"></i>cool grey 4</span><span class="sw"><i style="background:#6f777f"></i>cool grey 7</span><span class="sw"><i style="background:#0e9aa7"></i>teal: product only</span></div>
+      <div class="fontline" style="color:#5c5c60">Permanent Marker (titles) · Patrick Hand (lettering) · Work Sans (editor)</div>
+    </div></div>
+      <div class="option-summary">The UX and industrial-design storyboard staple: a black fineliner outline over <strong>3 cool-grey marker tones</strong> that sit slightly off the line, like real markers. The rule that carries it: <strong>the software is the only thing in color</strong>. Every screen, tap and notification is teal, and everything else in the person's life is grey. Anyone glancing at a board sees at once how small and how late the product shows up in someone's day.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Boards get shared in decks, Slack and printouts (high contrast survives shrinking)</li><li>You want the 'where does our product actually show up?' insight to jump out</li><li>Flat fills are the easiest style to generate consistently from modular parts</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Can drift toward 'finished illustration' if the line wobble is tuned too clean</li><li>Less emotional range than ink and wash</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option B"</code></div>
+    </article><article class="option-card option-c not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option C</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Rough Whiteboard</h2></div>
+      <div class="visual-preview"><div class="frame" style="background:#f6f6f9;border-radius:8px;border:1px solid #dcdce4;font-family:'Nunito', sans-serif">
+      <svg width="0" height="0" style="position:absolute"><defs><filter id="rw-rough"><feTurbulence type="turbulence" baseFrequency=".06" numOctaves="1" seed="11" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4"/></filter>
+      <filter id="rw-rough2"><feTurbulence type="turbulence" baseFrequency=".06" numOctaves="1" seed="29" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4"/></filter><pattern id="rw-h-yellow" width="4.5" height="4.5" patternUnits="userSpaceOnUse" patternTransform="rotate(-41)"><line x1="0" y1="0" x2="0" y2="4.5" stroke="#f2c94c" stroke-width="1.1"/></pattern><pattern id="rw-h-blue" width="4.5" height="4.5" patternUnits="userSpaceOnUse" patternTransform="rotate(-41)"><line x1="0" y1="0" x2="0" y2="4.5" stroke="#4dabf7" stroke-width="1.1"/></pattern><pattern id="rw-h-green" width="4.5" height="4.5" patternUnits="userSpaceOnUse" patternTransform="rotate(-41)"><line x1="0" y1="0" x2="0" y2="4.5" stroke="#69db7c" stroke-width="1.1"/></pattern><pattern id="rw-h-grey" width="4.5" height="4.5" patternUnits="userSpaceOnUse" patternTransform="rotate(-41)"><line x1="0" y1="0" x2="0" y2="4.5" stroke="#adb5bd" stroke-width="1.1"/></pattern><pattern id="rw-h-red" width="4.5" height="4.5" patternUnits="userSpaceOnUse" patternTransform="rotate(-41)"><line x1="0" y1="0" x2="0" y2="4.5" stroke="#ff8787" stroke-width="1.1"/></pattern></defs></svg>
+      <div class="chrome" style="background:#ececf1;border-bottom:1px solid #dcdce4"><span style="background:#ef4444"></span><span style="background:#eab308"></span><span style="background:#22c55e"></span></div>
+      <div class="apphead" style="border-bottom:1px solid #dcdce4">
+        <b style="font-family:'Gaegu', cursive;color:#1e1e1e">Storyboard</b>
+        <nav style="color:#5b5b66"><span>Cast</span><span>Scenes</span><span>Devices</span><span style="color:#1e1e1e;font-weight:600">Export ↓</span></nav>
+      </div>
+      <div class="boardtitle" style="color:#5b5b66">late-latte.storyboard.json · 4 panels</div>
+      <div class="grid4"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#ffffff"/>
+      
+      <g><text x="120" y="66" text-anchor="middle" class="rw-title" font-size="18">THE LATE LATTE</text>
+                 <text x="120" y="90" text-anchor="middle" class="rw-hand" font-size="11.04">Maya · Tuesday · 8:14 am</text>
+                 <text x="120" y="112" text-anchor="middle" class="rw-hand" font-size="9.2" opacity=".75">ordered ahead on the app, 4 min ETA</text></g>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1e1e1e" stroke-width="1.4" filter="url(#rw-rough)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#ffffff"/>
+      
+      <g transform=""  opacity="1"><rect x="138" y="14" width="88" height="32" rx="2" fill="url(#rw-h-grey)" stroke="none"/><rect x="128" y="86" width="112" height="42" fill="url(#rw-h-grey)" stroke="none"/><rect x="176" y="62" width="38" height="24" rx="3" fill="url(#rw-h-grey)" stroke="none"/><circle cx="152" cy="66" r="8" fill="url(#rw-h-yellow)" stroke="none"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z" fill="url(#rw-h-green)" stroke="none"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z" fill="url(#rw-h-blue)" stroke="none"/><circle cx="69" cy="52" r="11" fill="url(#rw-h-yellow)" stroke="none"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z" fill="url(#rw-h-grey)" stroke="none"/><circle cx="60" cy="42" r="5" fill="url(#rw-h-grey)" stroke="none"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)" fill="url(#rw-h-red)" stroke="none"/></g><g fill="none" stroke="#1e1e1e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" filter="url(#rw-rough)"><line x1="0" y1="128" x2="240" y2="128"/><rect x="138" y="14" width="88" height="32" rx="2"/><path d="M146 24 h40 M146 31 h52 M146 38 h30 M204 24 h14 M206 31 h12"/><rect x="128" y="86" width="112" height="42"/><rect x="176" y="62" width="38" height="24" rx="3"/><path d="M186 86 v-6 M204 86 v-6"/><circle cx="152" cy="66" r="8"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z"/><path d="M55 104 L57 128 M79 104 L82 128"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z"/><circle cx="69" cy="52" r="11"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z"/><circle cx="60" cy="42" r="5"/><path d="M57 68 L52 96"/><path d="M79 68 L88 86 L80 80"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)"/><path d="M52 128 h10 M77 128 h10"/></g><g fill="none" stroke="#1e1e1e" stroke-width="0.9099999999999999" stroke-linecap="round" opacity=".7" transform="translate(.8 -.6)" filter="url(#rw-rough2)"><line x1="0" y1="128" x2="240" y2="128"/><rect x="138" y="14" width="88" height="32" rx="2"/><path d="M146 24 h40 M146 31 h52 M146 38 h30 M204 24 h14 M206 31 h12"/><rect x="128" y="86" width="112" height="42"/><rect x="176" y="62" width="38" height="24" rx="3"/><path d="M186 86 v-6 M204 86 v-6"/><circle cx="152" cy="66" r="8"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z"/><path d="M55 104 L57 128 M79 104 L82 128"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z"/><circle cx="69" cy="52" r="11"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z"/><circle cx="60" cy="42" r="5"/><path d="M57 68 L52 96"/><path d="M79 68 L88 86 L80 80"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)"/><path d="M52 128 h10 M77 128 h10"/></g><rect x="6" y="6" width="96" height="30" class="rw-capbox"/>
+                 <text x="12" y="19" class="rw-hand" font-size="8.74">In line anyway. Is my</text>
+                 <text x="12" y="30" class="rw-hand" font-size="8.74">order even started?</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1e1e1e" stroke-width="1.4" filter="url(#rw-rough)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#ffffff"/>
+      
+      <g transform=""  opacity="1"><circle cx="34" cy="102" r="19" fill="url(#rw-h-grey)" stroke="none"/><circle cx="22" cy="86" r="6" fill="url(#rw-h-grey)" stroke="none"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z" fill="url(#rw-h-blue)" stroke="none"/><rect x="92" y="18" width="74" height="140" rx="11" fill="url(#rw-h-grey)" stroke="none"/><rect x="98" y="30" width="62" height="112" rx="3" fill="url(#rw-h-red)" stroke="none"/><rect x="104" y="78" width="50" height="6" rx="3" fill="#ffffff" stroke="none"/><rect x="104" y="78" width="18" height="6" rx="3" fill="url(#rw-h-grey)" stroke="none"/><rect x="108" y="116" width="42" height="14" rx="4" fill="#ffffff" stroke="none"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z" fill="url(#rw-h-yellow)" stroke="none"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z" fill="#ffffff" stroke="none"/><circle cx="44" cy="70" r="3.6" fill="#ffffff" stroke="none"/><circle cx="40" cy="77" r="2.2" fill="#ffffff" stroke="none"/></g><g fill="none" stroke="#1e1e1e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" filter="url(#rw-rough)"><circle cx="34" cy="102" r="19"/><circle cx="22" cy="86" r="6"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z"/><rect x="92" y="18" width="74" height="140" rx="11"/><rect x="98" y="30" width="62" height="112" rx="3"/><path d="M104 72 h50"/><rect x="104" y="78" width="50" height="6" rx="3"/><rect x="104" y="78" width="18" height="6" rx="3"/><rect x="108" y="116" width="42" height="14" rx="4"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z"/><circle cx="44" cy="70" r="3.6"/><circle cx="40" cy="77" r="2.2"/></g><g fill="none" stroke="#1e1e1e" stroke-width="0.9099999999999999" stroke-linecap="round" opacity=".7" transform="translate(.8 -.6)" filter="url(#rw-rough2)"><circle cx="34" cy="102" r="19"/><circle cx="22" cy="86" r="6"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z"/><rect x="92" y="18" width="74" height="140" rx="11"/><rect x="98" y="30" width="62" height="112" rx="3"/><path d="M104 72 h50"/><rect x="104" y="78" width="50" height="6" rx="3"/><rect x="104" y="78" width="18" height="6" rx="3"/><rect x="108" y="116" width="42" height="14" rx="4"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z"/><circle cx="44" cy="70" r="3.6"/><circle cx="40" cy="77" r="2.2"/></g><g stroke="#e03131" fill="none" stroke-width="1.3" stroke-linecap="round">
+      <circle cx="129" cy="123" r="5"/><circle cx="129" cy="123" r="10" opacity=".6"/>
+      <path d="M114 110 l-5 -5 M129 106 v-7 M144 110 l5 -5"/></g><text x="47" y="34" text-anchor="middle" class="rw-hand" font-size="8.28">It said 4 min.</text>
+                 <text x="47" y="46" text-anchor="middle" class="rw-hand" font-size="8.28">That was 12 min</text>
+                 <text x="47" y="56" text-anchor="middle" class="rw-hand" font-size="8.28">ago…</text>
+                 <text x="129" y="46" text-anchor="middle" class="rw-hand" font-size="7.36">Order #214</text>
+                 <text x="129" y="64" text-anchor="middle" class="rw-hand" font-size="7.36">Preparing…</text>
+                 <text x="129" y="95" text-anchor="middle" class="rw-hand" font-size="7.36">ETA 4 min</text>
+                 <text x="129" y="126" text-anchor="middle" class="rw-hand" font-size="6.9">I'm here</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1e1e1e" stroke-width="1.4" filter="url(#rw-rough)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#ffffff"/>
+      
+      <g transform=""  opacity="1"><circle cx="120" cy="62" r="30" fill="#ffffff" stroke="none"/></g><g fill="none" stroke="#1e1e1e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" filter="url(#rw-rough)"><circle cx="120" cy="62" r="30"/><path d="M120 62 L120 40 M120 62 L136 70"/><path d="M120 34 v4 M148 62 h-4 M120 90 v-4 M92 62 h4"/><path d="M150 36 q8 -6 14 2 M154 28 q10 -4 16 6"/></g><g fill="none" stroke="#1e1e1e" stroke-width="0.9099999999999999" stroke-linecap="round" opacity=".7" transform="translate(.8 -.6)" filter="url(#rw-rough2)"><circle cx="120" cy="62" r="30"/><path d="M120 62 L120 40 M120 62 L136 70"/><path d="M120 34 v4 M148 62 h-4 M120 90 v-4 M92 62 h4"/><path d="M150 36 q8 -6 14 2 M154 28 q10 -4 16 6"/></g><text x="120" y="120" text-anchor="middle" class="rw-title" font-size="15">12 MINUTES LATER…</text>
+                 <text x="120" y="138" text-anchor="middle" class="rw-hand" font-size="8.74" opacity=".75">still no latte</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1e1e1e" stroke-width="1.4" filter="url(#rw-rough)"/>
+    </svg></div>
+      <div class="tokens" style="color:#5b5b66"><span class="sw"><i style="background:#ffffff"></i>canvas</span><span class="sw"><i style="background:#1e1e1e"></i>ink</span><span class="sw"><i style="background:#4dabf7"></i>blue</span><span class="sw"><i style="background:#f2c94c"></i>yellow</span><span class="sw"><i style="background:#69db7c"></i>green</span><span class="sw"><i style="background:#e03131"></i>red</span></div>
+      <div class="fontline" style="color:#5b5b66">Gaegu (lettering) · Nunito (editor)</div>
+    </div></div>
+      <div class="option-summary">The hand-drawn diagram look tech teams already know from whiteboard tools: doubled wobbly lines, diagonal <strong>hachure</strong> fills in bright pastels, and friendly lettering. It's the cheapest to build, because open-source libraries (rough.js) produce this look from any shape. The downside is that people will read it as a diagram, not as a person's life.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>The storyboard should sit comfortably next to existing architecture diagrams</li><li>You want the fastest possible path to a working renderer</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Looks like every other whiteboard sketch, so there's little identity</li><li>People drawn in this style feel stiff and robotic, which undercuts the empathy goal</li><li>Pastel rainbow fills fight the 'product is the highlight' idea</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option C"</code></div>
+    </article><article class="option-card option-d not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option D</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Ink & Wash</h2></div>
+      <div class="visual-preview"><div class="frame" style="background:#2a2420;border-radius:4px;border:1px solid #4a4038;font-family:'Karla', sans-serif">
+      <svg width="0" height="0" style="position:absolute"><defs><filter id="iw-brush"><feTurbulence type="fractalNoise" baseFrequency=".08" numOctaves="2" seed="5" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/></filter>
+      <filter id="iw-wash" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="3" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="9" result="d"/><feGaussianBlur in="d" stdDeviation=".7"/></filter>
+      <pattern id="iw-dots" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r=".9" fill="#1f1a17" opacity=".35"/></pattern></defs></svg>
+      <div class="chrome" style="background:#1f1a17;border-bottom:1px solid #4a4038"><span style="background:#ef4444"></span><span style="background:#eab308"></span><span style="background:#22c55e"></span></div>
+      <div class="apphead" style="border-bottom:1px solid #4a4038">
+        <b style="font-family:'Caveat Brush', cursive;color:#f3ead7">Storyboard</b>
+        <nav style="color:#c7b99d"><span>Cast</span><span>Scenes</span><span>Devices</span><span style="color:#f3ead7;font-weight:600">Export ↓</span></nav>
+      </div>
+      <div class="boardtitle" style="color:#c7b99d">late-latte.storyboard.json · 4 panels</div>
+      <div class="grid4"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#efe5cf"/>
+      
+      <g><text x="120" y="66" text-anchor="middle" class="iw-title" font-size="20">THE LATE LATTE</text>
+                 <text x="120" y="90" text-anchor="middle" class="iw-hand" font-size="9.6">Maya · Tuesday · 8:14 am</text>
+                 <text x="120" y="112" text-anchor="middle" class="iw-hand" font-size="8.0" opacity=".75">ordered ahead on the app, 4 min ETA</text></g>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1f1a17" stroke-width="3" filter="url(#iw-brush)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#efe5cf"/>
+      <rect x="0" y="0" width="240" height="150" fill="url(#iw-dots)" opacity=".5"/>
+      <g transform="translate(-2 2.5)" filter="url(#iw-wash)" opacity=".7"><rect x="138" y="14" width="88" height="32" rx="2" fill="#b89468" stroke="none"/><rect x="128" y="86" width="112" height="42" fill="#b89468" stroke="none"/><rect x="176" y="62" width="38" height="24" rx="3" fill="#2f3b45" stroke="none"/><circle cx="152" cy="66" r="8" fill="#e8c9a4" stroke="none"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z" fill="#9fb3a0" stroke="none"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z" fill="#e0b25c" stroke="none"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z" fill="#6d8fa6" stroke="none"/><circle cx="69" cy="52" r="11" fill="#e8c9a4" stroke="none"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z" fill="#2f3b45" stroke="none"/><circle cx="60" cy="42" r="5" fill="#2f3b45" stroke="none"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)" fill="#f2a36b" stroke="none"/></g><g fill="none" stroke="#1f1a17" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" filter="url(#iw-brush)"><line x1="0" y1="128" x2="240" y2="128"/><rect x="138" y="14" width="88" height="32" rx="2"/><path d="M146 24 h40 M146 31 h52 M146 38 h30 M204 24 h14 M206 31 h12"/><rect x="128" y="86" width="112" height="42"/><rect x="176" y="62" width="38" height="24" rx="3"/><path d="M186 86 v-6 M204 86 v-6"/><circle cx="152" cy="66" r="8"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z"/><path d="M55 104 L57 128 M79 104 L82 128"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z"/><circle cx="69" cy="52" r="11"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z"/><circle cx="60" cy="42" r="5"/><path d="M57 68 L52 96"/><path d="M79 68 L88 86 L80 80"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)"/><path d="M52 128 h10 M77 128 h10"/></g><rect x="6" y="6" width="96" height="30" class="iw-capbox"/>
+                 <text x="12" y="19" class="iw-hand" font-size="7.6">In line anyway. Is my</text>
+                 <text x="12" y="30" class="iw-hand" font-size="7.6">order even started?</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1f1a17" stroke-width="3" filter="url(#iw-brush)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#efe5cf"/>
+      <rect x="0" y="0" width="240" height="150" fill="url(#iw-dots)" opacity=".5"/>
+      <g transform="translate(-2 2.5)" filter="url(#iw-wash)" opacity=".7"><circle cx="34" cy="102" r="19" fill="#2f3b45" stroke="none"/><circle cx="22" cy="86" r="6" fill="#2f3b45" stroke="none"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z" fill="#6d8fa6" stroke="none"/><rect x="92" y="18" width="74" height="140" rx="11" fill="#2f3b45" stroke="none"/><rect x="98" y="30" width="62" height="112" rx="3" fill="#f2a36b" stroke="none"/><rect x="104" y="78" width="50" height="6" rx="3" fill="#f6efdd" stroke="none"/><rect x="104" y="78" width="18" height="6" rx="3" fill="#2f3b45" stroke="none"/><rect x="108" y="116" width="42" height="14" rx="4" fill="#f6efdd" stroke="none"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z" fill="#e8c9a4" stroke="none"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z" fill="#f6efdd" stroke="none"/><circle cx="44" cy="70" r="3.6" fill="#f6efdd" stroke="none"/><circle cx="40" cy="77" r="2.2" fill="#f6efdd" stroke="none"/></g><g fill="none" stroke="#1f1a17" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" filter="url(#iw-brush)"><circle cx="34" cy="102" r="19"/><circle cx="22" cy="86" r="6"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z"/><rect x="92" y="18" width="74" height="140" rx="11"/><rect x="98" y="30" width="62" height="112" rx="3"/><path d="M104 72 h50"/><rect x="104" y="78" width="50" height="6" rx="3"/><rect x="104" y="78" width="18" height="6" rx="3"/><rect x="108" y="116" width="42" height="14" rx="4"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z"/><circle cx="44" cy="70" r="3.6"/><circle cx="40" cy="77" r="2.2"/></g><g stroke="#d9480f" fill="none" stroke-width="1.9" stroke-linecap="round">
+      <circle cx="129" cy="123" r="5"/><circle cx="129" cy="123" r="10" opacity=".6"/>
+      <path d="M114 110 l-5 -5 M129 106 v-7 M144 110 l5 -5"/></g><text x="47" y="34" text-anchor="middle" class="iw-hand" font-size="7.2">It said 4 min.</text>
+                 <text x="47" y="46" text-anchor="middle" class="iw-hand" font-size="7.2">That was 12 min</text>
+                 <text x="47" y="56" text-anchor="middle" class="iw-hand" font-size="7.2">ago…</text>
+                 <text x="129" y="46" text-anchor="middle" class="iw-hand" font-size="6.4">Order #214</text>
+                 <text x="129" y="64" text-anchor="middle" class="iw-hand" font-size="6.4">Preparing…</text>
+                 <text x="129" y="95" text-anchor="middle" class="iw-hand" font-size="6.4">ETA 4 min</text>
+                 <text x="129" y="126" text-anchor="middle" class="iw-hand" font-size="6.0">I'm here</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1f1a17" stroke-width="3" filter="url(#iw-brush)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#efe5cf"/>
+      <rect x="0" y="0" width="240" height="150" fill="url(#iw-dots)" opacity=".5"/>
+      <g transform="translate(-2 2.5)" filter="url(#iw-wash)" opacity=".7"><circle cx="120" cy="62" r="30" fill="#f6efdd" stroke="none"/></g><g fill="none" stroke="#1f1a17" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" filter="url(#iw-brush)"><circle cx="120" cy="62" r="30"/><path d="M120 62 L120 40 M120 62 L136 70"/><path d="M120 34 v4 M148 62 h-4 M120 90 v-4 M92 62 h4"/><path d="M150 36 q8 -6 14 2 M154 28 q10 -4 16 6"/></g><text x="120" y="120" text-anchor="middle" class="iw-title" font-size="17">12 MINUTES LATER…</text>
+                 <text x="120" y="138" text-anchor="middle" class="iw-hand" font-size="7.6" opacity=".75">still no latte</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1f1a17" stroke-width="3" filter="url(#iw-brush)"/>
+    </svg></div>
+      <div class="tokens" style="color:#c7b99d"><span class="sw"><i style="background:#efe5cf"></i>paper</span><span class="sw"><i style="background:#1f1a17"></i>sumi ink</span><span class="sw"><i style="background:#6d8fa6"></i>indigo wash</span><span class="sw"><i style="background:#b89468"></i>umber wash</span><span class="sw"><i style="background:#e8c9a4"></i>skin wash</span><span class="sw"><i style="background:#d9480f"></i>vermilion: product</span></div>
+      <div class="fontline" style="color:#c7b99d">Caveat Brush (titles) · Comic Neue (lettering) · Karla (editor)</div>
+    </div></div>
+      <div class="option-summary">Comic-book energy: brush-ink outlines, loose watercolor washes that bleed past the lines, halftone dots and ALL-CAPS comic lettering. It's the most <strong>emotional</strong> of the four, so frustration, relief and exhaustion read clearly on faces and in the mood of a scene. It also looks the most crafted, which is exactly the risk.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Emotion is the point, e.g. journey maps about stressful moments (healthcare, money, travel)</li><li>Boards are shown to execs and need to feel compelling</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Reads as higher fidelity, so teams polish the boards instead of questioning the journey</li><li>Washes are the hardest to keep consistent across panels</li><li>Color washes compete with the product highlight</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option D"</code></div>
+    </article></main>
+
+<section class="case-against">
+  <h2>The case against my pick</h2>
+  <p>You said <strong>low fidelity</strong> twice, and Graphite (A) is lower-fi than Marker. Pencil thumbnails signal "this is a draft, rip it apart" more loudly than anything else here.
+  Marker comps are what agencies use when a board needs to <strong>impress</strong>, and that pull toward polish is how storyboards stop being thinking tools and turn into deliverables.
+  If your users mainly storyboard in early discovery with their own team, A is probably the better tool. There's also a hybrid worth considering: B's "only the product is in color" rule applied to A's pencil.</p>
+</section>
+<section class="assumptions">
+  <h2>This recommendation assumes</h2>
+  <ul>
+    <li>Boards travel: they get pasted into decks, Slack threads and research readouts, where contrast at small sizes matters</li>
+    <li>The core insight you want boards to deliver is <strong>"where does the software show up in this person's day?"</strong>, and a single product color makes that visible</li>
+    <li>Characters are built from modular parts (decision 3), which suits flat fills better than hatching or washes</li>
+  </ul>
+</section>
+
+<section class="comparison-section">
+  <h2>How They Compare</h2>
+  <div class="comparison-table-wrapper"><table class="comparison-table">
+    <thead><tr><th></th><th class="col-a">A: Graphite</th><th class="col-b col-chosen">B: Marker Comp</th><th class="col-c">C: Rough Whiteboard</th><th class="col-d">D: Ink &amp; Wash</th></tr></thead>
+    <tbody>
+      <tr><td>How low-fi it feels</td><td>Lowest: an obvious draft</td><td class="col-chosen">Low, but confident</td><td>Low, reads as a diagram</td><td>Medium to high: looks crafted</td></tr>
+      <tr><td>Product moment stands out</td><td>Yes (red pencil)</td><td class="col-chosen">Strongly: the only color on the page</td><td>Weakly: everything is colored</td><td>Somewhat, since washes compete</td></tr>
+      <tr><td>Legible when shrunk into a slide</td><td>Weak (low contrast)</td><td class="col-chosen">Strong</td><td>Strong</td><td>Medium</td></tr>
+      <tr><td>Emotional range on faces</td><td>Medium</td><td class="col-chosen">Medium</td><td>Low</td><td>High</td></tr>
+      <tr><td>Consistency from modular parts</td><td>Medium (hatching varies)</td><td class="col-chosen">High (flat fills)</td><td>High (procedural)</td><td>Low (washes vary)</td></tr>
+      <tr><td>Build effort</td><td>Medium (texture filters)</td><td class="col-chosen">Low to medium</td><td>Lowest (rough.js)</td><td>High</td></tr>
+      <tr><td>Trend durability</td><td>Timeless</td><td class="col-chosen">Timeless in design practice</td><td>Tied to whiteboard-tool era</td><td>Timeless</td></tr>
+      <tr><td>Undo cost</td><td>Low for the renderer, medium for art assets</td><td class="col-chosen">Low for the renderer, medium for art assets</td><td>Low</td><td>High (hand-painted assets)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="research-context">
+  <h2>Why these four</h2>
+  <ul class="findings">
+    <li>They span the real storyboard traditions: film pre-visualization (graphite), design and ID comps (marker), the tech whiteboard (rough), and comics (ink and wash).</li>
+    <li>The decision research found that open-source sketch libraries (rough.js, perfect-freehand) and SVG turbulence filters can produce A, B and C live in the browser while keeping every stroke editable. D's washes are the hardest to generate. <a class="cite" href="https://github.com/rough-stuff/rough">rough.js</a> <a class="cite" href="https://heredragonsabound.blogspot.com/2020/02/creating-pencil-effect-in-svg.html">SVG pencil effect</a></li>
+    <li>The Open Peeps library (free to reuse, hand-drawn line art) is the closest ready-made match for styles A and B, which is useful for decision 3. <a class="cite" href="https://www.openpeeps.com/">Open Peeps</a></li>
+  </ul>
+  <div class="experts-disagree"><h3>Where practitioners disagree</h3>
+    <p>One school says <strong>rougher is better</strong>: polish shuts down critique, so keep boards ugly. The other says boards have to <strong>travel and persuade</strong> stakeholders who weren't in the room, so legibility beats roughness. What decides it: are these boards mostly for the team's own thinking (A), or mostly for convincing people outside the team (B)?</p>
+  </div>
+</section>
+
+<div class="page-footer">
+  <p>Respond with: <strong>"Option B"</strong>, <strong>"Option A but [your change]"</strong>, or <strong>"more options"</strong></p>
+  <p>To change a past decision: <strong>"for decision-001 I want Option B instead"</strong></p>
+</div>
+</body></html>

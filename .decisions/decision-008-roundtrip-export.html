@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision 8: Round-Trip &amp; Export — Storyboarding Tool</title>
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    .hl { font-style: italic; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.technical { background: #e6f0f3; color: #1b5e74; }
+    .triage-badge { display:inline-block; padding:4px 12px; border-radius:999px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; margin-top:0.5rem; margin-left:6px; }
+    .triage-badge.one-way { background:#fef2f2; color:#dc2626; }
+    .triage-badge.stakes-high { background:#fff7ed; color:#c2410c; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 720px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eef5f7; color: #1b5e74; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #b9d5de; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #1f6f8b; box-shadow: 0 4px 16px rgba(31,111,139,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #a23b72; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .confidence-badge { padding:3px 10px; border-radius:999px; font-size:0.65rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; color:white; }
+    .confidence-badge.strong { background:#059669; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .card-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+
+    .visual-preview { padding: 1.25rem; background: #f8fafc; min-height: 360px; display: flex; flex-direction: column; gap: 10px; align-items: stretch; flex: 1; }
+    .file-tab { display: inline-flex; align-self: flex-start; gap: 6px; align-items: center; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.68rem; color: #cbd5e1; background: #1e293b; padding: 5px 12px; border-radius: 8px 8px 0 0; margin-bottom: -10px; }
+    pre.code { background: #0f172a; color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.7rem; line-height: 1.55; padding: 12px 14px; border-radius: 0 10px 10px 10px; overflow-x: auto; white-space: pre; flex: 1; }
+    .k { color: #93c5fd; } .s { color: #86efac; } .c { color: #8a9bb0; } .t { color: #f9a8d4; } .n { color: #fcd34d; }
+    .pipeline { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 0.66rem; font-weight: 600; color: #334155; }
+    .pipe-box { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 4px 9px; }
+    .pipe-box.ok { border-color: #059669; color: #047857; }
+    .pipe-box.warn { border-color: #d97706; color: #b45309; }
+    .pipe-box.bad { border-color: #e11d48; color: #be123c; }
+    .pipe-arrow { color: #94a3b8; }
+
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; } .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0 0.15rem 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-ai { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+    .case-against { max-width:1200px; margin:0 auto 3rem; background:white; border-left:4px solid #e11d48; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .case-against h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#e11d48; margin-bottom:0.5rem; }
+    .case-against p { font-size:0.9rem; color:#334155; line-height:1.65; }
+    .assumptions { max-width:1200px; margin:0 auto 3rem; font-size:0.85rem; color:#475569; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:1rem 1.5rem; }
+    .assumptions h2 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#64748b; margin-bottom:0.4rem; }
+    .assumptions ul { padding-left:1.1rem; }
+
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #a23b72; } .comparison-table th.col-b { color: #0891b2; } .comparison-table th.col-c { color: #059669; } .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: top; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; white-space: nowrap; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table tr td.col-recommended, .comparison-table tr th.col-recommended { background: #fffbeb; }
+    .comparison-table tr td.col-chosen, .comparison-table tr th.col-chosen { background: #ecfdf5; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+
+    .research-context { max-width:1200px; margin:0 auto 3rem; background:white; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .research-context h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#1f6f8b; margin-bottom:0.75rem; }
+    .findings { list-style:none; padding:0; }
+    .findings li { font-size:0.875rem; color:#334155; line-height:1.6; padding:0.35rem 0 0.35rem 1.1rem; position:relative; }
+    .findings li::before { content:"→"; position:absolute; left:0; color:#1f6f8b; font-weight:700; }
+    .cite { color:#1f6f8b; font-size:0.8rem; text-decoration:none; border-bottom:1px dotted #1f6f8b; margin-left:4px; }
+    .experts-disagree { margin-top:1rem; border-top:3px solid #f59e0b; background:#fffbeb; border-radius:0 0 8px 8px; padding:0.85rem 1.1rem; }
+    .experts-disagree h3 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#b45309; margin-bottom:0.35rem; }
+    .experts-disagree p { font-size:0.85rem; color:#451a03; line-height:1.6; }
+
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #1f6f8b; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  
+.visual-preview{justify-content:flex-start;gap:12px;align-items:center}
+.term{width:100%;background:#1c1c1e;color:#e4e6e8;font-family:'SF Mono','Fira Code',monospace;font-size:.68rem;line-height:1.6;padding:10px 12px;border-radius:8px;white-space:pre-wrap}
+.term .p{color:#8fd6dc}.term .d{color:#959ba2}.term .ok{color:#69db7c}.term .bad{color:#ff8787}.term .y{color:#fff6bf}
+.flow-container{display:flex;flex-direction:column;align-items:stretch;padding:.25rem;width:100%;max-width:340px}
+.flow-step{display:flex;align-items:center;gap:10px;background:white;border:2px solid #e2e8f0;border-radius:10px;padding:7px 12px;font-size:.72rem;font-weight:600;color:#334155}
+.flow-step.highlight{border-color:#0e9aa7;background:#e6f6f7;color:#0b6f78}
+.flow-step.error{border-color:#e11d48;background:#fff1f2;color:#be123c}
+.flow-step-number{width:22px;height:22px;border-radius:50%;background:#e2e8f0;color:#475569;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;flex-shrink:0}
+.flow-step.highlight .flow-step-number{background:#0e9aa7;color:white}
+.flow-step.error .flow-step-number{background:#e11d48;color:white}
+.flow-down-arrow{font-size:.9rem;color:#94a3b8;text-align:center;line-height:1.2}
+.flow-branch-label{font-size:.6rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;text-align:center;padding:6px 0 2px;border-top:1px dashed #cbd5e1;margin-top:4px}
+.category-badge.technical{background:#e6f0f3;color:#1b5e74}
+.triage-badge.stakes-med{background:#fefce8;color:#a16207}
+.preview-link{display:inline-block;margin-top:0.75rem;font-size:0.8rem;font-weight:600;color:#059669;text-decoration:none;border:1px solid #a7f3d0;background:#ecfdf5;padding:0.4rem 0.9rem;border-radius:999px}
+</style></head>
+<body>
+<a href="index.html" class="back-link">← All Decisions</a>
+<header>
+  <span class="decision-number">Decision 8 of 8</span>
+  <h1>Round-Trip &amp; Export</h1>
+  <span class="category-badge technical">Technical</span><span class="triage-badge one-way">🚪 One-way door</span><span class="triage-badge stakes-med">Medium stakes</span>
+  <br><a class="preview-link" href="preview.html">See the tool so far →</a>
+  <p class="decision-description">
+    Your workflow is a loop: the agent drafts, you tweak in the editor, you ask the agent for more ("add a panel where she gives up and leaves"), you tweak again, and eventually you export an image.
+    This decision is about what happens to your tweaks each time the loop comes around, and how the final image gets made.
+    Each card runs the same loop and shows where it breaks.
+  </p>
+  <p class="instruction">Respond with: <strong>"Option A"</strong> · <strong>"Option A but [change]"</strong> · <strong>"more options"</strong></p>
+</header>
+<main class="options-grid"><article class="option-card option-a chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option A</span>
+        <div class="card-badges"><span class="recommended-badge">My pick</span><span class="confidence-badge strong">Strong pick</span><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Live Two-Way Sync + CLI Export</h2></div>
+      <div class="visual-preview"><div class="term"><span class="d">editor</span>  drag Maya left      <span class="p">→ wrote</span> panels[1].layout.maya.x = 0.38
+<span class="d">you ›</span> <span class="y">add a panel where she gives up and leaves</span>
+<span class="d">agent</span> edits late-latte.json   <span class="p">→ editor hot-reloads</span>, your nudge kept <span class="ok">✓</span>
+<span class="p">$</span> storyboard export late-latte --png --pdf
+<span class="ok">✓</span> late-latte.png (2×) · late-latte.pdf</div><div class="flow-container"><div class="flow-step"><span class="flow-step-number">1</span><span class="flow-step-label">Agent writes the JSON, and the editor opens</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">2</span><span class="flow-step-label">Designer tweaks, and each change autosaves as a small edit to the file</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">3</span><span class="flow-step-label">Designer asks the agent for more; agent edits the same file</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">4</span><span class="flow-step-label">Editor watches the file and reloads without losing tweaks</span></div><div class="flow-branch-label">if both edited the same field ↓</div><div class="flow-step error"><span class="flow-step-number">4b</span><span class="flow-step-label">Editor shows "Agent changed panel 3 · keep mine / take theirs"</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">5</span><span class="flow-step-label">Export from the button, or the agent runs storyboard export</span></div></div></div>
+      <div class="option-summary">The file is always the truth, and both sides edit it live. Editor changes save within a second as <strong>small, targeted edits</strong> (layout overrides, text, cast swaps), not a rewrite of the file. The dev server <strong>watches the file</strong>, so when the agent adds a panel, it appears without wiping your nudges. Export works from the editor button <strong>and</strong> headlessly via <code>storyboard export</code> (PNG at 2×/3×, PDF, SVG, rendered with resvg and bundled fonts), so agents can attach boards to PRs and docs.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>The agent-plus-editor loop never loses work</li><li>Git diffs stay readable: small, meaningful edits</li><li>Agents can export without a browser</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>The hardest to build: file watching, edit-in-place, conflict prompt</li><li>Needs careful design of the "both changed it" case</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option A"</code></div>
+    </article><article class="option-card option-b not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option B</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Save Button, Reload to Sync</h2></div>
+      <div class="visual-preview"><div class="term"><span class="d">editor</span>  … 14 tweaks …   <span class="bad">● unsaved</span>
+<span class="d">you ›</span> <span class="y">add a panel where she gives up</span>
+<span class="d">agent</span> edits late-latte.json
+<span class="d">editor</span> <span class="bad">⚠ file changed on disk. Reload (lose 14 tweaks) or overwrite (lose agent's panel)?</span></div><div class="flow-container"><div class="flow-step"><span class="flow-step-number">1</span><span class="flow-step-label">Agent writes the JSON, editor opens</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">2</span><span class="flow-step-label">Designer tweaks, then clicks Save</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">3</span><span class="flow-step-label">Designer asks the agent for more</span></div><div class="flow-branch-label">if designer forgot to save ↓</div><div class="flow-step error"><span class="flow-step-number">3b</span><span class="flow-step-label">Pick one: lose tweaks or lose the agent's work</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">4</span><span class="flow-step-label">Export from the editor</span></div></div></div>
+      <div class="option-summary">A familiar document model: edit, then press Save to write the file. The agent's changes show up when you reload. It's simple and predictable, but the <strong>collaboration loop you described (agent drafts, you tweak, ask for more) keeps colliding</strong>: forget to save before prompting and someone's work gets thrown away.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Simple mental model</li><li>Much less code than live sync</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Frequent lose-your-work dilemmas in the agent loop</li><li>Export only through the editor</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option B"</code></div>
+    </article><article class="option-card option-c not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option C</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Export-Only Editor</h2></div>
+      <div class="visual-preview"><div class="term"><span class="d">editor</span>  tweak, tweak, tweak → <span class="p">Export PNG</span> <span class="ok">✓</span>
+<span class="d">you ›</span> <span class="y">add a panel where she gives up</span>
+<span class="d">agent</span> rewrites late-latte.json
+<span class="d">editor</span> <span class="bad">all tweaks gone, start over</span></div><div class="flow-container"><div class="flow-step"><span class="flow-step-number">1</span><span class="flow-step-label">Agent writes the JSON</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">2</span><span class="flow-step-label">Designer polishes in the editor</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">3</span><span class="flow-step-label">Export PNG, and the tweaks live only in the image</span></div><div class="flow-branch-label">if the story changes ↓</div><div class="flow-step error"><span class="flow-step-number">3b</span><span class="flow-step-label">Regenerate, and redo every tweak by hand</span></div></div></div>
+      <div class="option-summary">The editor is a final polishing step: tweak, export the image, done. Nothing is written back. It's the fastest to build and fine for one-shot boards. But storyboards are <strong>iterated</strong> (after a crit, after research), and every regenerate throws away the manual work, so people stop tweaking or stop iterating.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Trivial to build</li><li>No sync bugs possible</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Every change to the story wipes out manual polish</li><li>Breaks the "tweak it any way" promise over time</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option C"</code></div>
+    </article><article class="option-card option-d not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option D</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Two Files: Story + Layout</h2></div>
+      <div class="visual-preview"><div class="term">late-latte.story.json    <span class="d">← agent owns</span>
+late-latte.layout.json   <span class="d">← editor owns (positions, sizes, crops)</span>
+<span class="d">editor</span> text edit on bubble → <span class="bad">which file?</span> <span class="d">(story)</span>
+<span class="d">agent</span> deletes panel 3 → <span class="bad">orphaned layout entries</span></div><div class="flow-container"><div class="flow-step"><span class="flow-step-number">1</span><span class="flow-step-label">Agent writes the story file</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">2</span><span class="flow-step-label">Editor writes only the layout file</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">3</span><span class="flow-step-label">Agent regenerates the story freely</span></div><div class="flow-branch-label">if the edit is text or a cast swap ↓</div><div class="flow-step error"><span class="flow-step-number">3b</span><span class="flow-step-label">Editor must write the story file too, so conflicts return</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">4</span><span class="flow-step-label">Export merges both</span></div></div></div>
+      <div class="option-summary">Split ownership: the agent owns what happens (<code>story.json</code>) and the editor owns where things sit (<code>layout.json</code>). The two never fight over positions. It's neat until the designer edits a <strong>bubble's text</strong> or <strong>swaps a character</strong> in the editor, which are story changes, so the editor writes both files anyway and conflicts come back, now across two files. Panel IDs must also stay stable, or layout entries end up orphaned.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>No conflicts over positions</li><li>The agent can regenerate the story without fear</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Text and cast edits still hit the story file</li><li>Two files to keep in sync, with orphaned entries</li><li>Harder for agents to reason about</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option D"</code></div>
+    </article></main>
+
+<section class="case-against">
+  <h2>The case against my pick</h2>
+  <p>Live two-way sync is where editors grow their nastiest bugs: file-watcher races, the editor writing a stale copy, an agent and an autosave landing in the same second.
+  For a v1, a lot of that risk could be avoided with <strong>A without the conflict UI</strong>: last write wins per field, and the editor simply reloads when the file changes. That's almost always fine because humans and agents rarely edit the <strong>same field</strong> at the same time.
+  Build the "keep mine / take theirs" prompt only if real users hit it.</p>
+</section>
+<section class="assumptions">
+  <h2>This recommendation assumes</h2>
+  <ul>
+    <li>Boards get iterated many times (crits, research findings), not generated once</li>
+    <li>Storyboard files live in git, so readable diffs matter</li>
+    <li>Agents need to produce images on their own (for PR descriptions, docs, Slack), without a browser</li>
+  </ul>
+</section>
+
+<section class="comparison-section">
+  <h2>How They Compare</h2>
+  <div class="comparison-table-wrapper"><table class="comparison-table">
+    <thead><tr><th></th><th class="col-a col-chosen">A: Live Sync</th><th class="col-b">B: Save Button</th><th class="col-c">C: Export-Only</th><th class="col-d">D: Two Files</th></tr></thead>
+    <tbody>
+      <tr><td>Tweaks survive agent edits</td><td class="col-chosen">Yes</td><td>Only if saved first</td><td>No</td><td>Positions yes, text maybe</td></tr>
+      <tr><td>Agent sees your tweaks</td><td class="col-chosen">Immediately</td><td>After save</td><td>Never</td><td>Yes, if it reads both files</td></tr>
+      <tr><td>Readable git diffs</td><td class="col-chosen">Yes (targeted edits)</td><td>Depends on the serializer</td><td>N/A</td><td>Yes</td></tr>
+      <tr><td>Headless export for agents</td><td class="col-chosen">Yes (storyboard export)</td><td>No</td><td>No</td><td>Possible</td></tr>
+      <tr><td>Build complexity</td><td class="col-chosen">High</td><td>Low</td><td>Lowest</td><td>Medium</td></tr>
+      <tr><td>Undo cost</td><td class="col-chosen">Medium: sync logic is isolated in the dev server</td><td>Low</td><td>Low</td><td>High: the file format splits</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="research-context">
+  <h2>What earlier research says about this</h2>
+  <ul class="findings">
+    <li>Mermaid visual editors lose manual layout whenever auto-layout re-runs, or they hide positions in comments. In Miro, a diagram switched to free-form stops syncing with its code. That's the failure A avoids by storing sparse overrides next to the story. <a class="cite" href="https://github.com/strowk/ceasg">CEASG</a> <a class="cite" href="https://help.miro.com/hc/en-us/articles/7004628130962-Create-Mermaid-diagrams-Beta">Miro</a></li>
+    <li>Full Excalidraw JSON rewrites noisy fields on every edit, which makes diffs unreadable. Targeted edits keep git history meaningful. <a class="cite" href="https://github.com/excalidraw/excalidraw/issues/1639">excalidraw #1639</a></li>
+    <li>resvg renders SVG, including filters, identically on every platform with bundled fonts. It ignores foreignObject and 3D transforms, which is why decision 7 pre-warps screens at export. <a class="cite" href="https://github.com/linebender/resvg">resvg</a> <a class="cite" href="https://linebender.org/resvg-test-suite/svg-support-table.html">support table</a></li>
+    <li>html-to-image-style browser capture silently drops custom fonts and external images. It isn't a reliable export path. <a class="cite" href="https://github.com/bubkoo/html-to-image/issues/534">html-to-image #534</a></li>
+    <li>tldraw's file format uses a schema version plus migrations, a good model for keeping storyboard files readable as the tool evolves. <a class="cite" href="https://tldraw.dev/reference/store/StoreSchema">tldraw StoreSchema</a></li>
+  </ul>
+</section>
+
+<div class="page-footer">
+  <p>Respond with: <strong>"Option A"</strong>, <strong>"Option A but last-write-wins for v1"</strong>, or <strong>"more options"</strong></p>
+  <p>To change a past decision: <strong>"for decision-007 I want Option C instead"</strong></p>
+</div>
+</body></html>

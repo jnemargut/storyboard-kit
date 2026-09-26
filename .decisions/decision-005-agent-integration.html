@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision 5: How It Plugs Into Coding Agents — Storyboarding Tool</title>
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    .hl { font-style: italic; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.technical { background: #e6f0f3; color: #1b5e74; }
+    .triage-badge { display:inline-block; padding:4px 12px; border-radius:999px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; margin-top:0.5rem; margin-left:6px; }
+    .triage-badge.one-way { background:#fef2f2; color:#dc2626; }
+    .triage-badge.stakes-high { background:#fff7ed; color:#c2410c; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 720px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eef5f7; color: #1b5e74; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #b9d5de; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #1f6f8b; box-shadow: 0 4px 16px rgba(31,111,139,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #a23b72; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .confidence-badge { padding:3px 10px; border-radius:999px; font-size:0.65rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; color:white; }
+    .confidence-badge.strong { background:#059669; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .card-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+
+    .visual-preview { padding: 1.25rem; background: #f8fafc; min-height: 360px; display: flex; flex-direction: column; gap: 10px; align-items: stretch; flex: 1; }
+    .file-tab { display: inline-flex; align-self: flex-start; gap: 6px; align-items: center; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.68rem; color: #cbd5e1; background: #1e293b; padding: 5px 12px; border-radius: 8px 8px 0 0; margin-bottom: -10px; }
+    pre.code { background: #0f172a; color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.7rem; line-height: 1.55; padding: 12px 14px; border-radius: 0 10px 10px 10px; overflow-x: auto; white-space: pre; flex: 1; }
+    .k { color: #93c5fd; } .s { color: #86efac; } .c { color: #8a9bb0; } .t { color: #f9a8d4; } .n { color: #fcd34d; }
+    .pipeline { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 0.66rem; font-weight: 600; color: #334155; }
+    .pipe-box { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 4px 9px; }
+    .pipe-box.ok { border-color: #059669; color: #047857; }
+    .pipe-box.warn { border-color: #d97706; color: #b45309; }
+    .pipe-box.bad { border-color: #e11d48; color: #be123c; }
+    .pipe-arrow { color: #94a3b8; }
+
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; } .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0 0.15rem 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-ai { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+    .case-against { max-width:1200px; margin:0 auto 3rem; background:white; border-left:4px solid #e11d48; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .case-against h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#e11d48; margin-bottom:0.5rem; }
+    .case-against p { font-size:0.9rem; color:#334155; line-height:1.65; }
+    .assumptions { max-width:1200px; margin:0 auto 3rem; font-size:0.85rem; color:#475569; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:1rem 1.5rem; }
+    .assumptions h2 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#64748b; margin-bottom:0.4rem; }
+    .assumptions ul { padding-left:1.1rem; }
+
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #a23b72; } .comparison-table th.col-b { color: #0891b2; } .comparison-table th.col-c { color: #059669; } .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: top; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; white-space: nowrap; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table tr td.col-recommended, .comparison-table tr th.col-recommended { background: #fffbeb; }
+    .comparison-table tr td.col-chosen, .comparison-table tr th.col-chosen { background: #ecfdf5; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+
+    .research-context { max-width:1200px; margin:0 auto 3rem; background:white; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .research-context h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#1f6f8b; margin-bottom:0.75rem; }
+    .findings { list-style:none; padding:0; }
+    .findings li { font-size:0.875rem; color:#334155; line-height:1.6; padding:0.35rem 0 0.35rem 1.1rem; position:relative; }
+    .findings li::before { content:"→"; position:absolute; left:0; color:#1f6f8b; font-weight:700; }
+    .cite { color:#1f6f8b; font-size:0.8rem; text-decoration:none; border-bottom:1px dotted #1f6f8b; margin-left:4px; }
+    .experts-disagree { margin-top:1rem; border-top:3px solid #f59e0b; background:#fffbeb; border-radius:0 0 8px 8px; padding:0.85rem 1.1rem; }
+    .experts-disagree h3 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#b45309; margin-bottom:0.35rem; }
+    .experts-disagree p { font-size:0.85rem; color:#451a03; line-height:1.6; }
+
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #1f6f8b; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  
+.visual-preview{justify-content:flex-start;gap:12px;align-items:center}
+.term{width:100%;background:#1c1c1e;color:#e4e6e8;font-family:'SF Mono','Fira Code',monospace;font-size:.68rem;line-height:1.6;padding:10px 12px;border-radius:8px;white-space:pre-wrap}
+.term .p{color:#8fd6dc}.term .d{color:#959ba2}.term .ok{color:#69db7c}.term .bad{color:#ff8787}.term .y{color:#fff6bf}
+.flow-container{display:flex;flex-direction:column;align-items:stretch;padding:.25rem;width:100%;max-width:340px}
+.flow-step{display:flex;align-items:center;gap:10px;background:white;border:2px solid #e2e8f0;border-radius:10px;padding:7px 12px;font-size:.72rem;font-weight:600;color:#334155}
+.flow-step.highlight{border-color:#0e9aa7;background:#e6f6f7;color:#0b6f78}
+.flow-step.error{border-color:#e11d48;background:#fff1f2;color:#be123c}
+.flow-step-number{width:22px;height:22px;border-radius:50%;background:#e2e8f0;color:#475569;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;flex-shrink:0}
+.flow-step.highlight .flow-step-number{background:#0e9aa7;color:white}
+.flow-step.error .flow-step-number{background:#e11d48;color:white}
+.flow-down-arrow{font-size:.9rem;color:#94a3b8;text-align:center;line-height:1.2}
+.flow-branch-label{font-size:.6rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;text-align:center;padding:6px 0 2px;border-top:1px dashed #cbd5e1;margin-top:4px}
+.category-badge.technical{background:#e6f0f3;color:#1b5e74}
+.triage-badge.stakes-med{background:#fefce8;color:#a16207}
+.preview-link{display:inline-block;margin-top:0.75rem;font-size:0.8rem;font-weight:600;color:#059669;text-decoration:none;border:1px solid #a7f3d0;background:#ecfdf5;padding:0.4rem 0.9rem;border-radius:999px}
+</style></head>
+<body>
+<a href="index.html" class="back-link">← All Decisions</a>
+<header>
+  <span class="decision-number">Decision 5 of 8</span>
+  <h1>How It Plugs Into Coding Agents</h1>
+  <span class="category-badge technical">Technical</span><span class="triage-badge one-way">🚪 One-way door</span><span class="triage-badge stakes-med">Medium stakes</span>
+  <br><a class="preview-link" href="preview.html">See the tool so far →</a>
+  <p class="decision-description">
+    Your designers will type something loose into Claude Code, Codex or Cursor. For a good storyboard to come out, the agent has to <strong>know the tool exists</strong>, know its <strong>vocabulary</strong> (which poses, shots, scenes and devices exist), write a <strong>valid file</strong>, and <strong>open the editor</strong>.
+    Each option handles those steps differently. Every card follows the same prompt through the terminal and the steps the agent takes.
+  </p>
+  <p class="instruction">Respond with: <strong>"Option D"</strong> · <strong>"Option A but [change]"</strong> · <strong>"more options"</strong></p>
+</header>
+<main class="options-grid"><article class="option-card option-a not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option A</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Agent Skill + CLI</h2></div>
+      <div class="visual-preview"><div class="term"><span class="d">you ›</span> <span class="y">storyboard Maya ordering coffee ahead, it's late, she gets annoyed</span>
+<span class="d">· loaded skill </span><span class="p">storyboard</span><span class="d"> (when it decides to)</span>
+<span class="p">$</span> storyboard vocab poses
+<span class="p">$</span> storyboard validate late-latte.json <span class="ok">✓</span>
+<span class="p">$</span> storyboard dev <span class="d">→ localhost:4321</span></div><div class="flow-container"><div class="flow-step"><span class="flow-step-number">1</span><span class="flow-step-label">Designer describes the story in prose</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">2</span><span class="flow-step-label">Agent notices the storyboard skill and loads it</span></div><div class="flow-branch-label">if the agent doesn't load it ↓</div><div class="flow-step error"><span class="flow-step-number">2b</span><span class="flow-step-label">Agent invents fields, validate fails a lot</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">3</span><span class="flow-step-label">Writes JSON, runs validate, fixes errors</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">4</span><span class="flow-step-label">Runs storyboard dev, editor opens</span></div></div></div>
+      <div class="option-summary">Ship an npm CLI (<code>storyboard init / vocab / validate / dev / export</code>) plus a <strong>SKILL.md</strong> in the new open standard that about 40 agents now read (Claude Code, Codex, Cursor, Copilot, Gemini CLI…). Only the skill's name costs context until it's needed, and the full vocabulary sits in reference files. The weak spot is step 2: in Vercel's tests, agents <strong>never opened the skill 56% of the time</strong>.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>One folder works in every major agent</li><li>Cheap on context: about 100 tokens until used</li><li>Remotion, Slidev and shadcn all ship this</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Agents often don't load skills unless told to</li><li>Skills are "markdown and hope" without evals</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option A"</code></div>
+    </article><article class="option-card option-b not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option B</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">MCP Server</h2></div>
+      <div class="visual-preview"><div class="term"><span class="d">you ›</span> <span class="y">storyboard Maya ordering coffee ahead, it's late, she gets annoyed</span>
+<span class="d">· tools: </span><span class="p">create_storyboard, add_panel, list_poses, list_scenes, set_bubble, validate, render…</span>
+<span class="d">· thousands of tokens of tool schemas, every session</span>
+<span class="p">→</span> add_panel({ shot: "wide", … }) × 4</div><div class="flow-container"><div class="flow-step error"><span class="flow-step-number">1</span><span class="flow-step-label">Designer installs MCP (a different config per agent)</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">2</span><span class="flow-step-label">Designer describes the story</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">3</span><span class="flow-step-label">Agent calls add_panel, set_bubble… as tools</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">4</span><span class="flow-step-label">Server writes the JSON and validates each call</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">5</span><span class="flow-step-label">Agent calls open_editor</span></div></div></div>
+      <div class="option-summary">A local server exposes tools like <code>add_panel</code>, <code>list_poses</code> and <code>render_preview</code>. The agent calls them instead of editing the file, so invalid data is nearly impossible. But every session pays for all the tool schemas up front, setup differs for each agent (<code>.mcp.json</code>, <code>config.toml</code>, <code>settings.json</code>…), and the Playwright team found CLI + skill used about <strong>4× fewer tokens</strong> than their own MCP.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Structured tool calls, so invalid specs are almost impossible</li><li>Great for live edits against a running editor</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Install friction across agents</li><li>Context bloat on every session, used or not</li><li>Agents lose the ability to just read and edit the file</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option B"</code></div>
+    </article><article class="option-card option-c not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option C</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">AGENTS.md + CLI Only</h2></div>
+      <div class="visual-preview"><div class="term"><span class="p">$</span> npx storyboard init
+<span class="d">+ wrote AGENTS.md block (and CLAUDE.md)</span>
+<span class="d">you ›</span> <span class="y">storyboard Maya ordering coffee ahead, it's late, she gets annoyed</span>
+<span class="d">· AGENTS.md is always in context →</span>
+<span class="p">$</span> storyboard vocab --json
+<span class="p">$</span> storyboard validate <span class="ok">✓</span></div><div class="flow-container"><div class="flow-step"><span class="flow-step-number">1</span><span class="flow-step-label">Designer runs npx storyboard init once</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">2</span><span class="flow-step-label">Short AGENTS.md block sits in every session</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">3</span><span class="flow-step-label">Agent runs storyboard vocab to look up poses and scenes</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">4</span><span class="flow-step-label">Writes JSON, validates, fixes</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">5</span><span class="flow-step-label">Runs storyboard dev</span></div></div></div>
+      <div class="option-summary">No skill and no server: <code>storyboard init</code> writes a short, compressed block into the project's AGENTS.md (read by Codex, Cursor, Copilot, Gemini, Jules…) and CLAUDE.md. The block says "run <code>storyboard vocab</code>, write JSON, run <code>validate</code>". In Vercel's tests, a compressed docs index in AGENTS.md hit <strong>100%</strong>, compared with 53–79% for skills.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Always in context, so no discovery problem</li><li>Simplest thing to build and maintain</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Only works inside projects where init was run</li><li>No rich how-to guidance (shot choice, storytelling tips) without bloating every session</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option C"</code></div>
+    </article><article class="option-card option-d chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option D</span>
+        <div class="card-badges"><span class="recommended-badge">My pick</span><span class="confidence-badge strong">Strong pick</span><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Layered: CLI + AGENTS.md + Skill</h2></div>
+      <div class="visual-preview"><div class="term"><span class="p">$</span> npx storyboard init
+<span class="d">+ AGENTS.md / CLAUDE.md block (8 lines)</span>
+<span class="d">+ .agents/skills/storyboard/  (workflow + craft guide)</span>
+<span class="d">you ›</span> <span class="y">storyboard Maya ordering coffee ahead, it's late, she gets annoyed</span>
+<span class="p">$</span> storyboard vocab poses --grep phone
+<span class="p">$</span> storyboard validate <span class="bad">✗ "frustated" → did you mean "frustrated"?</span>
+<span class="p">$</span> storyboard validate <span class="ok">✓</span>  <span class="p">$</span> storyboard dev</div><div class="flow-container"><div class="flow-step"><span class="flow-step-number">1</span><span class="flow-step-label">npx storyboard init sets up the project</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">2</span><span class="flow-step-label">The always-on AGENTS.md block says: use the storyboard skill + CLI</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">3</span><span class="flow-step-label">Skill teaches the craft: shots, pacing, pain points</span></div><div class="flow-down-arrow">↓</div><div class="flow-step highlight"><span class="flow-step-number">4</span><span class="flow-step-label">CLI provides the vocabulary and validation with fix-it errors</span></div><div class="flow-down-arrow">↓</div><div class="flow-step"><span class="flow-step-number">5</span><span class="flow-step-label">storyboard dev opens the editor, and the agent keeps iterating on the same file</span></div></div></div>
+      <div class="option-summary">Three thin layers, each covering a known failure. The <strong>CLI</strong> does the real work (vocabulary lookups, validation with fix-it hints, dev server, export). A short <strong>AGENTS.md/CLAUDE.md block</strong> is always in context and tells the agent to use them, which fixes skill discovery. The <strong>portable skill</strong> carries the storyboarding craft ("show the moment before the app", "include a workaround panel") without bloating every session. MCP can come later as a small endpoint on the dev server if live editing needs it.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Works in any agent that can run shell commands</li><li>Discovery solved by AGENTS.md, depth by the skill, correctness by validate</li><li>Mirrors what Playwright, Slidev and Remotion converged on</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Three surfaces to keep in sync (docs can drift from the CLI)</li><li>Needs a small eval suite to prove agents actually follow it</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option D"</code></div>
+    </article></main>
+
+<section class="case-against">
+  <h2>The case against my pick</h2>
+  <p>Three surfaces means three things that can drift apart: a skill describing a flag the CLI renamed, or an AGENTS.md block pointing at an old command.
+  C alone (AGENTS.md + CLI) scored highest in the one published eval, and it's half the work. You could start with C and add the skill only once you see agents writing technically valid but <strong>boring</strong> boards (all wide shots, no workaround moments). That's the problem the craft guidance solves.
+  The mitigation if you pick D: generate both the AGENTS.md block and the skill's vocabulary files from the CLI's own schema, so they can't drift.</p>
+</section>
+<section class="assumptions">
+  <h2>This recommendation assumes</h2>
+  <ul>
+    <li>Designers work in a project folder where <code>npx storyboard init</code> can write files (a "storyboards" repo or a folder in the product repo)</li>
+    <li>Every target agent can run shell commands (true for Claude Code, Codex, Cursor, Copilot agent, Gemini CLI)</li>
+    <li>Storytelling quality matters, not only a valid file, so craft guidance earns its place in the skill</li>
+  </ul>
+</section>
+
+<section class="comparison-section">
+  <h2>How They Compare</h2>
+  <div class="comparison-table-wrapper"><table class="comparison-table">
+    <thead><tr><th></th><th class="col-a">A: Skill + CLI</th><th class="col-b">B: MCP Server</th><th class="col-c">C: AGENTS.md + CLI</th><th class="col-d col-chosen">D: Layered</th></tr></thead>
+    <tbody>
+      <tr><td>Agent finds the tool</td><td>Unreliable (skill not opened 56% of the time)</td><td>Yes, once installed</td><td>Always (in context)</td><td class="col-chosen">Always (AGENTS.md points to the skill)</td></tr>
+      <tr><td>Knows the vocabulary</td><td>Yes, via reference files</td><td>Yes, via list tools</td><td>Yes, via the vocab command</td><td class="col-chosen">Yes, vocab command + skill references</td></tr>
+      <tr><td>Writes good stories</td><td>Yes (craft guidance)</td><td>Weak</td><td>Weak</td><td class="col-chosen">Yes (craft guidance)</td></tr>
+      <tr><td>Context cost per session</td><td>~100 tokens</td><td>Thousands of tokens</td><td>~300 tokens</td><td class="col-chosen">~400 tokens</td></tr>
+      <tr><td>Install</td><td>1 command</td><td>Per-agent config</td><td>1 command</td><td class="col-chosen">1 command (init)</td></tr>
+      <tr><td>Agents supported</td><td>~40</td><td>Most, config varies</td><td>Most (AGENTS.md + CLAUDE.md)</td><td class="col-chosen">Any shell-capable agent</td></tr>
+      <tr><td>Maintenance</td><td>Low</td><td>Medium (server + schemas)</td><td>Lowest</td><td class="col-chosen">Medium (generate docs from the schema)</td></tr>
+      <tr><td>Undo cost</td><td>Low</td><td>Medium</td><td>Low</td><td class="col-chosen">Low: each layer can be dropped independently</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="research-context">
+  <h2>What the research says</h2>
+  <ul class="findings">
+    <li>Agent Skills (SKILL.md) became an open spec in Dec 2025. By mid-2026 about 40 products read it, including Claude Code, Codex, Copilot/VS Code, Cursor, Gemini CLI and JetBrains Junie. <a class="cite" href="https://agentman.ai/blog/agent-skills-ecosystem-report-2026">Agentman</a> <a class="cite" href="https://agentskills.io">agentskills.io</a></li>
+    <li>Vercel's Next.js evals: the agent never opened the skill 56% of the time. Pass rates were 53% with no docs or with the skill, 79% with the skill plus explicit instructions, and 100% with a compressed AGENTS.md docs index. <a class="cite" href="https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals">Vercel</a></li>
+    <li>AGENTS.md is used by more than 60k projects and was donated to the Linux Foundation's Agentic AI Foundation alongside MCP. <a class="cite" href="https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation">Linux Foundation</a></li>
+    <li>Playwright's benchmark: about 114k tokens via MCP versus about 27k via CLI for the same task. Their 26 tool schemas cost about 3.6k tokens before anything happens. They now point coding agents to the CLI. <a class="cite" href="https://betterstack.com/community/guides/ai/playwright-cli-vs-mcp-browser/">Better Stack</a> <a class="cite" href="https://playwright.dev/docs/getting-started-cli">Playwright</a></li>
+    <li>With 5–10 MCP servers, a session burns 50–67k tokens before the first prompt. <a class="cite" href="https://getunblocked.com/blog/mcp-token-budget-autopsy/">Unblocked</a></li>
+    <li>Remotion ships 15 official skills. Slidev ships a skill plus an MCP endpoint on its dev server, the closest analog to <code>storyboard dev</code>. <a class="cite" href="https://www.remotion.dev/docs/ai/skills">Remotion</a> <a class="cite" href="https://sli.dev/guide/work-with-ai">Slidev</a></li>
+  </ul>
+  <div class="experts-disagree"><h3>Where experts disagree</h3>
+    <p>MCP advocates say structured tools are the future and bloat is being fixed (Tool Search defers schemas). CLI advocates point to token numbers and to agents' skill at reading and editing files. What decides it for you: your source of truth is <strong>a file the agent edits</strong> (decision 1), which favors the CLI camp. MCP is worth adding later for live "change panel 3" edits while the editor is open.</p>
+  </div>
+</section>
+
+<div class="page-footer">
+  <p>Respond with: <strong>"Option D"</strong>, <strong>"Option C but [your change]"</strong>, or <strong>"more options"</strong></p>
+  <p>To change a past decision: <strong>"for decision-004 I want Option C instead"</strong></p>
+</div>
+</body></html>

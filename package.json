@@ -1,0 +1,48 @@
+{
+  "name": "storyboard-cli",
+  "version": "0.1.0",
+  "description": "Low-fi, sketch-style storyboards for service designers. Your coding agent drafts them, you tweak them in a page-first editor, export to PNG/PDF/SVG.",
+  "type": "module",
+  "bin": {
+    "storyboard": "dist/cli.js"
+  },
+  "files": [
+    "dist/cli.js",
+    "dist/editor",
+    "schema.json",
+    "assets",
+    "skill",
+    "examples/*.json",
+    "examples/screens"
+  ],
+  "scripts": {
+    "build:editor": "vite build",
+    "build:cli": "node scripts/build-cli.mjs",
+    "gen": "node scripts/build-cli.mjs && node dist/gen.js",
+    "build": "npm run build:cli && node dist/gen.js && npm run build:editor",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "e2e": "node tests/e2e.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "pdf-lib": "^1.17.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "esbuild": "^0.28.2",
+    "playwright": "^1.63.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.1"
+  }
+}

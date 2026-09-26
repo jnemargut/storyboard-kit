@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decision 1: The Storyboard File Format — Storyboarding Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    .hl { font-style: italic; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.technical { background: #e6f0f3; color: #1b5e74; }
+    .triage-badge { display:inline-block; padding:4px 12px; border-radius:999px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; margin-top:0.5rem; margin-left:6px; }
+    .triage-badge.one-way { background:#fef2f2; color:#dc2626; }
+    .triage-badge.stakes-high { background:#fff7ed; color:#c2410c; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 720px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eef5f7; color: #1b5e74; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #b9d5de; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #1f6f8b; box-shadow: 0 4px 16px rgba(31,111,139,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #a23b72; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .confidence-badge { padding:3px 10px; border-radius:999px; font-size:0.65rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; color:white; }
+    .confidence-badge.strong { background:#059669; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .card-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+
+    .visual-preview { padding: 1.25rem; background: #f8fafc; min-height: 360px; display: flex; flex-direction: column; gap: 10px; align-items: stretch; flex: 1; }
+    .file-tab { display: inline-flex; align-self: flex-start; gap: 6px; align-items: center; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.68rem; color: #cbd5e1; background: #1e293b; padding: 5px 12px; border-radius: 8px 8px 0 0; margin-bottom: -10px; }
+    pre.code { background: #0f172a; color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.7rem; line-height: 1.55; padding: 12px 14px; border-radius: 0 10px 10px 10px; overflow-x: auto; white-space: pre; flex: 1; }
+    .k { color: #93c5fd; } .s { color: #86efac; } .c { color: #8a9bb0; } .t { color: #f9a8d4; } .n { color: #fcd34d; }
+    .pipeline { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 0.66rem; font-weight: 600; color: #334155; }
+    .pipe-box { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 4px 9px; }
+    .pipe-box.ok { border-color: #059669; color: #047857; }
+    .pipe-box.warn { border-color: #d97706; color: #b45309; }
+    .pipe-box.bad { border-color: #e11d48; color: #be123c; }
+    .pipe-arrow { color: #94a3b8; }
+
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; } .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0 0.15rem 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-ai { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+    .case-against { max-width:1200px; margin:0 auto 3rem; background:white; border-left:4px solid #e11d48; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .case-against h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#e11d48; margin-bottom:0.5rem; }
+    .case-against p { font-size:0.9rem; color:#334155; line-height:1.65; }
+    .assumptions { max-width:1200px; margin:0 auto 3rem; font-size:0.85rem; color:#475569; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:1rem 1.5rem; }
+    .assumptions h2 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#64748b; margin-bottom:0.4rem; }
+    .assumptions ul { padding-left:1.1rem; }
+
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #a23b72; } .comparison-table th.col-b { color: #0891b2; } .comparison-table th.col-c { color: #059669; } .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: top; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; white-space: nowrap; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table tr td.col-recommended, .comparison-table tr th.col-recommended { background: #fffbeb; }
+    .comparison-table tr td.col-chosen, .comparison-table tr th.col-chosen { background: #ecfdf5; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+
+    .research-context { max-width:1200px; margin:0 auto 3rem; background:white; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .research-context h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#1f6f8b; margin-bottom:0.75rem; }
+    .findings { list-style:none; padding:0; }
+    .findings li { font-size:0.875rem; color:#334155; line-height:1.6; padding:0.35rem 0 0.35rem 1.1rem; position:relative; }
+    .findings li::before { content:"→"; position:absolute; left:0; color:#1f6f8b; font-weight:700; }
+    .cite { color:#1f6f8b; font-size:0.8rem; text-decoration:none; border-bottom:1px dotted #1f6f8b; margin-left:4px; }
+    .experts-disagree { margin-top:1rem; border-top:3px solid #f59e0b; background:#fffbeb; border-radius:0 0 8px 8px; padding:0.85rem 1.1rem; }
+    .experts-disagree h3 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#b45309; margin-bottom:0.35rem; }
+    .experts-disagree p { font-size:0.85rem; color:#451a03; line-height:1.6; }
+
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #1f6f8b; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">← All Decisions</a>
+
+  <header>
+    <span class="decision-number">Decision 1 of 8</span>
+    <h1>The Storyboard File Format</h1>
+    <span class="category-badge technical">Technical</span><span class="triage-badge one-way">🚪 One-way door</span><span class="triage-badge stakes-high">High stakes</span>
+    <p class="decision-description">
+      A designer writes something loose like <span class="hl">"Maya's in line at the coffee shop, order's late, she's annoyed, checks the app."</span>
+      Claude Code or Codex turns that into a file. The editor draws that file as a storyboard, the designer's drag-and-drop tweaks get saved back into it,
+      and the export reads it too. So the file is the <strong>contract between three readers</strong>: the AI, the editor and the designer.
+      Below is that same coffee-shop panel written four different ways.
+    </p>
+    <p class="instruction">
+      Respond with: <strong>"Option B"</strong> · <strong>"Option A but [change]"</strong> · <strong>"more options"</strong>
+    </p>
+  </header>
+
+  <main class="options-grid">
+
+    <!-- OPTION A -->
+    <article class="option-card option-a chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option A</span>
+          <div class="card-badges">
+            <span class="recommended-badge">My pick</span>
+            <span class="confidence-badge strong">Strong pick</span>
+            <span class="chosen-badge">Chosen</span>
+          </div>
+        </div>
+        <h2 class="option-title">Story-First JSON + Schema</h2>
+      </div>
+      <div class="visual-preview">
+        <span class="file-tab">coffee-order.storyboard.json</span>
+<pre class="code">{
+  <span class="k">"panels"</span>: [{
+    <span class="k">"id"</span>: <span class="s">"p3"</span>,
+    <span class="k">"scene"</span>: <span class="s">"coffee-shop/counter"</span>,
+    <span class="k">"shot"</span>: <span class="s">"over-the-shoulder"</span>,
+    <span class="k">"characters"</span>: [{
+      <span class="k">"who"</span>: <span class="s">"maya"</span>, <span class="k">"pose"</span>: <span class="s">"holding-phone"</span>,
+      <span class="k">"mood"</span>: <span class="s">"annoyed"</span>, <span class="k">"device"</span>: <span class="s">"phone"</span>
+    }],
+    <span class="k">"screen"</span>: <span class="s">"./screens/order-status.png"</span>,
+    <span class="k">"bubbles"</span>: [{ <span class="k">"type"</span>: <span class="s">"thought"</span>,
+      <span class="k">"text"</span>: <span class="s">"It said 4 minutes. 12 min ago."</span> }],
+    <span class="k">"gesture"</span>: { <span class="k">"type"</span>: <span class="s">"tap"</span>, <span class="k">"on"</span>: <span class="s">"screen"</span> },
+    <span class="k">"layout"</span>: { <span class="k">"maya"</span>: { <span class="k">"x"</span>: <span class="n">0.42</span> } } <span class="c">← only if nudged</span>
+  }]
+}</pre>
+        <div class="pipeline">
+          <span class="pipe-box">AI writes</span><span class="pipe-arrow">→</span>
+          <span class="pipe-box ok">storyboard validate ✓</span><span class="pipe-arrow">→</span>
+          <span class="pipe-box">editor</span><span class="pipe-arrow">⇄</span>
+          <span class="pipe-box ok">clean write-back</span>
+        </div>
+      </div>
+      <div class="option-summary">
+        The file says <strong>what's happening</strong> (who, where, which shot, which mood), not where each pixel goes. Every word like
+        <code>"over-the-shoulder"</code> or <code>"annoyed"</code> comes from a published vocabulary, so the tool ships a
+        <code>validate</code> command that tells the AI exactly what it got wrong ("'frustated' isn't a mood, did you mean 'frustrated'?").
+        When a designer drags Maya a bit left in the editor, only a tiny <code>layout</code> override gets written. The story stays readable and the AI can keep rewriting it.
+      </div>
+      <div class="verdict">
+        <div class="pros"><h3>Works well when</h3><ul>
+          <li>The AI is the main author. JSON is the format models get wrong least often</li>
+          <li>Editor tweaks and AI rewrites need to live together without clobbering each other</li>
+          <li>You want autocomplete and errors in VS Code for free (JSON Schema)</li>
+        </ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul>
+          <li>Designers rarely want to hand-edit brackets and quotes</li>
+          <li>No comments allowed, so no "TODO: ask research about this" notes except in a <code>notes</code> field</li>
+        </ul></div>
+      </div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option A"</code></div>
+    </article>
+
+    <!-- OPTION B -->
+    <article class="option-card option-b not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option B</span>
+          <div class="card-badges"><span class="chosen-badge">Chosen</span></div>
+        </div>
+        <h2 class="option-title">Readable YAML Spec</h2>
+      </div>
+      <div class="visual-preview">
+        <span class="file-tab">coffee-order.storyboard.yaml</span>
+<pre class="code"><span class="k">panels</span>:
+  - <span class="k">id</span>: <span class="s">p3</span>
+    <span class="k">scene</span>: <span class="s">coffee-shop/counter</span>
+    <span class="k">shot</span>: <span class="s">over-the-shoulder</span>
+    <span class="c"># Maya's the "busy commuter" persona</span>
+    <span class="k">characters</span>:
+      - <span class="k">who</span>: <span class="s">maya</span>
+        <span class="k">pose</span>: <span class="s">holding-phone</span>
+        <span class="k">mood</span>: <span class="s">annoyed</span>
+        <span class="k">device</span>: <span class="s">phone</span>
+    <span class="k">screen</span>: <span class="s">./screens/order-status.png</span>
+    <span class="k">bubbles</span>:
+      - <span class="k">thought</span>: <span class="s">"It said 4 minutes. 12 min ago."</span>
+    <span class="k">gesture</span>: { <span class="k">tap</span>: <span class="s">screen</span> }</pre>
+        <div class="pipeline">
+          <span class="pipe-box">AI writes</span><span class="pipe-arrow">→</span>
+          <span class="pipe-box warn">indent errors?</span><span class="pipe-arrow">→</span>
+          <span class="pipe-box">editor</span><span class="pipe-arrow">⇄</span>
+          <span class="pipe-box warn">comments may drop</span>
+        </div>
+      </div>
+      <div class="option-summary">
+        Same idea as A (a story, not pixels) in a friendlier costume: no brackets, and designers can leave <code># notes</code>.
+        It's nicer to read and scan in a pull request. The catch is that indentation carries meaning, so one wrong space quietly changes
+        what belongs to what. The editor also has to be very careful when saving tweaks back, or it'll wipe those comments.
+      </div>
+      <div class="verdict">
+        <div class="pros"><h3>Works well when</h3><ul>
+          <li>Designers will open the file themselves and edit text directly</li>
+          <li>Teams want inline comments and research notes next to panels</li>
+        </ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul>
+          <li>LLMs make more syntax slips in YAML than in JSON</li>
+          <li>Round-tripping through an editor loses comments even with specialist libraries</li>
+          <li>Oddities like <code>no</code> being read as <code>false</code></li>
+        </ul></div>
+      </div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option B"</code></div>
+    </article>
+
+    <!-- OPTION C -->
+    <article class="option-card option-c not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option C</span>
+          <div class="card-badges"><span class="chosen-badge">Chosen</span></div>
+        </div>
+        <h2 class="option-title">Markdown Screenplay</h2>
+      </div>
+      <div class="visual-preview">
+        <span class="file-tab">coffee-order.storyboard.md</span>
+<pre class="code"><span class="t"># Late Latte</span>
+<span class="c">Persona: Maya, commuter · Tue 8:14am</span>
+
+<span class="k">---</span>
+<span class="t">## Panel 3</span> · <span class="n">COFFEE SHOP — COUNTER</span>
+<span class="n">OVER THE SHOULDER</span> on Maya.
+
+Maya (annoyed) holds her phone.
+She <span class="s">[taps]</span> the order screen
+<span class="s">![screen](./screens/order-status.png)</span>
+
+<span class="k">&gt; (thought)</span> It said 4 minutes. 12 min ago.
+
+<span class="k">---</span>
+<span class="t">## Panel 4</span> · <span class="n">TIME CARD</span>
+<span class="s">Eight minutes later…</span></pre>
+        <div class="pipeline">
+          <span class="pipe-box">AI writes</span><span class="pipe-arrow">→</span>
+          <span class="pipe-box bad">custom parser guesses</span><span class="pipe-arrow">→</span>
+          <span class="pipe-box">editor</span><span class="pipe-arrow">⇄</span>
+          <span class="pipe-box bad">where do nudges go?</span>
+        </div>
+      </div>
+      <div class="option-summary">
+        Reads like a film script. <code>---</code> separates panels (the way Slidev separates slides), and ALL-CAPS lines set the scene and camera.
+        It's lovely: designers can read the whole journey top to bottom, and it doubles as the narrative that goes with the boards.
+        But it's a brand-new little language, so the AI has never seen it and the parser has to guess what "Maya (annoyed)" means.
+        Editor tweaks like "move Maya left 30px" also don't have a natural place to live.
+      </div>
+      <div class="verdict">
+        <div class="pros"><h3>Works well when</h3><ul>
+          <li>The written story matters as much as the pictures</li>
+          <li>Non-technical designers and PMs should edit it by hand</li>
+          <li>It's the closest match to how people naturally write storyboards</li>
+        </ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul>
+          <li>Custom text formats break often (Mermaid needed repair tools)</li>
+          <li>Visual tweaks end up in hidden comments or get lost</li>
+          <li>Hard to validate with specific, fixable errors</li>
+        </ul></div>
+      </div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option C"</code></div>
+    </article>
+
+    <!-- OPTION D -->
+    <article class="option-card option-d not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option D</span>
+          <div class="card-badges"><span class="chosen-badge">Chosen</span></div>
+        </div>
+        <h2 class="option-title">Storyboards as Code (TSX)</h2>
+      </div>
+      <div class="visual-preview">
+        <span class="file-tab">CoffeeOrder.storyboard.tsx</span>
+<pre class="code"><span class="k">export default</span> () =&gt; (
+  &lt;<span class="t">Storyboard</span> <span class="k">title</span>=<span class="s">"Late Latte"</span>&gt;
+    &lt;<span class="t">Panel</span> <span class="k">scene</span>=<span class="s">"coffee-shop/counter"</span>
+           <span class="k">shot</span>=<span class="s">"over-the-shoulder"</span>&gt;
+      &lt;<span class="t">Maya</span> <span class="k">pose</span>=<span class="s">"holding-phone"</span>
+            <span class="k">mood</span>=<span class="s">"annoyed"</span>&gt;
+        &lt;<span class="t">Phone</span> <span class="k">screen</span>={orderStatus}&gt;
+          &lt;<span class="t">Tap</span> <span class="k">x</span>={<span class="n">0.5</span>} <span class="k">y</span>={<span class="n">0.7</span>} /&gt;
+        &lt;/<span class="t">Phone</span>&gt;
+      &lt;/<span class="t">Maya</span>&gt;
+      &lt;<span class="t">Thought</span>&gt;It said 4 minutes.&lt;/<span class="t">Thought</span>&gt;
+    &lt;/<span class="t">Panel</span>&gt;
+  &lt;/<span class="t">Storyboard</span>&gt;
+)</pre>
+        <div class="pipeline">
+          <span class="pipe-box">AI writes</span><span class="pipe-arrow">→</span>
+          <span class="pipe-box ok">type-checked</span><span class="pipe-arrow">→</span>
+          <span class="pipe-box">editor</span><span class="pipe-arrow">⇄</span>
+          <span class="pipe-box bad">rewrite source code?</span>
+        </div>
+      </div>
+      <div class="option-summary">
+        Storyboards become React components, like how Remotion makes videos from code. It's endlessly powerful: loops, reusable
+        "Maya's morning" snippets, custom props. TypeScript catches mistakes. But the editor would have to rewrite <strong>source code</strong>
+        every time someone drags a bubble, which is fragile. It also turns a designer tool into a developer tool.
+      </div>
+      <div class="verdict">
+        <div class="pros"><h3>Works well when</h3><ul>
+          <li>Power users want logic and reuse (variants, persona swaps)</li>
+          <li>The audience is design engineers who live in React</li>
+        </ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul>
+          <li>Drag-and-drop edits writing back into code is a hard problem</li>
+          <li>Needs a build step, and running code means security concerns</li>
+          <li>Scares off the designers this is actually for</li>
+        </ul></div>
+      </div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option D"</code></div>
+    </article>
+  </main>
+
+  <section class="case-against">
+    <h2>The case against my pick</h2>
+    <p>
+      Your whole thesis is getting teams to think like service designers, and the thing that does that is the <strong>story</strong>, not the file.
+      A Markdown screenplay (C) is something a PM could read in a pull request, paste into a doc, or argue about in a crit. Nobody reads JSON for fun.
+      If the editor is good enough, maybe nobody ever looks at the file, and then readability matters less than I'm assuming. If people <strong>do</strong> read the file,
+      JSON is the worst of these four to read. The mitigation I'd build: A as the source of truth, plus a
+      <code>storyboard script</code> command that prints a Markdown screenplay view (read-only) for humans.
+    </p>
+  </section>
+
+  <section class="assumptions">
+    <h2>This recommendation assumes</h2>
+    <ul>
+      <li>The coding agent writes almost all of the file. Designers mostly tweak visually, not by editing text</li>
+      <li>Editor changes must save back to the file so the AI can keep iterating (decision 8 depends on this)</li>
+      <li>The vocabulary (scenes, shots, poses, moods, devices) is finite and can be listed in a schema</li>
+    </ul>
+  </section>
+
+  <section class="comparison-section">
+    <h2>How They Compare</h2>
+    <div class="comparison-table-wrapper">
+      <table class="comparison-table">
+        <thead><tr>
+          <th></th>
+          <th class="col-a col-chosen">A: Story-First JSON</th>
+          <th class="col-b">B: YAML Spec</th>
+          <th class="col-c">C: Markdown Screenplay</th>
+          <th class="col-d">D: TSX Code</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>AI writes it correctly</td><td class="col-chosen">Best, since it's the format models are most reliable in</td><td>Good, with some indentation slips</td><td>Weakest: a new language with no training data</td><td>Good, and type-checked</td></tr>
+          <tr><td>Human readability</td><td class="col-chosen">Meh</td><td>Good</td><td>Excellent, reads like a script</td><td>For developers only</td></tr>
+          <tr><td>Editor tweaks save cleanly</td><td class="col-chosen">Yes, via sparse layout overrides</td><td>Mostly, but comments are at risk</td><td>Awkward, nudges go into hidden comments</td><td>Hard, has to rewrite code</td></tr>
+          <tr><td>Error messages the AI can act on</td><td class="col-chosen">Precise (schema path + suggestion)</td><td>Precise after parsing</td><td>Fuzzy (the parser guesses)</td><td>Compiler errors</td></tr>
+          <tr><td>Comments / notes</td><td class="col-chosen">Via a <code>notes</code> field only</td><td>Yes</td><td>Yes, it's prose</td><td>Yes</td></tr>
+          <tr><td>Build effort</td><td class="col-chosen">Low (schema + validator)</td><td>Low</td><td>Medium to high (custom parser)</td><td>High (compiler + code rewriter)</td></tr>
+          <tr><td>Undo cost</td><td class="col-chosen">Low. JSON converts mechanically to YAML or a screenplay view later</td><td>Low, converts to JSON</td><td>High, lossy to convert out of prose</td><td>Very high, code doesn't convert back to data</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="research-context">
+    <h2>What the research says</h2>
+    <ul class="findings">
+      <li>Across 21 models, JSON output was almost always syntactically valid, but 15–25 percent of the values inside were wrong. So the thing to build is <strong>semantic</strong> validation (valid moods, real scene IDs), not syntax checks. <a class="cite" href="https://arxiv.org/html/2604.25359v1">Structured Output Benchmark</a></li>
+      <li>Asking models for YAML output dropped syntax accuracy to about 0.6 on some models, while JSON in and JSON out performed best. <a class="cite" href="https://www.augmentcode.com/learn/baml-vs-poml-vs-yaml-vs-json-for-llm-prompts">Augment Code</a></li>
+      <li>Coding agents writing files don't get schema-guaranteed output, so a <code>validate</code> command with fix-it errors is the practical guardrail. <a class="cite" href="https://github.com/anthropics/claude-code/issues/9058">claude-code #9058</a></li>
+      <li>Custom text formats break often enough that people build repair tools (e.g. for Mermaid diagrams). <a class="cite" href="https://microsoft.github.io/genaiscript/blog/mermaids/">GenAIScript</a></li>
+      <li>Excalidraw's own answer to "AI is bad at our full file format" is a simplified skeleton format that expands into the full one. The authoring format and the render format are separate. <a class="cite" href="https://docs.excalidraw.com/docs/@excalidraw/excalidraw/api/excalidraw-element-skeleton">Excalidraw docs</a></li>
+      <li>Full Excalidraw JSON produces noisy diffs because seeds, nonces and coordinates change on every edit. That's why pixel positions should be opt-in overrides. <a class="cite" href="https://github.com/excalidraw/excalidraw/issues/1639">excalidraw #1639</a></li>
+      <li>YAML comments get lost on read-and-rewrite even with libraries built for round-trips. <a class="cite" href="https://sourceforge.net/p/ruamel-yaml/tickets/426/">ruamel.yaml #426</a></li>
+      <li>Storyboarder (the open-source film tool) stores boards as JSON with a documented schema: a <code>boards[]</code> array with dialogue, action and notes. <a class="cite" href="https://github.com/wonderunit/storyboarder/wiki/Storyboarder-File-Format">Storyboarder wiki</a></li>
+      <li>Slidev works well with agents because it's built on formats models already know (Markdown + YAML frontmatter) and ships an llms.txt. <a class="cite" href="https://sli.dev/llms.txt">Slidev</a></li>
+    </ul>
+    <div class="experts-disagree">
+      <h3>Where experts disagree</h3>
+      <p>The "docs as code" camp (Slidev, Fountain) says text humans can read wins adoption. The "visual editor" camp (tldraw, Excalidraw, Storyboarder) says the file is plumbing and should be structured data. What decides it: <strong>will your designers ever open the file?</strong> If the editor plus the AI covers everything, go structured. If the script itself is a deliverable, lean toward Markdown.</p>
+    </div>
+  </section>
+
+  <div class="page-footer">
+    <p>Respond with: <strong>"Option A"</strong>, <strong>"Option C but [your change]"</strong>, or <strong>"more options"</strong></p>
+    <p>To change a past decision: <strong>"for decision-001 I want Option B instead"</strong></p>
+  </div>
+</body>
+</html>

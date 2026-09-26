@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision 4: Editor Rendering Engine — Storyboarding Tool</title>
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    .hl { font-style: italic; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.technical { background: #e6f0f3; color: #1b5e74; }
+    .triage-badge { display:inline-block; padding:4px 12px; border-radius:999px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; margin-top:0.5rem; margin-left:6px; }
+    .triage-badge.one-way { background:#fef2f2; color:#dc2626; }
+    .triage-badge.stakes-high { background:#fff7ed; color:#c2410c; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 720px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eef5f7; color: #1b5e74; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #b9d5de; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #1f6f8b; box-shadow: 0 4px 16px rgba(31,111,139,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #a23b72; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .confidence-badge { padding:3px 10px; border-radius:999px; font-size:0.65rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; color:white; }
+    .confidence-badge.strong { background:#059669; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .card-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+
+    .visual-preview { padding: 1.25rem; background: #f8fafc; min-height: 360px; display: flex; flex-direction: column; gap: 10px; align-items: stretch; flex: 1; }
+    .file-tab { display: inline-flex; align-self: flex-start; gap: 6px; align-items: center; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.68rem; color: #cbd5e1; background: #1e293b; padding: 5px 12px; border-radius: 8px 8px 0 0; margin-bottom: -10px; }
+    pre.code { background: #0f172a; color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.7rem; line-height: 1.55; padding: 12px 14px; border-radius: 0 10px 10px 10px; overflow-x: auto; white-space: pre; flex: 1; }
+    .k { color: #93c5fd; } .s { color: #86efac; } .c { color: #8a9bb0; } .t { color: #f9a8d4; } .n { color: #fcd34d; }
+    .pipeline { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 0.66rem; font-weight: 600; color: #334155; }
+    .pipe-box { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 4px 9px; }
+    .pipe-box.ok { border-color: #059669; color: #047857; }
+    .pipe-box.warn { border-color: #d97706; color: #b45309; }
+    .pipe-box.bad { border-color: #e11d48; color: #be123c; }
+    .pipe-arrow { color: #94a3b8; }
+
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; } .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0 0.15rem 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-ai { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+    .case-against { max-width:1200px; margin:0 auto 3rem; background:white; border-left:4px solid #e11d48; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .case-against h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#e11d48; margin-bottom:0.5rem; }
+    .case-against p { font-size:0.9rem; color:#334155; line-height:1.65; }
+    .assumptions { max-width:1200px; margin:0 auto 3rem; font-size:0.85rem; color:#475569; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:1rem 1.5rem; }
+    .assumptions h2 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#64748b; margin-bottom:0.4rem; }
+    .assumptions ul { padding-left:1.1rem; }
+
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #a23b72; } .comparison-table th.col-b { color: #0891b2; } .comparison-table th.col-c { color: #059669; } .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: top; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; white-space: nowrap; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table tr td.col-recommended, .comparison-table tr th.col-recommended { background: #fffbeb; }
+    .comparison-table tr td.col-chosen, .comparison-table tr th.col-chosen { background: #ecfdf5; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+
+    .research-context { max-width:1200px; margin:0 auto 3rem; background:white; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .research-context h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#1f6f8b; margin-bottom:0.75rem; }
+    .findings { list-style:none; padding:0; }
+    .findings li { font-size:0.875rem; color:#334155; line-height:1.6; padding:0.35rem 0 0.35rem 1.1rem; position:relative; }
+    .findings li::before { content:"→"; position:absolute; left:0; color:#1f6f8b; font-weight:700; }
+    .cite { color:#1f6f8b; font-size:0.8rem; text-decoration:none; border-bottom:1px dotted #1f6f8b; margin-left:4px; }
+    .experts-disagree { margin-top:1rem; border-top:3px solid #f59e0b; background:#fffbeb; border-radius:0 0 8px 8px; padding:0.85rem 1.1rem; }
+    .experts-disagree h3 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#b45309; margin-bottom:0.35rem; }
+    .experts-disagree p { font-size:0.85rem; color:#451a03; line-height:1.6; }
+
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #1f6f8b; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  
+.visual-preview{justify-content:flex-start;gap:12px}
+.arch-diagram{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%}
+.arch-layer{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;width:100%}
+.arch-box{background:white;border:2px solid #e2e8f0;border-radius:8px;padding:7px 12px;font-size:0.72rem;font-weight:600;color:#334155;text-align:center;min-width:70px}
+.arch-box small{display:block;font-weight:500;color:#64748b;font-size:.64rem}
+.arch-box.frontend{border-color:#a23b72;color:#a23b72}
+.arch-box.backend{border-color:#0891b2;color:#0e7490}
+.arch-box.database{border-color:#059669;color:#047857}
+.arch-box.service{border-color:#dc2626;color:#b91c1c}
+.arch-box.product{border-color:#0e9aa7;background:#e6f6f7;color:#0b6f78}
+.arch-arrow{font-size:1rem;color:#94a3b8;text-align:center;line-height:1}
+.bars{width:100%;background:white;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px}
+.bars-title{font-size:0.62rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#64748b;margin-bottom:7px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.bar-label{font-size:0.68rem;color:#475569;width:120px;flex-shrink:0}
+.bar-track{flex:1;height:9px;background:#f1f5f9;border-radius:999px;overflow:hidden}
+.bar-fill{display:block;height:100%;border-radius:999px}
+.bar-value{font-size:0.64rem;font-weight:800;color:#0f172a;width:52px;text-align:right;flex-shrink:0}
+.category-badge.technical{background:#e6f0f3;color:#1b5e74}
+.preview-link{display:inline-block;margin-top:0.75rem;font-size:0.8rem;font-weight:600;color:#059669;text-decoration:none;border:1px solid #a7f3d0;background:#ecfdf5;padding:0.4rem 0.9rem;border-radius:999px}
+</style></head>
+<body>
+<a href="index.html" class="back-link">← All Decisions</a>
+<header>
+  <span class="decision-number">Decision 4 of 8</span>
+  <h1>Editor Rendering Engine</h1>
+  <span class="category-badge technical">Technical</span><span class="triage-badge one-way">🚪 One-way door</span><span class="triage-badge stakes-high">High stakes</span>
+  <br><a class="preview-link" href="preview.html">See the tool so far →</a>
+  <p class="decision-description">
+    When a designer drags Maya's arm, resizes a bubble, or types a new caption, what is actually drawing and moving those things in the browser?
+    Your earlier picks narrow this down a lot: the art is <strong>vector parts on a rig</strong> (decision 3) with a <strong>marker wobble filter</strong> (decision 2), bubbles are full of <strong>text</strong>, and the tool is <strong>free and open source</strong>, run locally from a CLI.
+    Each option shows how it's put together and how well it fits those constraints.
+  </p>
+  <p class="instruction">Respond with: <strong>"Option A"</strong> · <strong>"Option A but [change]"</strong> · <strong>"more options"</strong></p>
+</header>
+<main class="options-grid"><article class="option-card option-a chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option A</span>
+        <div class="card-badges"><span class="recommended-badge">My pick</span><span class="confidence-badge strong">Strong pick</span><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">SVG + React, Handle Overlay</h2></div>
+      <div class="visual-preview"><div class="arch-diagram"><div class="arch-layer"><div class="arch-box database">storyboard.json</div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box frontend">React (Vite)<small>JSON → SVG components</small></div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box product">SVG art layer<small>parts · rig · marker filter per panel</small></div><div class="arch-box backend">Overlay layer<small>handles · snapping · text boxes</small></div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box service">Export<small>resvg · PDF</small></div></div></div><div class="bars"><div class="bars-title">Fit for this tool</div><div class="bar-row"><span class="bar-label">Rig + marker look</span><span class="bar-track"><span class="bar-fill" style="width:95%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">Text in bubbles</span><span class="bar-track"><span class="bar-fill" style="width:95%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">Speed at 12 panels</span><span class="bar-track"><span class="bar-fill" style="width:80%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">License freedom</span><span class="bar-track"><span class="bar-fill" style="width:100%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">Clean SVG/PNG export</span><span class="bar-track"><span class="bar-fill" style="width:95%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">Ease of building</span><span class="bar-track"><span class="bar-fill" style="width:55%;background:#d97706"></span></span><span class="bar-value">mixed</span></div></div></div>
+      <div class="option-summary">Each part, bubble and device is an SVG element generated straight from the JSON by React components. A separate transparent layer on top holds the selection handles, snapping guides and text boxes. This is <strong>the same architecture tldraw uses internally</strong>, without the license. Text editing is ordinary HTML, SVG export is nearly free because the art already is SVG, and the marker wobble filter is applied once per panel and paused while you drag.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>The rig, marker filters and hand-lettering are all native SVG</li><li>Bubbles get real text editing, wrapping, spellcheck and accessibility</li><li>Open-source friendly: no license keys, no watermark</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>You build selection, snapping, undo and zoom yourself (about 2–4 weeks)</li><li>SVG slows down at thousands of moving parts (storyboards are around 400)</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option A"</code></div>
+    </article><article class="option-card option-b not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option B</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Canvas with Konva</h2></div>
+      <div class="visual-preview"><div class="arch-diagram"><div class="arch-layer"><div class="arch-box database">storyboard.json</div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box frontend">React + react-konva</div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box backend">HTML Canvas<small>bitmap, redrawn per frame</small></div><div class="arch-box service">textarea hack<small>for editing text</small></div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box service">Export<small>PNG only · SVG lost</small></div></div></div><div class="bars"><div class="bars-title">Fit for this tool</div><div class="bar-row"><span class="bar-label">Rig + marker look</span><span class="bar-track"><span class="bar-fill" style="width:55%;background:#d97706"></span></span><span class="bar-value">mixed</span></div><div class="bar-row"><span class="bar-label">Text in bubbles</span><span class="bar-track"><span class="bar-fill" style="width:30%;background:#dc2626"></span></span><span class="bar-value">poor</span></div><div class="bar-row"><span class="bar-label">Speed at 12 panels</span><span class="bar-track"><span class="bar-fill" style="width:95%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">License freedom</span><span class="bar-track"><span class="bar-fill" style="width:100%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">Clean SVG/PNG export</span><span class="bar-track"><span class="bar-fill" style="width:45%;background:#dc2626"></span></span><span class="bar-value">poor</span></div><div class="bar-row"><span class="bar-label">Ease of building</span><span class="bar-track"><span class="bar-fill" style="width:60%;background:#d97706"></span></span><span class="bar-value">mixed</span></div></div></div>
+      <div class="option-summary">Everything is painted onto a single canvas bitmap. Konva gives you drag, resize and rotate handles out of the box, and it stays fast with thousands of objects. But the marker wobble has to be re-created in canvas code, <strong>text editing is a known pain</strong> (a floating textarea that drifts when you zoom or rotate), and you lose SVG export.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Drag and transform handles come built in</li><li>Performance headroom for huge boards</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Konva's own docs say canvas isn't designed for text editing</li><li>SVG filters don't carry over, so the look is rebuilt by hand</li><li>No vector export for designers who want to bring boards into Figma</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option B"</code></div>
+    </article><article class="option-card option-c not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option C</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Build on tldraw SDK</h2></div>
+      <div class="visual-preview"><div class="arch-diagram"><div class="arch-layer"><div class="arch-box database">storyboard.json</div><div class="arch-box service">↔ tldraw store<small>sync layer to write</small></div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box frontend">tldraw editor<small>custom shapes</small></div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box backend">SVG/HTML shapes<small>+ tldraw UI chrome</small></div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box service">License key<small>or watermark</small></div></div></div><div class="bars"><div class="bars-title">Fit for this tool</div><div class="bar-row"><span class="bar-label">Rig + marker look</span><span class="bar-track"><span class="bar-fill" style="width:80%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">Text in bubbles</span><span class="bar-track"><span class="bar-fill" style="width:90%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">Speed at 12 panels</span><span class="bar-track"><span class="bar-fill" style="width:85%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">License freedom</span><span class="bar-track"><span class="bar-fill" style="width:15%;background:#dc2626"></span></span><span class="bar-value">poor</span></div><div class="bar-row"><span class="bar-label">Clean SVG/PNG export</span><span class="bar-track"><span class="bar-fill" style="width:80%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">Ease of building</span><span class="bar-track"><span class="bar-fill" style="width:90%;background:#059669"></span></span><span class="bar-value">good</span></div></div></div>
+      <div class="option-summary">tldraw is a world-class canvas: selection, undo, zoom, snapping, keyboard shortcuts and export are all done. You'd write custom shapes for characters, bubbles and panels and get a polished editor in days. But since SDK 4.0, <strong>production use needs a license key</strong> (reported around $6k per team per year), or a watermark and a non-commercial hobby license. Every designer who runs your open-source CLI would inherit that problem.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Fastest path to a polished editor</li><li>Proven at scale, with a very good interaction feel</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>License terms clash with a free, open-source CLI tool</li><li>You'd have to keep your JSON and tldraw's own store in sync</li><li>About 524 KB of JavaScript, plus a tldraw look to override</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option C"</code></div>
+    </article><article class="option-card option-d not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option D</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Embed Excalidraw</h2></div>
+      <div class="visual-preview"><div class="arch-diagram"><div class="arch-layer"><div class="arch-box database">storyboard.json</div><div class="arch-box service">→ convert<small>one-way, lossy</small></div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box frontend">Excalidraw component</div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box backend">Fixed element types<small>rect · ellipse · arrow · text · image</small></div></div><div class="arch-arrow">↕</div><div class="arch-layer"><div class="arch-box service">Rig? not supported</div></div></div><div class="bars"><div class="bars-title">Fit for this tool</div><div class="bar-row"><span class="bar-label">Rig + marker look</span><span class="bar-track"><span class="bar-fill" style="width:15%;background:#dc2626"></span></span><span class="bar-value">poor</span></div><div class="bar-row"><span class="bar-label">Text in bubbles</span><span class="bar-track"><span class="bar-fill" style="width:70%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">Speed at 12 panels</span><span class="bar-track"><span class="bar-fill" style="width:85%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">License freedom</span><span class="bar-track"><span class="bar-fill" style="width:100%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">Clean SVG/PNG export</span><span class="bar-track"><span class="bar-fill" style="width:70%;background:#059669"></span></span><span class="bar-value">good</span></div><div class="bar-row"><span class="bar-label">Ease of building</span><span class="bar-track"><span class="bar-fill" style="width:85%;background:#059669"></span></span><span class="bar-value">good</span></div></div></div>
+      <div class="option-summary">Excalidraw is MIT-licensed and loved, and its hand-drawn look is close in spirit. But it only knows a fixed set of shapes (rectangle, ellipse, arrow, text, image). A rigged character, a device with a screen slot, or a speech bubble that follows its speaker <strong>can't exist as a native element</strong>, so they'd become flat images and the editing would stop at "move the picture".</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Free, MIT-licensed, familiar to every tech team</li><li>Collaboration and export come for free</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>No custom element types (the request has been open since 2022)</li><li>Its rough.js look isn't Marker Comp</li><li>Characters become flat images, which defeats decision 3's rig</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option D"</code></div>
+    </article></main>
+
+<section class="case-against">
+  <h2>The case against my pick</h2>
+  <p>Building your own editor is a known tar pit. Selection, multi-select, snapping, undo/redo, zoom and pan, keyboard shortcuts and touch support are each "a few days" that add up to months, and it's the least differentiating part of this tool.
+  tldraw (C) exists precisely so people stop rebuilding it. If this tool ends up <strong>internal to one company</strong> rather than open source, the license cost is small next to the engineering time, and C becomes the better choice.</p>
+</section>
+<section class="assumptions">
+  <h2>This recommendation assumes</h2>
+  <ul>
+    <li>The tool is distributed free and open source, so anyone can <code>npx</code> it without a license key</li>
+    <li>Boards stay around a dozen panels with a few hundred parts, well under where SVG gets slow</li>
+    <li>You're willing to spend about 2–4 weeks on editor basics (a library such as react-moveable can cover the handles)</li>
+  </ul>
+</section>
+
+<section class="comparison-section">
+  <h2>How They Compare</h2>
+  <div class="comparison-table-wrapper"><table class="comparison-table">
+    <thead><tr><th></th><th class="col-a col-chosen">A: SVG + Overlay</th><th class="col-b">B: Konva Canvas</th><th class="col-c">C: tldraw</th><th class="col-d">D: Excalidraw</th></tr></thead>
+    <tbody>
+      <tr><td>Fits rig + marker filter</td><td class="col-chosen">Native</td><td>Rebuild in canvas code</td><td>Yes, as custom shapes</td><td>No custom elements</td></tr>
+      <tr><td>Text editing in bubbles</td><td class="col-chosen">Real HTML text</td><td>Floating-textarea hack</td><td>Excellent</td><td>Good (text elements only)</td></tr>
+      <tr><td>Performance ceiling</td><td class="col-chosen">~500 moving nodes, plenty for boards</td><td>Thousands</td><td>High</td><td>High</td></tr>
+      <tr><td>License</td><td class="col-chosen">Yours (MIT)</td><td>MIT</td><td>Commercial key or watermark</td><td>MIT</td></tr>
+      <tr><td>Export</td><td class="col-chosen">SVG, PNG, PDF</td><td>PNG only</td><td>SVG, PNG</td><td>SVG, PNG</td></tr>
+      <tr><td>Time to a usable editor</td><td class="col-chosen">~3–5 weeks</td><td>~3 weeks</td><td>~1–2 weeks</td><td>~1 week, but a dead end</td></tr>
+      <tr><td>Bundle (gzipped)</td><td class="col-chosen">~80 KB (React + moveable)</td><td>~55 KB</td><td>~524 KB</td><td>Large</td></tr>
+      <tr><td>Undo cost</td><td class="col-chosen">Medium: renderers are swappable because JSON is the source of truth</td><td>Medium</td><td>High: shapes and store are tldraw-specific</td><td>High</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="research-context">
+  <h2>What the research says</h2>
+  <ul class="findings">
+    <li>tldraw renders every shape as an SVG or HTML React component to get DOM events, CSS, text input and accessibility, which is option A's architecture inside a product. <a class="cite" href="https://tldraw.dev/features/customization/custom-shapes-and-tools">tldraw docs</a></li>
+    <li>Since SDK 4.0 (Sept 2025), tldraw needs a license key in production (reported around $6k per team per year, now "custom pricing"). The hobby license is non-commercial and requires a watermark. <a class="cite" href="https://tldraw.dev/community/license">tldraw license</a> <a class="cite" href="https://biggo.com/news/202509190115_tldraw_SDK_4.0_Licensing_Debate">BigGo</a></li>
+    <li>Felt moved from SVG to canvas because React re-checking thousands of nodes on every pan broke large maps. That's the ceiling for A, and far above a storyboard's size. <a class="cite" href="https://felt.com/blog/from-svg-to-canvas-part-1-making-felt-faster">Felt</a></li>
+    <li>DOM/SVG animation stays smooth to about 100 objects moving at once and degrades around 500. In a storyboard you drag one thing at a time. <a class="cite" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12843483/">web animation benchmark</a></li>
+    <li>SVG turbulence filters are expensive, especially on iOS and Firefox. The fix is one filter per panel group, switched off while dragging. <a class="cite" href="https://gsap.com/community/forums/topic/33075-gsap-and-feturbulence-mobile-performance/">GSAP forum</a> <a class="cite" href="https://bugzilla.mozilla.org/show_bug.cgi?id=422371">Mozilla #422371</a></li>
+    <li>Konva recommends a textarea positioned over the canvas for text editing. Users report it drifts on zoom and rotate. <a class="cite" href="https://konvajs.org/docs/sandbox/Editable_Text.html">Konva docs</a> <a class="cite" href="https://github.com/konvajs/konva/issues/878">konva #878</a></li>
+    <li>Excalidraw's element types are fixed. Custom elements have been requested since 2022. <a class="cite" href="https://github.com/excalidraw/excalidraw/issues/4957">excalidraw #4957</a></li>
+  </ul>
+</section>
+
+<div class="page-footer">
+  <p>Respond with: <strong>"Option A"</strong>, <strong>"Option C but [your change]"</strong>, or <strong>"more options"</strong></p>
+  <p>To change a past decision: <strong>"for decision-003 I want Option A instead"</strong></p>
+</div>
+</body></html>

@@ -1,0 +1,408 @@
+{
+  "projectName": "Storyboarding Tool",
+  "projectDescription": "A CLI-first, low-fi storyboarding tool: designers describe an end-to-end customer journey in prose to their coding agent, which generates an editable sketch-style storyboard website they can tweak and export to image.",
+  "createdAt": "2026-09-24",
+  "roadmap": [
+    {
+      "id": 1,
+      "slug": "spec-format",
+      "title": "The Storyboard File Format",
+      "category": "technical",
+      "reversibility": "one-way",
+      "stakes": "high"
+    },
+    {
+      "id": 2,
+      "slug": "art-style",
+      "title": "Storyboard Art Style",
+      "category": "visual",
+      "reversibility": "two-way",
+      "stakes": "high"
+    },
+    {
+      "id": 3,
+      "slug": "asset-system",
+      "title": "How Characters, Scenes & Devices Get Made",
+      "category": "technical",
+      "reversibility": "one-way",
+      "stakes": "high"
+    },
+    {
+      "id": 4,
+      "slug": "render-engine",
+      "title": "Editor Rendering Engine",
+      "category": "technical",
+      "reversibility": "one-way",
+      "stakes": "high"
+    },
+    {
+      "id": 5,
+      "slug": "agent-integration",
+      "title": "How It Plugs Into Coding Agents",
+      "category": "technical",
+      "reversibility": "one-way",
+      "stakes": "med"
+    },
+    {
+      "id": 6,
+      "slug": "editor-layout",
+      "title": "Editor Layout",
+      "category": "ia",
+      "reversibility": "two-way",
+      "stakes": "med"
+    },
+    {
+      "id": 7,
+      "slug": "screen-sketchify",
+      "title": "Uploaded Screens: Sketchify & Auto-Fit",
+      "category": "interaction",
+      "reversibility": "two-way",
+      "stakes": "med"
+    },
+    {
+      "id": 8,
+      "slug": "roundtrip-export",
+      "title": "Round-Trip & Export",
+      "category": "technical",
+      "reversibility": "one-way",
+      "stakes": "med"
+    }
+  ],
+  "decisions": [
+    {
+      "id": 1,
+      "slug": "spec-format",
+      "title": "The Storyboard File Format",
+      "category": "technical",
+      "status": "chosen",
+      "chosenOption": "A",
+      "chosenTitle": "Story-First JSON + Schema",
+      "options": [
+        "A: Story-First JSON + Schema",
+        "B: Readable YAML Spec",
+        "C: Markdown Screenplay",
+        "D: Storyboards as Code (TSX)"
+      ],
+      "recommended": "A",
+      "confidence": "strong",
+      "stakes": "high",
+      "reversibility": "one-way",
+      "caseAgainst": "The story is what builds service-design empathy, and a Markdown screenplay is readable by PMs in a PR or crit; JSON is the least readable if humans ever open the file. Mitigation: JSON source of truth plus a read-only `storyboard script` Markdown view.",
+      "assumptions": [
+        "The coding agent authors almost all of the file; designers tweak visually",
+        "Editor edits must write back to the file",
+        "Scene/shot/pose/mood/device vocabulary is finite and schema-able"
+      ],
+      "tripwires": [
+        "Designers report opening and hand-editing the file regularly -> revisit C or add a Markdown authoring layer",
+        "Validation error rate from agents stays high despite fix-it messages"
+      ],
+      "sources": [
+        "https://arxiv.org/html/2604.25359v1",
+        "https://www.augmentcode.com/learn/baml-vs-poml-vs-yaml-vs-json-for-llm-prompts",
+        "https://github.com/anthropics/claude-code/issues/9058",
+        "https://microsoft.github.io/genaiscript/blog/mermaids/",
+        "https://docs.excalidraw.com/docs/@excalidraw/excalidraw/api/excalidraw-element-skeleton",
+        "https://github.com/excalidraw/excalidraw/issues/1639",
+        "https://sourceforge.net/p/ruamel-yaml/tickets/426/",
+        "https://github.com/wonderunit/storyboarder/wiki/Storyboarder-File-Format",
+        "https://sli.dev/llms.txt"
+      ],
+      "htmlFile": "decision-001-spec-format.html",
+      "decidedAt": "2026-09-24",
+      "summary": "What file the coding agent writes, the editor edits, and the exporter reads.",
+      "reasoning": null
+    },
+    {
+      "id": 2,
+      "slug": "art-style",
+      "title": "Storyboard Art Style",
+      "category": "visual",
+      "status": "chosen",
+      "chosenOption": "B",
+      "chosenTitle": "Marker Comp",
+      "options": [
+        "A: Graphite Thumbnails",
+        "B: Marker Comp",
+        "C: Rough Whiteboard",
+        "D: Ink & Wash"
+      ],
+      "recommended": "B",
+      "confidence": "lean",
+      "stakes": "high",
+      "reversibility": "two-way",
+      "caseAgainst": "User stressed low fidelity; Graphite (A) reads as a rougher draft and invites critique more than Marker, which can drift toward polish and deliverable-ism. Hybrid: A's pencil + B's product-only-color rule.",
+      "assumptions": [
+        "Boards travel into decks/Slack where small-size contrast matters",
+        "Core insight = where the software shows up in the day; single product color makes it visible",
+        "Characters built from modular parts favor flat fills"
+      ],
+      "tripwires": [
+        "Users polish boards instead of debating the journey -> roughen line weight / move toward A"
+      ],
+      "sources": [
+        "https://github.com/rough-stuff/rough",
+        "https://heredragonsabound.blogspot.com/2020/02/creating-pencil-effect-in-svg.html",
+        "https://www.openpeeps.com/"
+      ],
+      "htmlFile": "decision-002-art-style.html",
+      "decidedAt": "2026-09-24",
+      "summary": "The drawing style every board uses, and the design tokens for the editor around it.",
+      "reasoning": null
+    },
+    {
+      "id": 3,
+      "slug": "asset-system",
+      "title": "How Characters, Scenes & Devices Get Made",
+      "category": "technical",
+      "status": "chosen",
+      "chosenOption": "D",
+      "chosenTitle": "Modular Parts on a Rig",
+      "options": [
+        "A: Curated Drawing Library",
+        "B: Primitive Pose Rig",
+        "C: AI-Generated Panels",
+        "D: Modular Parts on a Rig"
+      ],
+      "recommended": "D",
+      "confidence": "lean",
+      "stakes": "high",
+      "reversibility": "one-way",
+      "caseAgainst": "Most expensive; 2D rigs look broken (elbows, floaty hands) before they look good and no mature open-source storyboard rig exists. A curated library ships beautiful v1 in weeks; hybrid path: draw A-style art cut into D parts from day one.",
+      "assumptions": [
+        "Diverse cast AND full pose/angle range are both must-haves",
+        "Must work offline and free after install",
+        "~160 Marker Comp parts can be drawn by someone"
+      ],
+      "tripwires": [
+        "Rigged poses look stiff/broken in user tests -> hand-tuned pose presets only, no free joint dragging",
+        "Art production stalls -> ship front+3/4 only, add side/back later"
+      ],
+      "sources": [
+        "https://www.openpeeps.com/",
+        "https://pixels.market/blog/undraw-license",
+        "https://blush.design/license",
+        "https://wonderunit.com/shot-generator/",
+        "https://blog.tensorflow.org/2020/05/pose-animator-open-source-tool-to-bring-svg-characters-to-life.html",
+        "https://toonystory.com/ai-character-consistency",
+        "https://www.sebantoniou.com/guides/ai-in-storyboarding-2026-what-producers-should-know/",
+        "https://developers.googleblog.com/introducing-gemini-2-5-flash-image/"
+      ],
+      "htmlFile": "decision-003-asset-system.html",
+      "decidedAt": "2026-09-24",
+      "summary": "Where the cast, poses, angles, scenes and devices come from.",
+      "reasoning": null
+    },
+    {
+      "id": 4,
+      "slug": "render-engine",
+      "title": "Editor Rendering Engine",
+      "category": "technical",
+      "status": "chosen",
+      "chosenOption": "A",
+      "chosenTitle": "SVG + React, Handle Overlay",
+      "options": [
+        "A: SVG + React, Handle Overlay",
+        "B: Canvas with Konva",
+        "C: Build on tldraw SDK",
+        "D: Embed Excalidraw"
+      ],
+      "recommended": "A",
+      "confidence": "strong",
+      "stakes": "high",
+      "reversibility": "one-way",
+      "caseAgainst": "Building your own editor (selection, undo, snapping, zoom, touch) is a tar pit of non-differentiating work; tldraw exists to prevent that. If the tool is internal to one company, the license is cheap vs engineering time and C wins.",
+      "assumptions": [
+        "Distributed free/open-source via npx with no license key",
+        "Boards stay ~a dozen panels / few hundred parts",
+        "2-4 weeks acceptable for editor basics (react-moveable for handles)"
+      ],
+      "tripwires": [
+        "Tool becomes internal/commercial-only -> reconsider tldraw",
+        "Drag perf drops below 60fps on typical boards -> canvas art layer, keep SVG export path"
+      ],
+      "sources": [
+        "https://tldraw.dev/features/customization/custom-shapes-and-tools",
+        "https://tldraw.dev/community/license",
+        "https://biggo.com/news/202509190115_tldraw_SDK_4.0_Licensing_Debate",
+        "https://felt.com/blog/from-svg-to-canvas-part-1-making-felt-faster",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12843483/",
+        "https://gsap.com/community/forums/topic/33075-gsap-and-feturbulence-mobile-performance/",
+        "https://konvajs.org/docs/sandbox/Editable_Text.html",
+        "https://github.com/excalidraw/excalidraw/issues/4957"
+      ],
+      "htmlFile": "decision-004-render-engine.html",
+      "decidedAt": "2026-09-24",
+      "summary": "What draws and moves things in the browser editor.",
+      "reasoning": null
+    },
+    {
+      "id": 5,
+      "slug": "agent-integration",
+      "title": "How It Plugs Into Coding Agents",
+      "category": "technical",
+      "status": "chosen",
+      "chosenOption": "D",
+      "chosenTitle": "Layered: CLI + AGENTS.md + Skill",
+      "options": [
+        "A: Agent Skill + CLI",
+        "B: MCP Server",
+        "C: AGENTS.md + CLI Only",
+        "D: Layered: CLI + AGENTS.md + Skill"
+      ],
+      "recommended": "D",
+      "confidence": "strong",
+      "stakes": "med",
+      "reversibility": "one-way",
+      "caseAgainst": "Three surfaces can drift; C alone scored highest in the only published eval and is half the work. Start with C, add the skill when boards are valid-but-boring. Mitigation: generate AGENTS.md block + skill vocab from the CLI schema.",
+      "assumptions": [
+        "Designers work in a folder where init can write files",
+        "Target agents can run shell commands",
+        "Storytelling quality matters, justifying craft guidance"
+      ],
+      "tripwires": [
+        "Evals show agents ignore the skill even with AGENTS.md pointer -> inline key craft rules into AGENTS.md block",
+        "Live 'edit panel 3' requests become common -> add small MCP endpoint on dev server"
+      ],
+      "sources": [
+        "https://agentman.ai/blog/agent-skills-ecosystem-report-2026",
+        "https://agentskills.io",
+        "https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals",
+        "https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation",
+        "https://betterstack.com/community/guides/ai/playwright-cli-vs-mcp-browser/",
+        "https://getunblocked.com/blog/mcp-token-budget-autopsy/",
+        "https://www.remotion.dev/docs/ai/skills",
+        "https://sli.dev/guide/work-with-ai"
+      ],
+      "htmlFile": "decision-005-agent-integration.html",
+      "decidedAt": "2026-09-24",
+      "summary": "How Claude Code, Codex, Cursor etc. learn the tool, its vocabulary and workflow.",
+      "reasoning": null
+    },
+    {
+      "id": 6,
+      "slug": "editor-layout",
+      "title": "Editor Layout",
+      "category": "ia",
+      "status": "chosen",
+      "chosenOption": "C",
+      "chosenTitle": "Page-First, Edit in Place",
+      "options": [
+        "A: Canvas + Library + Inspector",
+        "B: Stage + Filmstrip",
+        "C: Page-First, Edit in Place",
+        "D: Journey Lanes"
+      ],
+      "recommended": "C",
+      "confidence": "lean",
+      "stakes": "med",
+      "reversibility": "two-way",
+      "caseAgainst": "D is the only layout that actively forces service-design thinking (feeling curve, product-presence row, workaround notes); C merely permits it and could produce happy-path marketing comics. Alternative: C with D's lanes as an exportable toggle.",
+      "assumptions": [
+        "Export is the page itself",
+        "Agent does heavy composition; editor is for tweaks",
+        "Designers mostly on laptops"
+      ],
+      "tripwires": [
+        "Boards produced skew happy-path / no workaround panels -> promote lanes to default"
+      ],
+      "sources": [],
+      "htmlFile": "decision-006-editor-layout.html",
+      "decidedAt": "2026-09-24",
+      "summary": "Where designers tweak: how the editor screen is arranged.",
+      "reasoning": null
+    },
+    {
+      "id": 7,
+      "slug": "screen-sketchify",
+      "title": "Uploaded Screens: Sketchify & Auto-Fit",
+      "category": "interaction",
+      "status": "chosen",
+      "chosenOption": "B",
+      "chosenTitle": "Baked Teal Duotone",
+      "options": [
+        "A: Live Edge Filter",
+        "B: Baked Teal Duotone",
+        "C: Trace to Vectors",
+        "D: AI Redraw (BYO key)"
+      ],
+      "recommended": "B",
+      "confidence": "strong",
+      "stakes": "med",
+      "reversibility": "two-way",
+      "caseAgainst": "Teal duotone makes the screen the most prominent element, possibly stealing focus from Maya's face; and it reads as a filtered screenshot, not a drawing. C is more honestly rough for early UI. Mitigation: roughness slider + optional wireframe (trace) mode.",
+      "assumptions": [
+        "UI copy matters to the story",
+        "Uploads are mostly PNG/JPG Figma exports",
+        "Product-only-teal rule applies to uploaded screens"
+      ],
+      "tripwires": [
+        "Users complain screens overpower characters -> lower duotone saturation default"
+      ],
+      "sources": [
+        "https://vanseodesign.com/web-design/svg-filter-primitives-feconvolvematrix/",
+        "https://heredragonsabound.blogspot.com/2020/02/creating-pencil-effect-in-svg.html",
+        "https://answers.opencv.org/question/229032/opencv_jswasm-is-too-large/",
+        "https://github.com/visioncortex/vtracer",
+        "https://www.runcomfy.com/comfyui-nodes/comfyui_controlnet_aux/AnimeLineArtPreprocessor",
+        "https://github.com/jlouthan/perspective-transform",
+        "https://github.com/Eric-Canas/Homography.js/",
+        "https://github.com/CyberAgent/psd2svg/issues/404",
+        "https://rotato.app/iphone"
+      ],
+      "htmlFile": "decision-007-screen-sketchify.html",
+      "decidedAt": "2026-09-24",
+      "summary": "How uploaded designs become sketch-like and snap onto device screens.",
+      "reasoning": null
+    },
+    {
+      "id": 8,
+      "slug": "roundtrip-export",
+      "title": "Round-Trip & Export",
+      "category": "technical",
+      "status": "chosen",
+      "chosenOption": "A",
+      "chosenTitle": "Live Two-Way Sync + CLI Export",
+      "options": [
+        "A: Live Two-Way Sync + CLI Export",
+        "B: Save Button, Reload to Sync",
+        "C: Export-Only Editor",
+        "D: Two Files: Story + Layout"
+      ],
+      "recommended": "A",
+      "confidence": "strong",
+      "stakes": "med",
+      "reversibility": "one-way",
+      "caseAgainst": "Live sync breeds watcher races and stale writes; v1 can be A minus conflict UI (last-write-wins per field + reload on change), adding keep-mine/take-theirs only if users hit it.",
+      "assumptions": [
+        "Boards are iterated many times",
+        "Files live in git; diffs matter",
+        "Agents need headless image export"
+      ],
+      "tripwires": [
+        "Users report lost edits -> build per-field conflict prompt"
+      ],
+      "sources": [
+        "https://github.com/strowk/ceasg",
+        "https://github.com/excalidraw/excalidraw/issues/1639",
+        "https://github.com/linebender/resvg",
+        "https://github.com/bubkoo/html-to-image/issues/534",
+        "https://tldraw.dev/reference/store/StoreSchema"
+      ],
+      "htmlFile": "decision-008-roundtrip-export.html",
+      "decidedAt": "2026-09-24",
+      "summary": "What happens to editor tweaks when the agent edits again, and how images get made.",
+      "reasoning": null
+    }
+  ],
+  "calibration": {
+    "skipped": true,
+    "why": "Marker comp is an era-stable drawing technique; no web calibration applied."
+  },
+  "feedback": [
+    "Thought/speech bubble tails must point at the speaker's head (fixed in close-up shot); editor should auto-aim tails at the character's head anchor."
+  ],
+  "research_cache": {
+    "decision7": "sketchify+fit research complete (canvas Sobel+posterize bake to PNG; stored device screen quads; CSS matrix3d preview; pre-warp raster for resvg export)."
+  }
+}

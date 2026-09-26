@@ -1,0 +1,680 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Storyboard",
+  "description": "A low-fi service-design storyboard. Describe what happens; the renderer decides where things go.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "title",
+    "cast",
+    "panels"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "title": {
+      "type": "string"
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "persona": {
+      "type": "string",
+      "description": "Who this is about, e.g. 'Maya, busy commuter'."
+    },
+    "notes": {
+      "type": "string"
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "columns": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        }
+      }
+    },
+    "cast": {
+      "type": "object",
+      "description": "Everyone who appears, keyed by id (lowercase).",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "skin": {
+            "enum": [
+              "tone-1",
+              "tone-2",
+              "tone-3",
+              "tone-4"
+            ],
+            "description": "tone-1: Lightest skin tone.\ntone-2: Light-medium skin tone.\ntone-3: Medium-dark skin tone.\ntone-4: Darkest skin tone."
+          },
+          "hair": {
+            "enum": [
+              "short",
+              "bun",
+              "long",
+              "curly",
+              "afro",
+              "ponytail",
+              "buzz",
+              "bald",
+              "hijab"
+            ],
+            "description": "short: Short, side-swept.\nbun: Hair up in a bun.\nlong: Long, past the shoulders.\ncurly: Curly, voluminous.\nafro: Rounded afro.\nponytail: Pulled back in a ponytail.\nbuzz: Buzz cut.\nbald: No hair.\nhijab: Head covering (hijab)."
+          },
+          "hairShade": {
+            "enum": [
+              "dark",
+              "light",
+              "grey"
+            ],
+            "description": "dark: Dark hair.\nlight: Light hair.\ngrey: Grey or white hair."
+          },
+          "body": {
+            "enum": [
+              "slim",
+              "average",
+              "broad",
+              "plus"
+            ],
+            "description": "slim: Narrow build.\naverage: Default build.\nbroad: Broad shoulders.\nplus: Larger build."
+          },
+          "outfit": {
+            "enum": [
+              "jacket",
+              "tee",
+              "hoodie",
+              "sweater",
+              "suit",
+              "dress",
+              "scrubs",
+              "apron"
+            ],
+            "description": "jacket: Casual jacket.\ntee: T-shirt.\nhoodie: Hoodie.\nsweater: Sweater.\nsuit: Blazer and shirt.\ndress: Dress.\nscrubs: Medical scrubs.\napron: Work apron (barista, shop staff)."
+          },
+          "age": {
+            "enum": [
+              "child",
+              "adult",
+              "older"
+            ],
+            "description": "child: Kid, shorter.\nadult: Default.\nolder: Older adult."
+          },
+          "accessories": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "glasses",
+                "headphones",
+                "bag",
+                "backpack",
+                "cane",
+                "wheelchair",
+                "beard"
+              ],
+              "description": "glasses: Glasses.\nheadphones: Over-ear headphones.\nbag: Shoulder bag.\nbackpack: Backpack.\ncane: Walking cane.\nwheelchair: Uses a wheelchair (poses render seated in the chair).\nbeard: Beard."
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "panels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "title"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]*$",
+                "description": "Stable panel id, e.g. p1 or order-late."
+              },
+              "label": {
+                "type": "string",
+                "description": "Short caption under the panel (optional)."
+              },
+              "notes": {
+                "type": "string",
+                "description": "Designer/research notes. Not drawn."
+              },
+              "layout": {
+                "type": "object",
+                "description": "Manual nudges written by the editor. Leave these alone unless asked to reset a layout.",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "dx": {
+                      "type": "number"
+                    },
+                    "dy": {
+                      "type": "number"
+                    },
+                    "scale": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "rotate": {
+                      "type": "number"
+                    },
+                    "hidden": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
+              "type": {
+                "const": "title"
+              },
+              "title": {
+                "type": "string"
+              },
+              "subtitle": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "text"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]*$",
+                "description": "Stable panel id, e.g. p1 or order-late."
+              },
+              "label": {
+                "type": "string",
+                "description": "Short caption under the panel (optional)."
+              },
+              "notes": {
+                "type": "string",
+                "description": "Designer/research notes. Not drawn."
+              },
+              "layout": {
+                "type": "object",
+                "description": "Manual nudges written by the editor. Leave these alone unless asked to reset a layout.",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "dx": {
+                      "type": "number"
+                    },
+                    "dy": {
+                      "type": "number"
+                    },
+                    "scale": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "rotate": {
+                      "type": "number"
+                    },
+                    "hidden": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
+              "type": {
+                "const": "time"
+              },
+              "text": {
+                "type": "string"
+              },
+              "icon": {
+                "enum": [
+                  "clock",
+                  "calendar",
+                  "sun",
+                  "moon"
+                ],
+                "description": "clock: Clock face.\ncalendar: Calendar page.\nsun: Morning / daytime.\nmoon: Night."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "text"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]*$",
+                "description": "Stable panel id, e.g. p1 or order-late."
+              },
+              "label": {
+                "type": "string",
+                "description": "Short caption under the panel (optional)."
+              },
+              "notes": {
+                "type": "string",
+                "description": "Designer/research notes. Not drawn."
+              },
+              "layout": {
+                "type": "object",
+                "description": "Manual nudges written by the editor. Leave these alone unless asked to reset a layout.",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "dx": {
+                      "type": "number"
+                    },
+                    "dy": {
+                      "type": "number"
+                    },
+                    "scale": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "rotate": {
+                      "type": "number"
+                    },
+                    "hidden": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "scene"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]*$",
+                "description": "Stable panel id, e.g. p1 or order-late."
+              },
+              "label": {
+                "type": "string",
+                "description": "Short caption under the panel (optional)."
+              },
+              "notes": {
+                "type": "string",
+                "description": "Designer/research notes. Not drawn."
+              },
+              "layout": {
+                "type": "object",
+                "description": "Manual nudges written by the editor. Leave these alone unless asked to reset a layout.",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "dx": {
+                      "type": "number"
+                    },
+                    "dy": {
+                      "type": "number"
+                    },
+                    "scale": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "rotate": {
+                      "type": "number"
+                    },
+                    "hidden": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
+              "type": {
+                "const": "scene"
+              },
+              "scene": {
+                "enum": [
+                  "coffee-shop",
+                  "kitchen",
+                  "living-room",
+                  "bedroom",
+                  "office",
+                  "meeting-room",
+                  "car",
+                  "street",
+                  "transit",
+                  "store",
+                  "hospital",
+                  "school",
+                  "blank"
+                ],
+                "description": "coffee-shop: Counter, menu board, espresso machine, barista. Marks: counter, barista (behind the counter), queue, table, door.\nkitchen: Home kitchen with counter, fridge, window. Marks: counter, fridge, table.\nliving-room: Sofa, lamp, TV on the wall. Marks: sofa, tv, floor.\nbedroom: Bed, nightstand, window at night or morning. Marks: bed, nightstand, door.\noffice: Desk with monitor, chair, plant, window. Marks: desk, chair, window, door.\nmeeting-room: Table, whiteboard, wall screen. Marks: table-left, table-right, whiteboard, screen.\ncar: Car interior from the side: seat, wheel, dashboard display. Marks: driver-seat, passenger-seat, dashboard.\nstreet: Sidewalk, storefronts, lamp post, curb. Marks: sidewalk, curb, storefront, crossing.\ntransit: Bus or train interior: seats, pole, windows. Marks: seat, standing, door.\nstore: Shop checkout: counter, shelves, payment terminal. Marks: checkout, cashier (behind the counter), aisle, entrance.\nhospital: Ward with a patient bed, IV pole and nurses' station. Marks: bed, bedside, corridor, station (behind the counter).\nschool: School entrance: fence, gate, doors, sign. Marks: sidewalk, gate, door.\nblank: Empty panel with a floor line. Marks: left, center, right."
+              },
+              "shot": {
+                "enum": [
+                  "wide",
+                  "medium",
+                  "close-up",
+                  "over-the-shoulder",
+                  "screen",
+                  "pov"
+                ],
+                "description": "wide: Establishing shot: the whole scene, people full-body. Use it to show where they are and what else is going on.\nmedium: Waist-up on the focus character (or two characters). Body language and what's in their hands.\nclose-up: Face fills the panel. Emotion: frustration, relief, confusion.\nover-the-shoulder: From behind the character, looking at their device. What they see and how they react.\nscreen: The device fills the panel, held in a hand. Use when the UI itself is the point.\npov: First person: two hands holding the device, as if you are them."
+              },
+              "focus": {
+                "type": "string",
+                "description": "Id of the character or device the camera frames."
+              },
+              "caption": {
+                "type": "string",
+                "description": "Narration box in the top-left corner."
+              },
+              "characters": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "who"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "who": {
+                      "type": "string",
+                      "description": "Key from `cast`."
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "pose": {
+                      "enum": [
+                        "standing",
+                        "holding-phone",
+                        "phone-to-ear",
+                        "walking",
+                        "sitting",
+                        "sitting-laptop",
+                        "driving",
+                        "waving",
+                        "pointing",
+                        "shrugging",
+                        "arms-crossed"
+                      ],
+                      "description": "standing: Standing, arms relaxed.\nholding-phone: Standing, looking at a phone held at chest height.\nphone-to-ear: On a call, phone held to the ear.\nwalking: Mid-stride. Best from the side.\nsitting: Seated on a chair, sofa or seat, hands on lap.\nsitting-laptop: Seated, typing on a laptop or at a desk.\ndriving: Seated, hands on the steering wheel. Use in the car scene.\nwaving: One arm raised, waving hello or flagging someone.\npointing: Arm extended, pointing at something.\nshrugging: Both palms up: 'I don't know' / 'what now?'.\narms-crossed: Arms folded: waiting, skeptical, impatient."
+                    },
+                    "mood": {
+                      "enum": [
+                        "neutral",
+                        "happy",
+                        "excited",
+                        "focused",
+                        "confused",
+                        "impatient",
+                        "frustrated",
+                        "stressed",
+                        "sad",
+                        "surprised",
+                        "relieved",
+                        "tired"
+                      ],
+                      "description": "neutral: Calm, default.\nhappy: Smiling.\nexcited: Big smile, eyebrows up.\nfocused: Concentrating, slight frown.\nconfused: One eyebrow up, wavy mouth.\nimpatient: Flat mouth, narrowed eyes.\nfrustrated: Frown, angled brows.\nstressed: Frown plus sweat drop.\nsad: Downturned mouth and brows.\nsurprised: Open mouth, raised brows.\nrelieved: Soft smile, closed eyes.\ntired: Half-closed eyes, flat mouth."
+                    },
+                    "angle": {
+                      "enum": [
+                        "front",
+                        "three-quarter",
+                        "side",
+                        "back"
+                      ],
+                      "description": "front: Facing the viewer.\nthree-quarter: Turned slightly (default for most panels).\nside: Profile. Use `facing` to choose left or right.\nback: From behind. Pairs with over-the-shoulder shots."
+                    },
+                    "facing": {
+                      "enum": [
+                        "left",
+                        "right"
+                      ]
+                    },
+                    "at": {
+                      "type": "string",
+                      "description": "A mark in the scene (see `storyboard vocab marks`)."
+                    },
+                    "device": {
+                      "description": "Device in their hands.",
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "phone",
+                            "tablet",
+                            "laptop",
+                            "desktop",
+                            "watch",
+                            "car-display",
+                            "tv",
+                            "smart-speaker",
+                            "kiosk",
+                            "payment-terminal"
+                          ],
+                          "description": "phone: Smartphone. Can be held (character.device) or placed. Set \"product\": false for a personal phone (call, text) so it isn't drawn as the product.\ntablet: Tablet, held in two hands or on a table.\nlaptop: Laptop, open on a desk or lap.\ndesktop: Desktop monitor on a desk.\nwatch: Smartwatch on the wrist.\ncar-display: In-car infotainment screen on the dashboard.\ntv: Television on a wall or stand.\nsmart-speaker: Voice assistant speaker (no screen; pair with speech bubbles).\nkiosk: Self-service kiosk or ordering screen.\npayment-terminal: Card reader at a checkout."
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "type"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "phone",
+                                "tablet",
+                                "laptop",
+                                "desktop",
+                                "watch",
+                                "car-display",
+                                "tv",
+                                "smart-speaker",
+                                "kiosk",
+                                "payment-terminal"
+                              ],
+                              "description": "phone: Smartphone. Can be held (character.device) or placed. Set \"product\": false for a personal phone (call, text) so it isn't drawn as the product.\ntablet: Tablet, held in two hands or on a table.\nlaptop: Laptop, open on a desk or lap.\ndesktop: Desktop monitor on a desk.\nwatch: Smartwatch on the wrist.\ncar-display: In-car infotainment screen on the dashboard.\ntv: Television on a wall or stand.\nsmart-speaker: Voice assistant speaker (no screen; pair with speech bubbles).\nkiosk: Self-service kiosk or ordering screen.\npayment-terminal: Card reader at a checkout."
+                            },
+                            "screen": {
+                              "type": "string"
+                            },
+                            "product": {
+                              "type": "boolean",
+                              "description": "false = not the product (personal call/text, someone else's app): drawn grey, not teal. Default true."
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "devices": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "phone",
+                        "tablet",
+                        "laptop",
+                        "desktop",
+                        "watch",
+                        "car-display",
+                        "tv",
+                        "smart-speaker",
+                        "kiosk",
+                        "payment-terminal"
+                      ],
+                      "description": "phone: Smartphone. Can be held (character.device) or placed. Set \"product\": false for a personal phone (call, text) so it isn't drawn as the product.\ntablet: Tablet, held in two hands or on a table.\nlaptop: Laptop, open on a desk or lap.\ndesktop: Desktop monitor on a desk.\nwatch: Smartwatch on the wrist.\ncar-display: In-car infotainment screen on the dashboard.\ntv: Television on a wall or stand.\nsmart-speaker: Voice assistant speaker (no screen; pair with speech bubbles).\nkiosk: Self-service kiosk or ordering screen.\npayment-terminal: Card reader at a checkout."
+                    },
+                    "at": {
+                      "type": "string"
+                    },
+                    "screen": {
+                      "type": "string",
+                      "description": "Path to a screen image, relative to the storyboard file."
+                    },
+                    "product": {
+                      "type": "boolean",
+                      "description": "false = not the product (personal call/text, someone else's app): drawn grey, not teal. Default true."
+                    }
+                  }
+                }
+              },
+              "bubbles": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "speech",
+                        "thought",
+                        "shout",
+                        "whisper"
+                      ],
+                      "description": "speech: Someone says something out loud.\nthought: What they're thinking. The unsaid frustrations are often the insight.\nshout: Loud, urgent or angry speech (spiky bubble).\nwhisper: Quiet speech (dashed outline)."
+                    },
+                    "from": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "callouts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "text"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "target": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "gestures": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "tap",
+                        "double-tap",
+                        "long-press",
+                        "swipe",
+                        "cursor",
+                        "click",
+                        "typing",
+                        "notification",
+                        "voice"
+                      ],
+                      "description": "tap: Finger tap on a screen (teal ripple).\ndouble-tap: Two quick taps.\nlong-press: Press and hold (teal ring).\nswipe: Swipe across the screen. Set `direction`: left, right, up, down.\ncursor: Mouse pointer on a desktop or laptop screen.\nclick: Mouse click (cursor + burst).\ntyping: Typing marks near the keyboard or screen.\nnotification: Device wiggle marks and a badge: a buzz or ping.\nvoice: Sound waves coming from a device, e.g. a smart speaker or car answering."
+                    },
+                    "on": {
+                      "type": "string"
+                    },
+                    "at": {
+                      "type": "array",
+                      "items": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "direction": {
+                      "enum": [
+                        "left",
+                        "right",
+                        "up",
+                        "down"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Living Preview — Storyboarding Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap&family=Patrick+Hand" rel="stylesheet">
+<style>
+/* Marker Comp tokens: Storyboarding Tool. Import fonts: https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap */
+:root {
+  --color-50: #fbfaf7;
+  --color-100: #f1f1ef;
+  --color-200: #e4e6e8;
+  --color-300: #d7dade;
+  --color-400: #b9bec4;
+  --color-500: #959ba2;
+  --color-600: #6f777f;
+  --color-700: #4d535a;
+  --color-800: #2e3236;
+  --color-900: #1c1c1e;
+  --color-product: #0e9aa7;
+  --color-product-pressed: #0b7f8a;
+  --color-product-tint: #8fd6dc;
+  --color-caption: #fff6bf;
+  --color-success: #2f9e44;
+  --color-danger: #c92a2a;
+  --color-paper: var(--color-50);
+  --color-ink: var(--color-900);
+  --font-title: 'Permanent Marker', cursive;
+  --font-lettering: 'Patrick Hand', cursive;
+  --font-ui: 'Work Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 40px;
+  --text-3xl: 56px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --radius-none: 0;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --shadow-l1: 0 1px 0 rgba(28,28,30,.12);
+  --shadow-l2: 3px 3px 0 #1c1c1e;
+  --shadow-l3: 5px 5px 0 #1c1c1e;
+  --shadow-l4: 8px 8px 0 #1c1c1e;
+  --ease: cubic-bezier(.2,.7,.3,1);
+  --dur-fast: 100ms;
+  --dur-base: 180ms;
+  --dur-slow: 280ms;
+  --stroke-fineliner: 2.1;
+  --stroke-detail: 1.2;
+  --stroke-panel: 2.6;
+  --marker-offset-x: 2.2px;
+  --marker-offset-y: 1.8px;
+}
+
+
+.ga-title{font-family:'Kalam',cursive;font-weight:700;fill:#3d3a36;letter-spacing:.04em}
+.ga-hand{font-family:'Kalam',cursive;fill:#3d3a36}
+.ga-capbox{fill:#f3efe6;stroke:#3d3a36;stroke-width:1;filter:url(#ga-pencil)}
+.mk-title{font-family:'Permanent Marker',cursive;fill:#1c1c1e}
+.mk-hand{font-family:'Patrick Hand',cursive;fill:#1c1c1e}
+.mk-capbox{fill:#fff6bf;stroke:#1c1c1e;stroke-width:1.6}
+.rw-title{font-family:'Gaegu',cursive;font-weight:700;fill:#1e1e1e}
+.rw-hand{font-family:'Gaegu',cursive;fill:#1e1e1e;font-weight:700}
+.rw-capbox{fill:#fff9db;stroke:#1e1e1e;stroke-width:1.2;filter:url(#rw-rough)}
+.iw-title{font-family:'Caveat Brush',cursive;fill:#1f1a17}
+.iw-hand{font-family:'Comic Neue',cursive;font-weight:700;fill:#1f1a17;text-transform:uppercase;letter-spacing:.02em}
+.iw-capbox{fill:#f6e7a8;stroke:#1f1a17;stroke-width:1.8}
+.visual-preview{justify-content:center}
+.frame{width:100%;overflow:hidden;position:relative}
+.chrome{padding:6px 10px;display:flex;gap:5px}
+.chrome span{width:8px;height:8px;border-radius:50%;display:block}
+.apphead{display:flex;justify-content:space-between;align-items:center;padding:8px 14px}
+.apphead b{font-size:17px;font-weight:400}
+.apphead nav{display:flex;gap:14px;font-size:12px}
+.boardtitle{font-size:11px;padding:8px 14px 0}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px}
+.panel{width:100%;height:auto;display:block}
+.tokens{display:flex;flex-wrap:wrap;gap:4px 12px;padding:4px 14px 2px;font-size:10.5px}
+.sw{display:inline-flex;align-items:center;gap:5px}
+.sw i{width:12px;height:12px;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.2)}
+.fontline{font-size:10.5px;padding:2px 14px 12px}
+.triage-badge.two-way{background:#ecfeff;color:#0891b2}
+.category-badge.visual{background:#fce7f3;color:#be185d}
+.confidence-badge.lean{background:#d97706}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--color-200);font-family:var(--font-ui);color:var(--color-ink)}
+.ledger{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;background:var(--color-900)}
+.ledger-chip{font-size:12px;font-weight:600;padding:4px 12px;border-radius:999px;text-decoration:none}
+.ledger-chip.done{background:#0b4d52;color:#bfeef1}
+.ledger-chip.done:not(.auto)::after{content:" \2713"}
+.ledger-chip.done.auto{background:#453206;color:#fbbf24}
+.ledger-chip.pending{background:var(--color-800);color:var(--color-500)}
+.note{max-width:1200px;margin:16px auto 0;font-size:var(--text-sm);color:var(--color-700);padding:0 16px}
+.app{max-width:1200px;margin:12px auto 24px;background:var(--color-paper);border:2px solid var(--color-ink);box-shadow:var(--shadow-l3)}
+.bchrome{display:flex;gap:6px;padding:8px 12px;background:var(--color-100);border-bottom:1px solid var(--color-300)}
+.bchrome i{width:10px;height:10px;border-radius:50%;display:block}
+.bchrome .url{margin-left:16px;font-size:var(--text-xs);color:var(--color-600);font-family:var(--font-mono)}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:2px solid var(--color-ink)}
+.brand{font-family:var(--font-title);font-size:var(--text-lg)}
+.file{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-600);margin-left:16px}
+.top nav{display:flex;gap:20px;font-size:var(--text-sm);color:var(--color-600)}
+.export{background:var(--color-ink);color:var(--color-paper);padding:6px 14px;font-weight:600;font-size:var(--text-sm);box-shadow:none;border:none}
+.desk{padding:32px;background:var(--color-100);position:relative}
+.pending-zone{border:2px dashed var(--color-400);color:var(--color-500);font-size:var(--text-xs);padding:8px 12px;margin-bottom:16px;text-align:center}
+.page{background:var(--color-paper);padding:24px;box-shadow:var(--shadow-l2);border:2px solid var(--color-ink)}
+.page h2{font-family:var(--font-title);font-weight:400;font-size:var(--text-xl)}
+.page .meta{font-family:var(--font-lettering);font-size:var(--text-base);color:var(--color-600);margin-bottom:16px}
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.pf figcaption{font-family:var(--font-lettering);font-size:var(--text-sm);color:var(--color-600);margin-top:4px}
+.legend{display:flex;align-items:center;gap:8px;margin-top:16px;font-family:var(--font-lettering);font-size:var(--text-base);color:var(--color-700)}
+.legend i{width:14px;height:14px;background:var(--color-product);display:inline-block;border:1.5px solid var(--color-ink)}
+.caststrip{margin-top:20px;border-top:1.5px dashed var(--color-400);padding-top:12px}
+.caststrip b{font-family:var(--font-lettering);font-weight:400;font-size:var(--text-base);color:var(--color-700)}
+.castrow{display:grid;grid-template-columns:repeat(8,1fr);gap:12px;margin-top:8px}
+.cf svg{width:100%;display:block}
+.cf figcaption{font-family:var(--font-lettering);font-size:var(--text-xs);color:var(--color-600);text-align:center}
+.pf.sel{position:relative}
+.pf.sel svg{outline:3px solid var(--color-product);outline-offset:3px}
+.ctx{position:absolute;top:-34px;left:0;display:flex;gap:2px;background:var(--color-ink);padding:4px 6px;box-shadow:var(--shadow-l2);z-index:2;white-space:nowrap}
+.ctx span{color:var(--color-paper);font-size:var(--text-xs);padding:2px 6px} .ctx .t{color:var(--color-product-tint)}
+.page .strip{margin-top:36px}
+.drawer-open{margin-top:20px;background:var(--color-paper);border:2px solid var(--color-ink);box-shadow:var(--shadow-l3);padding:12px 16px;max-width:620px}
+.dh{display:flex;gap:16px;align-items:center;font-size:var(--text-sm);color:var(--color-600);margin-bottom:10px}
+.dh b{color:var(--color-ink)} .dh .on{color:var(--color-ink);border-bottom:2px solid var(--color-ink)}
+.drawer-open .castrow{grid-template-columns:repeat(4,1fr)}
+.dnote{font-family:var(--font-lettering);font-size:var(--text-sm);color:var(--color-600);margin-top:6px}
+.deskbar{display:flex;gap:12px;align-items:center;margin-top:16px}
+.fab{background:var(--color-ink);color:var(--color-paper);font-weight:600;font-size:var(--text-sm);padding:6px 14px}
+.layout-pill,.zoom{border:1.5px solid var(--color-ink);background:var(--color-paper);font-size:var(--text-sm);padding:4px 12px}
+.saved{color:var(--color-success);font-size:var(--text-xs)}
+.drawer{border-top:2px solid var(--color-ink);display:grid;grid-template-columns:1fr 280px}
+.drawer pre{background:var(--color-900);color:var(--color-200);font-family:var(--font-mono);font-size:var(--text-xs);line-height:1.6;padding:16px 20px;overflow-x:auto}
+.drawer .k{color:#8fd6dc} .drawer .s{color:#fff6bf}
+.drawer aside{padding:16px;font-size:var(--text-sm);color:var(--color-700);background:var(--color-50)}
+.drawer aside b{display:block;font-size:var(--text-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--color-600);margin-bottom:8px}
+.ok{color:var(--color-success);font-family:var(--font-mono);font-size:var(--text-xs);margin-top:8px;display:block}
+.hood{max-width:1200px;margin:0 auto 32px;padding:0 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.hood b{font-size:var(--text-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--color-700);margin-right:4px}
+.uh{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-paper);border:1.5px solid var(--color-ink);padding:3px 10px}
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><filter id="mk-wobble"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter>
+      <filter id="mk-bleed"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter></defs></svg><svg width="0" height="0" style="position:absolute"><defs>
+<filter id="wob"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter>
+<filter id="bleed"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+<filter id="raster" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/><feColorMatrix in="n" type="saturate" values="0" result="g"/><feComponentTransfer in="g" result="g2"><feFuncA type="linear" slope=".18"/></feComponentTransfer><feGaussianBlur in="SourceGraphic" stdDeviation=".6" result="b"/><feBlend in="g2" in2="b" mode="multiply"/></filter>
+</defs></svg>
+<div class="ledger"><a class="ledger-chip done" href="decision-001-spec-format.html">1 · Format: Story-First JSON + Schema</a><a class="ledger-chip done" href="decision-002-art-style.html">2 · Art style: Marker Comp</a><a class="ledger-chip done" href="decision-003-asset-system.html">3 · Assets: Modular Parts on a Rig</a><a class="ledger-chip done" href="decision-004-render-engine.html">4 · Engine: SVG + React, Handle Overlay</a><a class="ledger-chip done" href="decision-005-agent-integration.html">5 · Agent hookup: Layered: CLI + AGENTS.md + Skill</a><a class="ledger-chip done" href="decision-006-editor-layout.html">6 · Layout: Page-First, Edit in Place</a><a class="ledger-chip done" href="decision-007-screen-sketchify.html">7 · Screens: Baked Teal Duotone</a><a class="ledger-chip done" href="decision-008-roundtrip-export.html">8 · Export: Live Two-Way Sync + CLI Export</a></div>
+<p class="note">Your storyboard tool so far. It shows chosen decisions only; grey chips are still open. <a href="index.html">All decisions →</a></p>
+<div class="app">
+  <div class="bchrome"><i style="background:#ef4444"></i><i style="background:#eab308"></i><i style="background:#22c55e"></i><span class="url">localhost:4321 / late-latte</span></div>
+  <div class="top">
+    <div><span class="brand">Storyboard</span><span class="file">late-latte.storyboard.json</span></div>
+    <nav><span class="saved">Saved to file · agent edit synced 4s ago</span><span>Undo</span><span>Redo</span><button class="export">Export ↓ PNG · PDF · SVG</button></nav>
+  </div>
+  <div class="desk">
+    <div class="page">
+      <h2>The Late Latte</h2>
+      <p class="meta">Persona: Maya, busy commuter · Journey: mobile order-ahead</p>
+      <div class="strip"><figure class="pf"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g><text x="120" y="66" text-anchor="middle" class="mk-title" font-size="19">THE LATE LATTE</text>
+                 <text x="120" y="90" text-anchor="middle" class="mk-hand" font-size="12">Maya · Tuesday · 8:14 am</text>
+                 <text x="120" y="112" text-anchor="middle" class="mk-hand" font-size="10" opacity=".75">ordered ahead on the app, 4 min ETA</text></g>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><figcaption>1 · Title card</figcaption></figure><figure class="pf"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><rect x="138" y="14" width="88" height="32" rx="2" fill="#d7dade" stroke="none"/><rect x="128" y="86" width="112" height="42" fill="#d7dade" stroke="none"/><rect x="176" y="62" width="38" height="24" rx="3" fill="#6f777f" stroke="none"/><circle cx="152" cy="66" r="8" fill="#eceae6" stroke="none"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z" fill="#d7dade" stroke="none"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z" fill="#d7dade" stroke="none"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z" fill="#b9bec4" stroke="none"/><circle cx="69" cy="52" r="11" fill="#eceae6" stroke="none"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z" fill="#6f777f" stroke="none"/><circle cx="60" cy="42" r="5" fill="#6f777f" stroke="none"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)" fill="#8fd6dc" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><line x1="0" y1="128" x2="240" y2="128"/><rect x="138" y="14" width="88" height="32" rx="2"/><path d="M146 24 h40 M146 31 h52 M146 38 h30 M204 24 h14 M206 31 h12"/><rect x="128" y="86" width="112" height="42"/><rect x="176" y="62" width="38" height="24" rx="3"/><path d="M186 86 v-6 M204 86 v-6"/><circle cx="152" cy="66" r="8"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z"/><path d="M55 104 L57 128 M79 104 L82 128"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z"/><circle cx="69" cy="52" r="11"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z"/><circle cx="60" cy="42" r="5"/><path d="M57 68 L52 96"/><path d="M79 68 L88 86 L80 80"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)"/><path d="M52 128 h10 M77 128 h10"/></g><rect x="6" y="6" width="96" height="30" class="mk-capbox"/>
+                 <text x="12" y="19" class="mk-hand" font-size="9.5">In line anyway. Is my</text>
+                 <text x="12" y="30" class="mk-hand" font-size="9.5">order even started?</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><figcaption>2 · Wide · coffee-shop/counter</figcaption></figure><figure class="pf sel"><div class="ctx"><span>Shot ▾</span><span>Swap cast</span><span>+ Bubble</span><span class="t">Screen ▾</span><span>Gesture ▾</span></div><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="34" cy="102" r="19" fill="#6f777f" stroke="none"/><circle cx="22" cy="86" r="6" fill="#6f777f" stroke="none"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z" fill="#b9bec4" stroke="none"/><rect x="92" y="18" width="74" height="140" rx="11" fill="#6f777f" stroke="none"/><rect x="98" y="30" width="62" height="112" rx="3" fill="#8fd6dc" stroke="none"/><rect x="104" y="78" width="50" height="6" rx="3" fill="#fbfaf7" stroke="none"/><rect x="104" y="78" width="18" height="6" rx="3" fill="#6f777f" stroke="none"/><rect x="108" y="116" width="42" height="14" rx="4" fill="#fbfaf7" stroke="none"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z" fill="#eceae6" stroke="none"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z" fill="#fbfaf7" stroke="none"/><circle cx="44" cy="70" r="3.6" fill="#fbfaf7" stroke="none"/><circle cx="40" cy="77" r="2.2" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="34" cy="102" r="19"/><circle cx="22" cy="86" r="6"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z"/><rect x="92" y="18" width="74" height="140" rx="11"/><rect x="98" y="30" width="62" height="112" rx="3"/><path d="M104 72 h50"/><rect x="104" y="78" width="50" height="6" rx="3"/><rect x="104" y="78" width="18" height="6" rx="3"/><rect x="108" y="116" width="42" height="14" rx="4"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z"/><circle cx="44" cy="70" r="3.6"/><circle cx="40" cy="77" r="2.2"/></g><g stroke="#0e9aa7" fill="none" stroke-width="2.1" stroke-linecap="round">
+      <circle cx="129" cy="123" r="5"/><circle cx="129" cy="123" r="10" opacity=".6"/>
+      <path d="M114 110 l-5 -5 M129 106 v-7 M144 110 l5 -5"/></g><text x="47" y="34" text-anchor="middle" class="mk-hand" font-size="9">It said 4 min.</text>
+                 <text x="47" y="46" text-anchor="middle" class="mk-hand" font-size="9">That was 12 min</text>
+                 <text x="47" y="56" text-anchor="middle" class="mk-hand" font-size="9">ago…</text>
+                 <text x="129" y="46" text-anchor="middle" class="mk-hand" font-size="8">Order #214</text>
+                 <text x="129" y="64" text-anchor="middle" class="mk-hand" font-size="8">Preparing…</text>
+                 <text x="129" y="95" text-anchor="middle" class="mk-hand" font-size="8">ETA 4 min</text>
+                 <text x="129" y="126" text-anchor="middle" class="mk-hand" font-size="7.5">I'm here</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><figcaption>3 · Over-the-shoulder · phone</figcaption></figure><figure class="pf"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="120" cy="62" r="30" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="120" cy="62" r="30"/><path d="M120 62 L120 40 M120 62 L136 70"/><path d="M120 34 v4 M148 62 h-4 M120 90 v-4 M92 62 h4"/><path d="M150 36 q8 -6 14 2 M154 28 q10 -4 16 6"/></g><text x="120" y="120" text-anchor="middle" class="mk-title" font-size="16">12 MINUTES LATER…</text>
+                 <text x="120" y="138" text-anchor="middle" class="mk-hand" font-size="9.5" opacity=".75">still no latte</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><figcaption>4 · Time card</figcaption></figure></div>
+      <div class="legend"><i></i> = where the product shows up in Maya's morning</div>
+    </div>
+    <div class="drawer-open"><div class="dh"><b>+ Add</b><span class="on">Cast</span><span>Scenes</span><span>Devices</span><span>Bubbles</span><span>Gestures</span></div>
+      <div class="castrow"><figure class="cf"><svg viewBox="0 0 120 150"><rect x="1" y="1" width="118" height="148" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="2"/><g transform="translate(2.2 1.8)" filter="url(#bleed)"><path d="M43 48 Q60.0 44 77 48 L73 94 L47 94 Z" fill="#b9bec4"/></g><g filter="url(#wob)"><line x1="53" y1="90" x2="53" y2="114" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="53" y1="114" x2="52" y2="140" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="53" y1="90" x2="53" y2="114" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="53" y1="114" x2="52" y2="140" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="55" cy="140" rx="6" ry="3" fill="#1c1c1e"/><line x1="67" y1="90" x2="67" y2="114" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="67" y1="114" x2="69" y2="140" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="67" y1="90" x2="67" y2="114" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="67" y1="114" x2="69" y2="140" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="72" cy="140" rx="6" ry="3" fill="#1c1c1e"/><path d="M43 48 Q60.0 44 77 48 L73 94 L47 94 Z" fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linejoin="round"/><path d="M55 48 L60 58 L65 48" fill="none" stroke="#1c1c1e" stroke-width="1.4"/><line x1="48" y1="49" x2="44" y2="70" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="44" y1="70" x2="46" y2="92" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="48" y1="49" x2="44" y2="70" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="44" y1="70" x2="46" y2="92" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="46" cy="92" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><line x1="72" y1="49" x2="77" y2="68" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="77" y1="68" x2="64" y2="60" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="72" y1="49" x2="77" y2="68" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="77" y1="68" x2="64" y2="60" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="64" cy="60" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><circle cx="60" cy="30" r="12" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="2.1"/><path d="M48 29 Q48 15 60 18 Q72 16 72 28 Q62 21 48 29Z" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/><circle cx="50" cy="19" r="5" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/><path d="M56 32 v1.5 M64 32 v1.5 M57 36.5 q3 1.6 6 0" stroke="#1c1c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/></g><rect x="60" y="52" width="9" height="15" rx="2" fill="#8fd6dc" stroke="#1c1c1e" stroke-width="1.6" transform="rotate(-10 64 60)"/></svg><figcaption>Maya · commuter</figcaption></figure><figure class="cf"><svg viewBox="0 0 120 150"><rect x="1" y="1" width="118" height="148" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="2"/><g transform="translate(2.2 1.8)" filter="url(#bleed)"><path d="M55 46 Q60.0 42 65 46 L64 92 L52 92 Z" fill="#d7dade"/></g><g filter="url(#wob)"><line x1="58" y1="88" x2="50" y2="112" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="50" y1="112" x2="42" y2="138" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="58" y1="88" x2="50" y2="112" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="50" y1="112" x2="42" y2="138" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="45" cy="138" rx="6" ry="3" fill="#1c1c1e"/><line x1="58" y1="88" x2="66" y2="112" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="66" y1="112" x2="74" y2="138" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="58" y1="88" x2="66" y2="112" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="66" y1="112" x2="74" y2="138" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="77" cy="138" rx="6" ry="3" fill="#1c1c1e"/><path d="M55 46 Q60.0 42 65 46 L64 92 L52 92 Z" fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linejoin="round"/><line x1="60" y1="47" x2="52" y2="66" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="52" y1="66" x2="50" y2="84" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="60" y1="47" x2="52" y2="66" stroke="#d7dade" stroke-width="4.9" stroke-linecap="round" /><line x1="52" y1="66" x2="50" y2="84" stroke="#d7dade" stroke-width="3.9" stroke-linecap="round" /><circle cx="50" cy="84" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><line x1="60" y1="47" x2="68" y2="66" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="68" y1="66" x2="76" y2="80" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="60" y1="47" x2="68" y2="66" stroke="#d7dade" stroke-width="4.9" stroke-linecap="round" /><line x1="68" y1="66" x2="76" y2="80" stroke="#d7dade" stroke-width="3.9" stroke-linecap="round" /><circle cx="76" cy="80" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><circle cx="62" cy="28" r="12" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="2.1"/><path d="M48 36 Q46 12 64 15 Q78 16 75 37 L71 25 Q62 22 53 25Z" fill="#3c4147" stroke="#1c1c1e" stroke-width="1.8"/><path d="M68 28 v1.5 M74 30 l3 2 l-3 1" stroke="#1c1c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/></g></svg><figcaption>Dev · walking, side</figcaption></figure><figure class="cf"><svg viewBox="0 0 120 150"><rect x="1" y="1" width="118" height="148" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="2"/><ellipse cx="82" cy="64" rx="7" ry="16" fill="none" stroke="#1c1c1e" stroke-width="2.4" transform="rotate(-20 82 64)"/><path d="M86 74 L104 96 M18 100 Q16 60 26 34 M92 20 L118 60" stroke="#1c1c1e" stroke-width="1.8" fill="none"/><rect x="96" y="70" width="18" height="12" fill="#8fd6dc" stroke="#1c1c1e" stroke-width="1.6"/><g transform="translate(2.2 1.8)" filter="url(#bleed)"><path d="M39 56 Q44.0 52 49 56 L46 98 L34 98 Z" fill="#b9bec4"/></g><g filter="url(#wob)"><line x1="40" y1="94" x2="72" y2="92" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="72" y1="92" x2="92" y2="116" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="40" y1="94" x2="72" y2="92" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="72" y1="92" x2="92" y2="116" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="95" cy="116" rx="6" ry="3" fill="#1c1c1e"/><line x1="40" y1="94" x2="70" y2="94" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="70" y1="94" x2="90" y2="120" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="40" y1="94" x2="70" y2="94" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="70" y1="94" x2="90" y2="120" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="93" cy="120" rx="6" ry="3" fill="#1c1c1e"/><path d="M39 56 Q44.0 52 49 56 L46 98 L34 98 Z" fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linejoin="round"/><line x1="44" y1="57" x2="62" y2="74" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="62" y1="74" x2="80" y2="62" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="44" y1="57" x2="62" y2="74" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="62" y1="74" x2="80" y2="62" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="80" cy="62" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><line x1="44" y1="57" x2="60" y2="78" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="60" y1="78" x2="78" y2="68" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="44" y1="57" x2="60" y2="78" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="60" y1="78" x2="78" y2="68" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="78" cy="68" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><circle cx="44" cy="40" r="12" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="2.1"/><path d="M32 39 Q32 25 44 28 Q56 26 56 38 Q46 31 32 39Z" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/><circle cx="34" cy="29" r="5" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/><path d="M50 40 v1.5 M56 42 l3 2 l-3 1" stroke="#1c1c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/></g></svg><figcaption>Maya · driving, side</figcaption></figure><figure class="cf"><svg viewBox="0 0 120 150"><rect x="1" y="1" width="118" height="148" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="2"/><g transform="translate(2.2 1.8)" filter="url(#bleed)"><path d="M29 75 Q60.0 71 91 75 L82 154 L38 154 Z" fill="#b9bec4"/></g><g filter="url(#wob)"><path d="M29 75 Q60.0 71 91 75 L82 154 L38 154 Z" fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linejoin="round"/><line x1="34" y1="76" x2="28" y2="110" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="28" y1="110" x2="30" y2="150" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="34" y1="76" x2="28" y2="110" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="28" y1="110" x2="30" y2="150" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="30" cy="150" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><line x1="86" y1="76" x2="92" y2="110" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="92" y1="110" x2="90" y2="150" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="86" y1="76" x2="92" y2="110" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="92" y1="110" x2="90" y2="150" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="90" cy="150" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><circle cx="60" cy="50" r="17" fill="#6f777f" stroke="#1c1c1e" stroke-width="2.1"/><circle cx="58" cy="30" r="6" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/></g><rect x="84" y="20" width="30" height="52" rx="5" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/><rect x="87" y="26" width="24" height="40" fill="#8fd6dc"/></svg><figcaption>Maya · over-shoulder</figcaption></figure></div><div class="dnote">Cast is built from parts on the rig (decision 3). Drag onto any panel.</div></div>
+    <div class="deskbar"><span class="fab">+ Add</span><span class="layout-pill">Layout: 1×4 strip ▾</span><span class="zoom">Zoom to panel ⤢</span></div>
+  </div>
+  <div class="drawer">
+    <pre>{
+  <span class="k">"$schema"</span>: <span class="s">"./node_modules/storyboard/schema.json"</span>,
+  <span class="k">"title"</span>: <span class="s">"The Late Latte"</span>,
+  <span class="k">"cast"</span>: { <span class="k">"maya"</span>: { <span class="k">"body"</span>: <span class="s">"b3"</span>, <span class="k">"hair"</span>: <span class="s">"bun"</span>, <span class="k">"persona"</span>: <span class="s">"commuter"</span> } },
+  <span class="k">"panels"</span>: [
+    { <span class="k">"type"</span>: <span class="s">"title-card"</span>, <span class="k">"text"</span>: <span class="s">"The Late Latte"</span>, <span class="k">"sub"</span>: <span class="s">"Maya · Tuesday · 8:14 am"</span> },
+    { <span class="k">"scene"</span>: <span class="s">"coffee-shop/counter"</span>, <span class="k">"shot"</span>: <span class="s">"wide"</span>,
+      <span class="k">"characters"</span>: [{ <span class="k">"who"</span>: <span class="s">"maya"</span>, <span class="k">"pose"</span>: <span class="s">"holding-phone"</span>, <span class="k">"mood"</span>: <span class="s">"impatient"</span> }],
+      <span class="k">"caption"</span>: <span class="s">"In line anyway. Is my order even started?"</span> },
+    { <span class="k">"shot"</span>: <span class="s">"over-the-shoulder"</span>, <span class="k">"focus"</span>: <span class="s">"device"</span>, <span class="k">"device"</span>: <span class="s">"phone"</span>,
+      <span class="k">"screen"</span>: <span class="s">"./screens/order-status.png"</span>,
+      <span class="k">"bubbles"</span>: [{ <span class="k">"type"</span>: <span class="s">"thought"</span>, <span class="k">"from"</span>: <span class="s">"maya"</span>, <span class="k">"text"</span>: <span class="s">"It said 4 min…"</span> }],
+      <span class="k">"gesture"</span>: { <span class="k">"type"</span>: <span class="s">"tap"</span>, <span class="k">"target"</span>: <span class="s">"button:I'm here"</span> } },
+    { <span class="k">"type"</span>: <span class="s">"time-card"</span>, <span class="k">"text"</span>: <span class="s">"12 minutes later…"</span> }
+  ]
+}</pre>
+    <aside><b>Source of truth (decision 1)</b>The coding agent wrote this file from a two-sentence prompt. Drag anything above and only a small <code>layout</code> override is added.
+      <span class="ok">$ storyboard validate ✓ 4 panels, 0 errors</span><span class="ok">$ storyboard export late-latte --png ✓</span></aside>
+  </div>
+</div>
+<div class="hood"><b>Under the hood</b><span class="uh">Story-first JSON + schema</span><span class="uh">storyboard validate</span><span class="uh">sparse layout overrides</span><span class="uh">Marker Comp tokens</span><span class="uh">part kit × 4 angles</span><span class="uh">2D pose rig</span><span class="uh">React + SVG art layer</span><span class="uh">handle overlay</span><span class="uh">1 wobble filter per panel</span><span class="uh">npx storyboard init</span><span class="uh">AGENTS.md block</span><span class="uh">portable SKILL.md</span><span class="uh">page-first editor</span><span class="uh">teal duotone bake</span><span class="uh">device screen quads</span><span class="uh">file watch + autosave</span><span class="uh">resvg export (PNG/PDF/SVG)</span></div>
+</body></html>

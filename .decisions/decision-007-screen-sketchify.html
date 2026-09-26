@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision 7: Uploaded Screens — Sketchify &amp; Auto-Fit — Storyboarding Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    .hl { font-style: italic; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.technical { background: #e6f0f3; color: #1b5e74; }
+    .triage-badge { display:inline-block; padding:4px 12px; border-radius:999px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; margin-top:0.5rem; margin-left:6px; }
+    .triage-badge.one-way { background:#fef2f2; color:#dc2626; }
+    .triage-badge.stakes-high { background:#fff7ed; color:#c2410c; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 720px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eef5f7; color: #1b5e74; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #b9d5de; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #1f6f8b; box-shadow: 0 4px 16px rgba(31,111,139,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #a23b72; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .confidence-badge { padding:3px 10px; border-radius:999px; font-size:0.65rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; color:white; }
+    .confidence-badge.strong { background:#059669; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .card-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+
+    .visual-preview { padding: 1.25rem; background: #f8fafc; min-height: 360px; display: flex; flex-direction: column; gap: 10px; align-items: stretch; flex: 1; }
+    .file-tab { display: inline-flex; align-self: flex-start; gap: 6px; align-items: center; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.68rem; color: #cbd5e1; background: #1e293b; padding: 5px 12px; border-radius: 8px 8px 0 0; margin-bottom: -10px; }
+    pre.code { background: #0f172a; color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.7rem; line-height: 1.55; padding: 12px 14px; border-radius: 0 10px 10px 10px; overflow-x: auto; white-space: pre; flex: 1; }
+    .k { color: #93c5fd; } .s { color: #86efac; } .c { color: #8a9bb0; } .t { color: #f9a8d4; } .n { color: #fcd34d; }
+    .pipeline { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 0.66rem; font-weight: 600; color: #334155; }
+    .pipe-box { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 4px 9px; }
+    .pipe-box.ok { border-color: #059669; color: #047857; }
+    .pipe-box.warn { border-color: #d97706; color: #b45309; }
+    .pipe-box.bad { border-color: #e11d48; color: #be123c; }
+    .pipe-arrow { color: #94a3b8; }
+
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; } .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0 0.15rem 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-ai { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+    .case-against { max-width:1200px; margin:0 auto 3rem; background:white; border-left:4px solid #e11d48; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .case-against h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#e11d48; margin-bottom:0.5rem; }
+    .case-against p { font-size:0.9rem; color:#334155; line-height:1.65; }
+    .assumptions { max-width:1200px; margin:0 auto 3rem; font-size:0.85rem; color:#475569; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:1rem 1.5rem; }
+    .assumptions h2 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#64748b; margin-bottom:0.4rem; }
+    .assumptions ul { padding-left:1.1rem; }
+
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #a23b72; } .comparison-table th.col-b { color: #0891b2; } .comparison-table th.col-c { color: #059669; } .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: top; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; white-space: nowrap; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table tr td.col-recommended, .comparison-table tr th.col-recommended { background: #fffbeb; }
+    .comparison-table tr td.col-chosen, .comparison-table tr th.col-chosen { background: #ecfdf5; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+
+    .research-context { max-width:1200px; margin:0 auto 3rem; background:white; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .research-context h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#1f6f8b; margin-bottom:0.75rem; }
+    .findings { list-style:none; padding:0; }
+    .findings li { font-size:0.875rem; color:#334155; line-height:1.6; padding:0.35rem 0 0.35rem 1.1rem; position:relative; }
+    .findings li::before { content:"→"; position:absolute; left:0; color:#1f6f8b; font-weight:700; }
+    .cite { color:#1f6f8b; font-size:0.8rem; text-decoration:none; border-bottom:1px dotted #1f6f8b; margin-left:4px; }
+    .experts-disagree { margin-top:1rem; border-top:3px solid #f59e0b; background:#fffbeb; border-radius:0 0 8px 8px; padding:0.85rem 1.1rem; }
+    .experts-disagree h3 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#b45309; margin-bottom:0.35rem; }
+    .experts-disagree p { font-size:0.85rem; color:#451a03; line-height:1.6; }
+
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #1f6f8b; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  /* Marker Comp tokens: Storyboarding Tool. Import fonts: https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap */
+:root {
+  --color-50: #fbfaf7;
+  --color-100: #f1f1ef;
+  --color-200: #e4e6e8;
+  --color-300: #d7dade;
+  --color-400: #b9bec4;
+  --color-500: #959ba2;
+  --color-600: #6f777f;
+  --color-700: #4d535a;
+  --color-800: #2e3236;
+  --color-900: #1c1c1e;
+  --color-product: #0e9aa7;
+  --color-product-pressed: #0b7f8a;
+  --color-product-tint: #8fd6dc;
+  --color-caption: #fff6bf;
+  --color-success: #2f9e44;
+  --color-danger: #c92a2a;
+  --color-paper: var(--color-50);
+  --color-ink: var(--color-900);
+  --font-title: 'Permanent Marker', cursive;
+  --font-lettering: 'Patrick Hand', cursive;
+  --font-ui: 'Work Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 40px;
+  --text-3xl: 56px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --radius-none: 0;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --shadow-l1: 0 1px 0 rgba(28,28,30,.12);
+  --shadow-l2: 3px 3px 0 #1c1c1e;
+  --shadow-l3: 5px 5px 0 #1c1c1e;
+  --shadow-l4: 8px 8px 0 #1c1c1e;
+  --ease: cubic-bezier(.2,.7,.3,1);
+  --dur-fast: 100ms;
+  --dur-base: 180ms;
+  --dur-slow: 280ms;
+  --stroke-fineliner: 2.1;
+  --stroke-detail: 1.2;
+  --stroke-panel: 2.6;
+  --marker-offset-x: 2.2px;
+  --marker-offset-y: 1.8px;
+}
+
+.visual-preview{justify-content:center;align-items:center}
+.pair{display:flex;align-items:center;gap:6px;width:100%}
+.pair figure{flex:1}.pair figcaption,.fitrow figcaption{font-family:'Patrick Hand',cursive;font-size:14px;color:#4d535a;text-align:center}
+.arrow{font-size:22px;color:#6f777f}
+.dev{width:100%;height:auto;display:block}
+.ann{margin-top:8px;font-family:'Patrick Hand',cursive;font-size:15px;padding:4px 10px;border:1.5px solid #1c1c1e}
+.ann.bad{background:#fff0f0;color:#c92a2a;border-color:#c92a2a}
+.fitrow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:12px;align-items:end}
+.fit{width:100%;height:auto;display:block}
+.also{max-width:1200px;margin:0 auto 3rem;background:white;border-radius:12px;padding:1.25rem 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.also h2{font-size:0.8rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#1b5e74;margin-bottom:.5rem}
+.also p,.also li{font-size:.875rem;color:#334155;line-height:1.6}.also ul{padding-left:1.1rem;margin-top:.4rem}
+.category-badge.interaction{background:#e0f2fe;color:#0369a1}
+.triage-badge.two-way{background:#ecfeff;color:#0891b2}
+.triage-badge.stakes-med{background:#fefce8;color:#a16207}
+.preview-link{display:inline-block;margin-top:0.75rem;font-size:0.8rem;font-weight:600;color:#059669;text-decoration:none;border:1px solid #a7f3d0;background:#ecfdf5;padding:0.4rem 0.9rem;border-radius:999px}
+</style></head>
+<body><svg width="0" height="0" style="position:absolute"><defs><symbol id="ui" viewBox="0 0 180 420">
+  <rect width="180" height="420" fill="#fffaf3"/>
+  <rect width="180" height="20" fill="#fffaf3"/><text x="10" y="14" font-family="Helvetica, Arial" font-size="8" font-weight="700" fill="#2b1d14">8:14</text>
+  <text x="14" y="46" font-family="Helvetica, Arial" font-size="15" font-weight="700" fill="#2b1d14">Order status</text>
+  <rect x="12" y="58" width="156" height="74" rx="10" fill="#ffffff" stroke="#ead9c6"/>
+  <circle cx="36" cy="82" r="14" fill="#6b3e26"/><path d="M30 78 h12 v7 a6 6 0 0 1 -12 0z" fill="#fffaf3"/>
+  <text x="58" y="80" font-family="Helvetica, Arial" font-size="10" font-weight="700" fill="#2b1d14">Oat latte, 12 oz</text>
+  <text x="58" y="94" font-family="Helvetica, Arial" font-size="8" fill="#8a6f5c">Order #214 · Pickup counter</text>
+  <text x="24" y="120" font-family="Helvetica, Arial" font-size="9" font-weight="700" fill="#2e7d4f">Preparing · ready in ~4 min</text>
+  <rect x="14" y="146" width="152" height="6" rx="3" fill="#ead9c6"/><rect x="14" y="146" width="62" height="6" rx="3" fill="#2e7d4f"/>
+  <text x="14" y="166" font-family="Helvetica, Arial" font-size="7" fill="#8a6f5c">Received</text><text x="74" y="166" font-family="Helvetica, Arial" font-size="7" fill="#2b1d14" font-weight="700">Preparing</text><text x="140" y="166" font-family="Helvetica, Arial" font-size="7" fill="#8a6f5c">Ready</text>
+  <rect x="12" y="180" width="156" height="92" rx="10" fill="#efe4d6"/>
+  <path d="M12 230 Q60 210 100 236 T168 220" stroke="#ffffff" stroke-width="6" fill="none"/><circle cx="104" cy="226" r="8" fill="#6b3e26"/>
+  <text x="22" y="198" font-family="Helvetica, Arial" font-size="8" fill="#2b1d14">Main St · 0.2 mi</text>
+  <rect x="12" y="290" width="156" height="36" rx="18" fill="#2e7d4f"/>
+  <text x="90" y="313" text-anchor="middle" font-family="Helvetica, Arial" font-size="12" font-weight="700" fill="#ffffff">I'm here</text>
+  <text x="90" y="344" text-anchor="middle" font-family="Helvetica, Arial" font-size="7" fill="#8a6f5c">Need help? Contact the store</text>
+  <rect x="0" y="384" width="180" height="36" fill="#ffffff" stroke="#ead9c6"/>
+  <text x="24" y="406" font-family="Helvetica, Arial" font-size="8" fill="#2b1d14" font-weight="700">Order</text><text x="78" y="406" font-family="Helvetica, Arial" font-size="8" fill="#8a6f5c">Rewards</text><text x="136" y="406" font-family="Helvetica, Arial" font-size="8" fill="#8a6f5c">Account</text>
+</symbol>
+<filter id="f-live" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+  <feColorMatrix type="saturate" values="0" result="g"/>
+  <feConvolveMatrix in="g" order="3" kernelMatrix="-1 -1 -1 -1 8 -1 -1 -1 -1" preserveAlpha="true" result="e"/>
+  <feColorMatrix in="e" type="matrix" values="-3 0 0 0 1  -3 0 0 0 1  -3 0 0 0 1  0 0 0 0 1" result="inv"/>
+  <feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="4" result="n"/>
+  <feDisplacementMap in="inv" in2="n" scale="2"/>
+</filter>
+<filter id="f-bake" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+  <feColorMatrix type="saturate" values="0" result="g"/>
+  <feComponentTransfer in="g" result="post">
+    <feFuncR type="discrete" tableValues="0.11 0.05 0.56 0.98"/><feFuncG type="discrete" tableValues="0.11 0.60 0.84 0.98"/><feFuncB type="discrete" tableValues="0.12 0.65 0.86 0.97"/>
+  </feComponentTransfer>
+  <feConvolveMatrix in="g" order="3" kernelMatrix="-1 -1 -1 -1 8 -1 -1 -1 -1" preserveAlpha="true" result="e"/>
+  <feColorMatrix in="e" type="matrix" values="0 0 0 0 0.11  0 0 0 0 0.11  0 0 0 0 0.12  0.3 0.3 0.3 0 0" result="lines"/>
+  <feMerge result="m"><feMergeNode in="post"/><feMergeNode in="lines"/></feMerge>
+  <feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="7" result="n"/>
+  <feDisplacementMap in="m" in2="n" scale="1.1"/>
+</filter>
+<filter id="wob"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter></defs></svg>
+<a href="index.html" class="back-link">← All Decisions</a>
+<header>
+  <span class="decision-number">Decision 7 of 8</span>
+  <h1>Uploaded Screens: Sketchify &amp; Auto-Fit</h1>
+  <span class="category-badge interaction">Interaction</span><span class="triage-badge two-way">🔁 Two-way door</span><span class="triage-badge stakes-med">Medium stakes</span>
+  <br><a class="preview-link" href="preview.html">See the tool so far →</a>
+  <p class="decision-description">
+    This is your item 10. A designer drops their real, polished "Order status" screen into the storyboard. It has to <strong>stop looking polished</strong> so it matches the sketch, but still read as <strong>their product</strong>, and it should snap onto the phone, laptop, watch or dashboard automatically.
+    Below, the same uploaded design goes through each approach. <strong>A and B are real browser filters</strong> running on the design right now, and C and D are illustrations of their typical output.
+  </p>
+  <p class="instruction">Respond with: <strong>"Option B"</strong> · <strong>"Option B but [change]"</strong> · <strong>"more options"</strong></p>
+</header>
+<main class="options-grid"><article class="option-card option-a not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option A</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Live Edge Filter</h2></div>
+      <div class="visual-preview"><div class="pair"><figure><svg viewBox="0 0 230 300" class="dev">
+      <g transform="rotate(0 115 150)">
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="#6f777f" transform="translate(2.2 1.8)"/>
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="none" stroke="#1c1c1e" stroke-width="2.4" filter="url(#wob)"/>
+        <svg x="60" y="22" width="110" height="256" viewBox="0 0 180 420" preserveAspectRatio="xMidYMin slice"><use href="#ui" width="180" height="420"/></svg>
+        <rect x="60" y="22" width="110" height="256" fill="none" stroke="#1c1c1e" stroke-width="1.6"/>
+        <circle cx="60" cy="22" r="3" fill="#0e9aa7"/><circle cx="170" cy="22" r="3" fill="#0e9aa7"/><circle cx="60" cy="278" r="3" fill="#0e9aa7"/><circle cx="170" cy="278" r="3" fill="#0e9aa7"/>
+      </g></svg><figcaption>uploaded design</figcaption></figure>
+      <div class="arrow">→</div><figure><svg viewBox="0 0 230 300" class="dev">
+      <g transform="rotate(-6 115 150)">
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="#6f777f" transform="translate(2.2 1.8)"/>
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="none" stroke="#1c1c1e" stroke-width="2.4" filter="url(#wob)"/>
+        <svg x="60" y="22" width="110" height="256" viewBox="0 0 180 420" preserveAspectRatio="xMidYMin slice"><use href="#ui" width="180" height="420" filter="url(#f-live)"/></svg>
+        <rect x="60" y="22" width="110" height="256" fill="none" stroke="#1c1c1e" stroke-width="1.6"/>
+        <circle cx="60" cy="22" r="3" fill="#0e9aa7"/><circle cx="170" cy="22" r="3" fill="#0e9aa7"/><circle cx="60" cy="278" r="3" fill="#0e9aa7"/><circle cx="170" cy="278" r="3" fill="#0e9aa7"/>
+      </g></svg><figcaption>live SVG filter (real)</figcaption></figure></div><div class="ann bad">Small text turns into doubled outlines, and there's no teal</div></div>
+      <div class="option-summary">An SVG filter chain (grayscale, then edge detection, then a slight wobble) is applied live whenever the screen is drawn. Nothing is stored, and swapping the image is instant. Big shapes survive, but <strong>small UI text becomes doubled-outline mush</strong>, because edge detection draws both sides of every letter. It also ignores your "product = teal" rule, so the screen comes out ink-only.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Zero processing step, fully live</li><li>Keeps the original file untouched</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Text under about 14px becomes unreadable</li><li>Loses the teal product highlight</li><li>Heavy filters slow the editor, and resvg export may differ</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option A"</code></div>
+    </article><article class="option-card option-b chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option B</span>
+        <div class="card-badges"><span class="recommended-badge">My pick</span><span class="confidence-badge strong">Strong pick</span><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Baked Teal Duotone</h2></div>
+      <div class="visual-preview"><div class="pair"><figure><svg viewBox="0 0 230 300" class="dev">
+      <g transform="rotate(0 115 150)">
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="#6f777f" transform="translate(2.2 1.8)"/>
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="none" stroke="#1c1c1e" stroke-width="2.4" filter="url(#wob)"/>
+        <svg x="60" y="22" width="110" height="256" viewBox="0 0 180 420" preserveAspectRatio="xMidYMin slice"><use href="#ui" width="180" height="420"/></svg>
+        <rect x="60" y="22" width="110" height="256" fill="none" stroke="#1c1c1e" stroke-width="1.6"/>
+        <circle cx="60" cy="22" r="3" fill="#0e9aa7"/><circle cx="170" cy="22" r="3" fill="#0e9aa7"/><circle cx="60" cy="278" r="3" fill="#0e9aa7"/><circle cx="170" cy="278" r="3" fill="#0e9aa7"/>
+      </g></svg><figcaption>uploaded design</figcaption></figure>
+      <div class="arrow">→</div><figure><svg viewBox="0 0 230 300" class="dev">
+      <g transform="rotate(-6 115 150)">
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="#6f777f" transform="translate(2.2 1.8)"/>
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="none" stroke="#1c1c1e" stroke-width="2.4" filter="url(#wob)"/>
+        <svg x="60" y="22" width="110" height="256" viewBox="0 0 180 420" preserveAspectRatio="xMidYMin slice"><use href="#ui" width="180" height="420" filter="url(#f-bake)"/></svg>
+        <rect x="60" y="22" width="110" height="256" fill="none" stroke="#1c1c1e" stroke-width="1.6"/>
+        <circle cx="60" cy="22" r="3" fill="#0e9aa7"/><circle cx="170" cy="22" r="3" fill="#0e9aa7"/><circle cx="60" cy="278" r="3" fill="#0e9aa7"/><circle cx="170" cy="278" r="3" fill="#0e9aa7"/>
+      </g></svg><figcaption>baked teal duotone (real)</figcaption></figure></div></div>
+      <div class="option-summary">On upload, the screen is processed <strong>once</strong>: grayscale, posterized into four tones mapped to the <strong>teal product ramp</strong>, a light ink edge pass, and a slight wobble. The result is saved as a PNG next to the original. Text stays readable because it's filled rather than outlined, the screen instantly reads as "the product" in the teal-only system, and export is guaranteed to match what you saw. A slider controls how rough it looks.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Follows the Marker Comp rule: the product is the only color</li><li>Readable copy, so reviewers can still read the UI</li><li>Baked PNG means fast editing and identical export</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>An extra file per screen in the project folder</li><li>Re-processing is needed if the roughness slider changes (about 100 ms)</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option B"</code></div>
+    </article><article class="option-card option-c not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option C</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Trace to Vectors</h2></div>
+      <div class="visual-preview"><div class="pair"><figure><svg viewBox="0 0 230 300" class="dev">
+      <g transform="rotate(0 115 150)">
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="#6f777f" transform="translate(2.2 1.8)"/>
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="none" stroke="#1c1c1e" stroke-width="2.4" filter="url(#wob)"/>
+        <svg x="60" y="22" width="110" height="256" viewBox="0 0 180 420" preserveAspectRatio="xMidYMin slice"><use href="#ui" width="180" height="420"/></svg>
+        <rect x="60" y="22" width="110" height="256" fill="none" stroke="#1c1c1e" stroke-width="1.6"/>
+        <circle cx="60" cy="22" r="3" fill="#0e9aa7"/><circle cx="170" cy="22" r="3" fill="#0e9aa7"/><circle cx="60" cy="278" r="3" fill="#0e9aa7"/><circle cx="170" cy="278" r="3" fill="#0e9aa7"/>
+      </g></svg><figcaption>uploaded design</figcaption></figure>
+      <div class="arrow">→</div><figure><svg viewBox="0 0 230 300" class="dev">
+      <g transform="rotate(-6 115 150)">
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="#6f777f" transform="translate(2.2 1.8)"/>
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="none" stroke="#1c1c1e" stroke-width="2.4" filter="url(#wob)"/>
+        <svg x="60" y="22" width="110" height="256" viewBox="0 0 180 420" preserveAspectRatio="xMidYMin slice"><g stroke="#1c1c1e" stroke-width="2" fill="none" filter="url(#wob)">
+  <rect width="180" height="420" fill="#fbfaf7" stroke="none"/>
+  <path d="M14 36 q4 -6 8 0 q4 6 8 0 q4 -6 8 0 q4 6 8 0 q4-6 8 0 q4 6 8 0 q4 -6 8 0 q4 6 8 0" stroke-width="3"/>
+  <rect x="12" y="58" width="156" height="74" rx="10"/><circle cx="36" cy="82" r="14" fill="#6f777f"/>
+  <path d="M58 78 h6 m3 0 h4 m3 0 h8 m3 0 h5 m3 0 h9 M58 92 h3 m2 0 h7 m3 0 h2 m2 0 h9 m2 0 h4 m2 0 h6 M24 118 h5 m3 0 h8 m2 0 h4 m3 0 h6 m3 0 h9 m2 0 h3" stroke-width="3.2"/>
+  <rect x="14" y="146" width="152" height="6" rx="3"/><rect x="14" y="146" width="62" height="6" rx="3" fill="#1c1c1e"/>
+  <rect x="12" y="180" width="156" height="92" rx="10" fill="#d7dade"/><path d="M12 230 Q60 210 100 236 T168 220"/>
+  <rect x="12" y="290" width="156" height="36" rx="18" fill="#6f777f"/><path d="M70 308 h4 m3 0 h5 m3 0 h6 m3 0 h8" stroke="#fbfaf7" stroke-width="3.4"/>
+</g></svg>
+        <rect x="60" y="22" width="110" height="256" fill="none" stroke="#1c1c1e" stroke-width="1.6"/>
+        <circle cx="60" cy="22" r="3" fill="#0e9aa7"/><circle cx="170" cy="22" r="3" fill="#0e9aa7"/><circle cx="60" cy="278" r="3" fill="#0e9aa7"/><circle cx="170" cy="278" r="3" fill="#0e9aa7"/>
+      </g></svg><figcaption>traced + re-stroked (illustration)</figcaption></figure></div><div class="ann bad">Text becomes blobs, and the copy is lost</div></div>
+      <div class="option-summary">The screenshot is traced into vector shapes (vtracer running in the browser), then re-stroked with the fineliner so it looks genuinely hand-drawn. Boxes, buttons and maps look great, but <strong>text becomes squiggles</strong>. That's fine for a wireframe feel, bad when the copy matters ("ready in ~4 min" <strong>is</strong> the story here).</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>The most convincingly hand-drawn result</li><li>Pure vectors, so it scales to any export size</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>All the UI copy is lost</li><li>Noisy on busy screens (maps, photos)</li><li>A heavier processing step (wasm tracer)</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option C"</code></div>
+    </article><article class="option-card option-d not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option D</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">AI Redraw (Bring Your Own Key)</h2></div>
+      <div class="visual-preview"><div class="pair"><figure><svg viewBox="0 0 230 300" class="dev">
+      <g transform="rotate(0 115 150)">
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="#6f777f" transform="translate(2.2 1.8)"/>
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="none" stroke="#1c1c1e" stroke-width="2.4" filter="url(#wob)"/>
+        <svg x="60" y="22" width="110" height="256" viewBox="0 0 180 420" preserveAspectRatio="xMidYMin slice"><use href="#ui" width="180" height="420"/></svg>
+        <rect x="60" y="22" width="110" height="256" fill="none" stroke="#1c1c1e" stroke-width="1.6"/>
+        <circle cx="60" cy="22" r="3" fill="#0e9aa7"/><circle cx="170" cy="22" r="3" fill="#0e9aa7"/><circle cx="60" cy="278" r="3" fill="#0e9aa7"/><circle cx="170" cy="278" r="3" fill="#0e9aa7"/>
+      </g></svg><figcaption>uploaded design</figcaption></figure>
+      <div class="arrow">→</div><figure><svg viewBox="0 0 230 300" class="dev">
+      <g transform="rotate(-6 115 150)">
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="#6f777f" transform="translate(2.2 1.8)"/>
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="none" stroke="#1c1c1e" stroke-width="2.4" filter="url(#wob)"/>
+        <svg x="60" y="22" width="110" height="256" viewBox="0 0 180 420" preserveAspectRatio="xMidYMin slice"><g font-family="Patrick Hand" fill="#1c1c1e" filter="url(#wob)">
+  <rect width="180" height="420" fill="#fbfaf7"/>
+  <text x="14" y="46" font-size="18">Order Status</text>
+  <rect x="12" y="58" width="156" height="74" rx="10" fill="none" stroke="#1c1c1e" stroke-width="2"/>
+  <circle cx="36" cy="82" r="14" fill="#b9bec4" stroke="#1c1c1e" stroke-width="2"/>
+  <text x="58" y="82" font-size="13">Oak Latte, 12oz</text><text x="58" y="98" font-size="11">Order #241</text>
+  <text x="24" y="122" font-size="12">Preparing · ready in 14 min</text>
+  <rect x="14" y="146" width="152" height="6" rx="3" fill="none" stroke="#1c1c1e" stroke-width="1.6"/>
+  <rect x="12" y="180" width="156" height="92" rx="10" fill="#d7dade" stroke="#1c1c1e" stroke-width="2"/>
+  <rect x="12" y="290" width="156" height="36" rx="18" fill="none" stroke="#1c1c1e" stroke-width="2.4"/>
+  <text x="90" y="314" text-anchor="middle" font-size="15">I'm hear</text>
+</g></svg>
+        <rect x="60" y="22" width="110" height="256" fill="none" stroke="#1c1c1e" stroke-width="1.6"/>
+        <circle cx="60" cy="22" r="3" fill="#0e9aa7"/><circle cx="170" cy="22" r="3" fill="#0e9aa7"/><circle cx="60" cy="278" r="3" fill="#0e9aa7"/><circle cx="170" cy="278" r="3" fill="#0e9aa7"/>
+      </g></svg><figcaption>AI line-art redraw (illustration)</figcaption></figure></div><div class="ann bad">Copy changed: "Oak", "#241", "14 min", "I'm hear"</div></div>
+      <div class="option-summary">An image model redraws the screen as a hand-drawn sketch using the designer's own API key. The result can look beautiful, with hand-lettered text and clean lines. But diffusion models <strong>rewrite the copy</strong>: order numbers, times and labels quietly change, which is dangerous when the storyboard is about <strong>your</strong> real product. It also costs money, takes seconds, and needs a network connection.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>The most beautiful sketch output</li><li>Works on any image, even photos</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Hallucinated copy means the storyboard misrepresents the product</li><li>Needs an API key, costs per image, needs a network</li><li>Different output every run</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option D"</code></div>
+    </article></main>
+
+<section class="also">
+  <h2>Auto-fit, the same in every option</h2>
+  <p>Every device in the library ships with its <strong>screen corners</strong> (the teal dots). Dropping a design onto a device fills that screen <strong>top-aligned</strong>, so tall scrolling screenshots show their first screen. Handles let you pan and scale inside the screen, or drag a corner.
+  Angled devices (a tilted phone, a car dashboard) use a perspective warp computed from the four corners: a live CSS preview while editing, and a pre-warped image at export so the PNG matches exactly.</p>
+  <div class="fitrow"><figure><svg viewBox="0 0 230 300" class="dev">
+      <g transform="rotate(-8 115 150)">
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="#6f777f" transform="translate(2.2 1.8)"/>
+        <rect x="52" y="6" width="126" height="288" rx="18" fill="none" stroke="#1c1c1e" stroke-width="2.4" filter="url(#wob)"/>
+        <svg x="60" y="22" width="110" height="256" viewBox="0 0 180 420" preserveAspectRatio="xMidYMin slice"><use href="#ui" width="180" height="420" filter="url(#f-bake)"/></svg>
+        <rect x="60" y="22" width="110" height="256" fill="none" stroke="#1c1c1e" stroke-width="1.6"/>
+        <circle cx="60" cy="22" r="3" fill="#0e9aa7"/><circle cx="170" cy="22" r="3" fill="#0e9aa7"/><circle cx="60" cy="278" r="3" fill="#0e9aa7"/><circle cx="170" cy="278" r="3" fill="#0e9aa7"/>
+      </g></svg><figcaption>phone · tilted</figcaption></figure><figure><svg viewBox="0 0 260 180" class="fit"><g><rect x="40" y="14" width="180" height="120" rx="6" fill="#6f777f" transform="translate(2.2 1.8)"/>
+      <rect x="40" y="14" width="180" height="120" rx="6" fill="none" stroke="#1c1c1e" stroke-width="2.4" filter="url(#wob)"/>
+      <svg x="48" y="22" width="164" height="104" viewBox="0 0 180 114" preserveAspectRatio="xMidYMin slice"><use href="#ui" width="180" height="420" filter="url(#f-bake)"/></svg>
+      <path d="M20 146 L240 146 L224 134 L36 134 Z" fill="#b9bec4" stroke="#1c1c1e" stroke-width="2.2"/></g>
+      <g fill="#0e9aa7"><circle cx="48" cy="22" r="3"/><circle cx="212" cy="22" r="3"/><circle cx="48" cy="126" r="3"/><circle cx="212" cy="126" r="3"/></g></svg><figcaption>laptop</figcaption></figure><figure><svg viewBox="0 0 140 180" class="fit"><path d="M50 10 h40 v30 h-40z M50 140 h40 v30 h-40z" fill="#d7dade" stroke="#1c1c1e" stroke-width="2"/>
+      <rect x="34" y="40" width="72" height="100" rx="18" fill="#6f777f" stroke="#1c1c1e" stroke-width="2.4"/>
+      <svg x="42" y="50" width="56" height="80" viewBox="0 0 180 257" preserveAspectRatio="xMidYMin slice"><use href="#ui" width="180" height="420" filter="url(#f-bake)"/></svg>
+      <g fill="#0e9aa7"><circle cx="42" cy="50" r="3"/><circle cx="98" cy="50" r="3"/><circle cx="42" cy="130" r="3"/><circle cx="98" cy="130" r="3"/></g></svg><figcaption>watch</figcaption></figure><figure><svg viewBox="0 0 260 180" class="fit"><path d="M0 120 Q130 70 260 120 L260 180 L0 180Z" fill="#d7dade" stroke="#1c1c1e" stroke-width="2.2"/>
+      <g transform="translate(78 62) skewY(-4)"><rect x="0" y="0" width="104" height="70" rx="4" fill="#6f777f" stroke="#1c1c1e" stroke-width="2.4"/>
+      <svg x="6" y="6" width="92" height="58" viewBox="0 0 180 114" preserveAspectRatio="xMidYMin slice"><use href="#ui" width="180" height="420" filter="url(#f-bake)"/></svg>
+      <g fill="#0e9aa7"><circle cx="6" cy="6" r="3"/><circle cx="98" cy="6" r="3"/><circle cx="6" cy="64" r="3"/><circle cx="98" cy="64" r="3"/></g></g>
+      <ellipse cx="40" cy="150" rx="34" ry="20" fill="none" stroke="#1c1c1e" stroke-width="3"/></svg><figcaption>car dashboard · angled</figcaption></figure></div>
+</section>
+
+<section class="case-against">
+  <h2>The case against my pick</h2>
+  <p>Teal duotone means the screen is the <strong>most prominent thing in every panel</strong> it appears in. That's intended, but it can also pull the eye away from Maya's face, and her face carries the emotion you're trying to surface.
+  It also still looks like a <strong>filtered screenshot</strong> rather than a drawing, which is lower-fi than the original but not truly hand-drawn like C. If early-stage teams would rather hide their unfinished UI copy, C's trace is more honest about how rough things are.
+  Mitigation: a per-screen roughness slider, plus "wireframe mode" (C's look) as an optional alternative.</p>
+</section>
+<section class="assumptions">
+  <h2>This recommendation assumes</h2>
+  <ul>
+    <li>The UI copy on the screen matters to the story ("ready in ~4 min" is the broken promise)</li>
+    <li>Uploads are mostly PNG/JPG exports from Figma, not live Figma links</li>
+    <li>The Marker Comp rule, that the product is the only color, should hold for uploaded screens too</li>
+  </ul>
+</section>
+
+<section class="comparison-section">
+  <h2>How They Compare</h2>
+  <div class="comparison-table-wrapper"><table class="comparison-table">
+    <thead><tr><th></th><th class="col-a">A: Live Edge</th><th class="col-b col-chosen">B: Teal Duotone</th><th class="col-c">C: Trace</th><th class="col-d">D: AI Redraw</th></tr></thead>
+    <tbody>
+      <tr><td>Copy stays readable</td><td>Only large text</td><td class="col-chosen">Yes</td><td>No</td><td>Looks readable, but it's wrong</td></tr>
+      <tr><td>Matches the sketch style</td><td>Medium</td><td class="col-chosen">Good</td><td>Best</td><td>Best</td></tr>
+      <tr><td>Follows "product = teal"</td><td>No</td><td class="col-chosen">Yes</td><td>Possible (tint the strokes)</td><td>Possible</td></tr>
+      <tr><td>Speed</td><td>Instant, but slows the editor</td><td class="col-chosen">~100 ms once</td><td>1–3 s once</td><td>5–60 s, with a network</td></tr>
+      <tr><td>Export matches the editor</td><td>Risky</td><td class="col-chosen">Exactly (baked PNG)</td><td>Exactly</td><td>Exactly</td></tr>
+      <tr><td>Cost / offline</td><td>Free, offline</td><td class="col-chosen">Free, offline</td><td>Free, offline</td><td>Paid, online</td></tr>
+      <tr><td>Undo cost</td><td>Low</td><td class="col-chosen">Low: the original is kept, so re-bake with any method</td><td>Low</td><td>Low</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="research-context">
+  <h2>What the research says</h2>
+  <ul class="findings">
+    <li>Edge-detection filters keep large type (16px and up) as outlined glyphs, but body text of 12px or less becomes doubled-edge mush because both sides of every stroke are drawn. <a class="cite" href="https://vanseodesign.com/web-design/svg-filter-primitives-feconvolvematrix/">feConvolveMatrix guide</a></li>
+    <li>Displacement "pencil" effects should stay at about 1–2px on screenshots, because higher values scramble text first. <a class="cite" href="https://heredragonsabound.blogspot.com/2020/02/creating-pencil-effect-in-svg.html">Here Dragons Abound</a></li>
+    <li>OpenCV.js is about 8–12 MB, which is far too heavy for one edge pass when a hand-written Sobel is a few KB. <a class="cite" href="https://answers.opencv.org/question/229032/opencv_jswasm-is-too-large/">OpenCV Q&amp;A</a></li>
+    <li>vtracer (wasm) traces flat UI well, but text turns into many tiny noisy blobs. <a class="cite" href="https://github.com/visioncortex/vtracer">vtracer</a></li>
+    <li>Diffusion line-art models still hallucinate or garble small text. <a class="cite" href="https://www.runcomfy.com/comfyui-nodes/comfyui_controlnet_aux/AnimeLineArtPreprocessor">RunComfy</a></li>
+    <li>SVG has no perspective transform. Compute a 4-corner homography (perspective-transform) for a CSS matrix3d preview, and pre-warp the raster (perspective.js / Homography.js) for export, because resvg ignores foreignObject and 3D transforms. <a class="cite" href="https://github.com/jlouthan/perspective-transform">perspective-transform</a> <a class="cite" href="https://github.com/Eric-Canas/Homography.js/">Homography.js</a> <a class="cite" href="https://github.com/CyberAgent/psd2svg/issues/404">resvg foreignObject</a></li>
+    <li>Mockup tools (Rotato, Figma perspective plugins) store screen geometry per device template and fit automatically instead of asking users to place corners. <a class="cite" href="https://rotato.app/iphone">Rotato</a> <a class="cite" href="https://www.figma.com/community/plugin/1592621188175649343/perspective-distort">Perspective Distort</a></li>
+  </ul>
+</section>
+
+<div class="page-footer">
+  <p>Respond with: <strong>"Option B"</strong>, <strong>"Option B but [your change]"</strong>, or <strong>"more options"</strong></p>
+  <p>To change a past decision: <strong>"for decision-006 I want Option D instead"</strong></p>
+</div>
+</body></html>

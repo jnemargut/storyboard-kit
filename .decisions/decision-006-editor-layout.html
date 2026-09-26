@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision 6: Editor Layout — Storyboarding Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    .hl { font-style: italic; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.technical { background: #e6f0f3; color: #1b5e74; }
+    .triage-badge { display:inline-block; padding:4px 12px; border-radius:999px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; margin-top:0.5rem; margin-left:6px; }
+    .triage-badge.one-way { background:#fef2f2; color:#dc2626; }
+    .triage-badge.stakes-high { background:#fff7ed; color:#c2410c; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 720px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eef5f7; color: #1b5e74; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #b9d5de; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #1f6f8b; box-shadow: 0 4px 16px rgba(31,111,139,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #a23b72; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .confidence-badge { padding:3px 10px; border-radius:999px; font-size:0.65rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; color:white; }
+    .confidence-badge.strong { background:#059669; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .card-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+
+    .visual-preview { padding: 1.25rem; background: #f8fafc; min-height: 360px; display: flex; flex-direction: column; gap: 10px; align-items: stretch; flex: 1; }
+    .file-tab { display: inline-flex; align-self: flex-start; gap: 6px; align-items: center; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.68rem; color: #cbd5e1; background: #1e293b; padding: 5px 12px; border-radius: 8px 8px 0 0; margin-bottom: -10px; }
+    pre.code { background: #0f172a; color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.7rem; line-height: 1.55; padding: 12px 14px; border-radius: 0 10px 10px 10px; overflow-x: auto; white-space: pre; flex: 1; }
+    .k { color: #93c5fd; } .s { color: #86efac; } .c { color: #8a9bb0; } .t { color: #f9a8d4; } .n { color: #fcd34d; }
+    .pipeline { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 0.66rem; font-weight: 600; color: #334155; }
+    .pipe-box { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 4px 9px; }
+    .pipe-box.ok { border-color: #059669; color: #047857; }
+    .pipe-box.warn { border-color: #d97706; color: #b45309; }
+    .pipe-box.bad { border-color: #e11d48; color: #be123c; }
+    .pipe-arrow { color: #94a3b8; }
+
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; } .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0 0.15rem 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-ai { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+    .case-against { max-width:1200px; margin:0 auto 3rem; background:white; border-left:4px solid #e11d48; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .case-against h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#e11d48; margin-bottom:0.5rem; }
+    .case-against p { font-size:0.9rem; color:#334155; line-height:1.65; }
+    .assumptions { max-width:1200px; margin:0 auto 3rem; font-size:0.85rem; color:#475569; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:1rem 1.5rem; }
+    .assumptions h2 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#64748b; margin-bottom:0.4rem; }
+    .assumptions ul { padding-left:1.1rem; }
+
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #a23b72; } .comparison-table th.col-b { color: #0891b2; } .comparison-table th.col-c { color: #059669; } .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: top; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; white-space: nowrap; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table tr td.col-recommended, .comparison-table tr th.col-recommended { background: #fffbeb; }
+    .comparison-table tr td.col-chosen, .comparison-table tr th.col-chosen { background: #ecfdf5; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+
+    .research-context { max-width:1200px; margin:0 auto 3rem; background:white; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .research-context h2 { font-size:0.8rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#1f6f8b; margin-bottom:0.75rem; }
+    .findings { list-style:none; padding:0; }
+    .findings li { font-size:0.875rem; color:#334155; line-height:1.6; padding:0.35rem 0 0.35rem 1.1rem; position:relative; }
+    .findings li::before { content:"→"; position:absolute; left:0; color:#1f6f8b; font-weight:700; }
+    .cite { color:#1f6f8b; font-size:0.8rem; text-decoration:none; border-bottom:1px dotted #1f6f8b; margin-left:4px; }
+    .experts-disagree { margin-top:1rem; border-top:3px solid #f59e0b; background:#fffbeb; border-radius:0 0 8px 8px; padding:0.85rem 1.1rem; }
+    .experts-disagree h3 { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#b45309; margin-bottom:0.35rem; }
+    .experts-disagree p { font-size:0.85rem; color:#451a03; line-height:1.6; }
+
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #1f6f8b; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  /* Marker Comp tokens: Storyboarding Tool. Import fonts: https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap */
+:root {
+  --color-50: #fbfaf7;
+  --color-100: #f1f1ef;
+  --color-200: #e4e6e8;
+  --color-300: #d7dade;
+  --color-400: #b9bec4;
+  --color-500: #959ba2;
+  --color-600: #6f777f;
+  --color-700: #4d535a;
+  --color-800: #2e3236;
+  --color-900: #1c1c1e;
+  --color-product: #0e9aa7;
+  --color-product-pressed: #0b7f8a;
+  --color-product-tint: #8fd6dc;
+  --color-caption: #fff6bf;
+  --color-success: #2f9e44;
+  --color-danger: #c92a2a;
+  --color-paper: var(--color-50);
+  --color-ink: var(--color-900);
+  --font-title: 'Permanent Marker', cursive;
+  --font-lettering: 'Patrick Hand', cursive;
+  --font-ui: 'Work Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 40px;
+  --text-3xl: 56px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --radius-none: 0;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --shadow-l1: 0 1px 0 rgba(28,28,30,.12);
+  --shadow-l2: 3px 3px 0 #1c1c1e;
+  --shadow-l3: 5px 5px 0 #1c1c1e;
+  --shadow-l4: 8px 8px 0 #1c1c1e;
+  --ease: cubic-bezier(.2,.7,.3,1);
+  --dur-fast: 100ms;
+  --dur-base: 180ms;
+  --dur-slow: 280ms;
+  --stroke-fineliner: 2.1;
+  --stroke-detail: 1.2;
+  --stroke-panel: 2.6;
+  --marker-offset-x: 2.2px;
+  --marker-offset-y: 1.8px;
+}
+
+.visual-preview{justify-content:flex-start;padding:1rem}
+.ed{width:100%;background:var(--color-paper);border:2px solid var(--color-ink);font-family:var(--font-ui);color:var(--color-ink);overflow:hidden}
+.ed-chrome{display:flex;gap:4px;padding:5px 8px;background:var(--color-100);border-bottom:1px solid var(--color-300)}
+.ed-chrome i{width:7px;height:7px;border-radius:50%;display:block}
+.ed-top{display:flex;align-items:center;gap:8px;padding:5px 10px;border-bottom:2px solid var(--color-ink)}
+.ed-brand{font-family:var(--font-title);font-size:13px}
+.ed-file{font-family:var(--font-mono);font-size:9px;color:var(--color-600)}
+.ed-sp{flex:1}
+.ed-btn{background:var(--color-ink);color:var(--color-paper);font-size:9px;font-weight:600;padding:3px 8px}
+.panel{width:100%;height:auto;display:block}
+.th{width:100%;height:auto;display:block}
+.selp{outline:2.5px solid var(--color-product);outline-offset:2px;position:relative}
+.selp::after{content:"";position:absolute;right:-6px;bottom:-6px;width:7px;height:7px;background:var(--color-paper);border:2px solid var(--color-product)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lbl{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--color-600);margin:8px 0 4px}
+.lay-a{display:grid;grid-template-columns:92px 1fr 120px;min-height:250px}
+.lib{border-right:1.5px solid var(--color-ink);padding:6px;background:var(--color-50)}
+.tabs{display:flex;gap:6px;font-size:9px;color:var(--color-600)} .tabs b{color:var(--color-ink);border-bottom:2px solid var(--color-ink)}
+.libgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+.chipsrow{display:flex;flex-wrap:wrap;gap:3px}.chipsrow span{font-size:8px;border:1px solid var(--color-ink);padding:1px 4px;background:var(--color-paper)}
+.cv{padding:10px;background:var(--color-100)}
+.insp{border-left:1.5px solid var(--color-ink);padding:6px 8px;background:var(--color-50)}
+.fld{display:flex;flex-direction:column;margin-bottom:5px}.fld span{font-size:8px;color:var(--color-600)}.fld b{font-size:9.5px;font-weight:500;border-bottom:1px solid var(--color-300);padding-bottom:1px}
+.teal{color:var(--color-product-pressed)}
+.lay-b{display:grid;grid-template-columns:52px 1fr;min-height:200px}
+.tools{border-right:1.5px solid var(--color-ink);display:flex;flex-direction:column;gap:4px;padding:6px 4px;background:var(--color-50)}
+.tools span{font-size:8.5px;text-align:center;border:1px solid var(--color-ink);padding:4px 0;background:var(--color-paper)}
+.stage{padding:12px 30px;background:var(--color-100)}
+.stage-note{font-family:var(--font-lettering);font-size:12px;color:var(--color-600);margin-top:6px;text-align:center}
+.film{display:flex;gap:6px;padding:6px 8px;border-top:2px solid var(--color-ink);background:var(--color-200);overflow:hidden}
+.fr{width:80px;flex-shrink:0;position:relative}.fr span{position:absolute;left:3px;top:2px;font-size:8px;font-weight:600;background:var(--color-paper);padding:0 3px}
+.fr.on{outline:2.5px solid var(--color-product)}
+.fr.add{border:1.5px dashed var(--color-500);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--color-600);height:50px;width:50px}
+.lay-c{position:relative;padding:12px 14px 34px;background:var(--color-200)}
+.page{background:var(--color-paper);border:2px solid var(--color-ink);box-shadow:var(--shadow-l2);padding:8px 10px 10px}
+.page-h{font-family:var(--font-title);font-size:14px;margin-bottom:6px}.page-h small{font-family:var(--font-lettering);font-size:11px;color:var(--color-600);margin-left:6px}
+.selwrap{position:relative}
+.ctx{position:absolute;top:-22px;left:0;right:0;z-index:2;display:flex;gap:2px;background:var(--color-ink);padding:3px 4px;width:max-content;box-shadow:var(--shadow-l2)}
+.ctx span{font-size:8.5px;color:var(--color-paper);padding:1px 4px}.ctx .teal{color:var(--color-product-tint)}
+.fab{position:absolute;left:14px;bottom:8px;background:var(--color-ink);color:var(--color-paper);font-size:10px;font-weight:600;padding:3px 10px}
+.layout-pill{position:absolute;right:14px;bottom:8px;border:1.5px solid var(--color-ink);background:var(--color-paper);font-size:9.5px;padding:2px 8px}
+.lay-d{padding:10px;background:var(--color-paper)}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-left:58px}
+.lane{display:flex;align-items:stretch;margin-top:6px}
+.ln{width:58px;flex-shrink:0;font-family:var(--font-lettering);font-size:11px;color:var(--color-700);display:flex;align-items:center}
+.lc{flex:1;border-top:1.5px dashed var(--color-400);padding-top:4px}
+.curve{width:100%;height:44px;display:block}
+.dots{display:grid;grid-template-columns:repeat(4,1fr);justify-items:center}
+.dots i{width:14px;height:14px;border:2px solid var(--color-ink);display:block}.dots i.on{background:var(--color-product)}.dots i.off{background:var(--color-paper)}
+.notes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.notes .n{background:var(--color-caption);border:1.2px solid var(--color-ink);font-family:var(--font-lettering);font-size:10px;padding:2px 4px;line-height:1.2}
+.category-badge.ia{background:#ecfdf5;color:#047857}
+.confidence-badge.lean{background:#d97706}
+.triage-badge.two-way{background:#ecfeff;color:#0891b2}
+.triage-badge.stakes-med{background:#fefce8;color:#a16207}
+.preview-link{display:inline-block;margin-top:0.75rem;font-size:0.8rem;font-weight:600;color:#059669;text-decoration:none;border:1px solid #a7f3d0;background:#ecfdf5;padding:0.4rem 0.9rem;border-radius:999px}
+
+.ga-title{font-family:'Kalam',cursive;font-weight:700;fill:#3d3a36;letter-spacing:.04em}
+.ga-hand{font-family:'Kalam',cursive;fill:#3d3a36}
+.ga-capbox{fill:#f3efe6;stroke:#3d3a36;stroke-width:1;filter:url(#ga-pencil)}
+.mk-title{font-family:'Permanent Marker',cursive;fill:#1c1c1e}
+.mk-hand{font-family:'Patrick Hand',cursive;fill:#1c1c1e}
+.mk-capbox{fill:#fff6bf;stroke:#1c1c1e;stroke-width:1.6}
+.rw-title{font-family:'Gaegu',cursive;font-weight:700;fill:#1e1e1e}
+.rw-hand{font-family:'Gaegu',cursive;fill:#1e1e1e;font-weight:700}
+.rw-capbox{fill:#fff9db;stroke:#1e1e1e;stroke-width:1.2;filter:url(#rw-rough)}
+.iw-title{font-family:'Caveat Brush',cursive;fill:#1f1a17}
+.iw-hand{font-family:'Comic Neue',cursive;font-weight:700;fill:#1f1a17;text-transform:uppercase;letter-spacing:.02em}
+.iw-capbox{fill:#f6e7a8;stroke:#1f1a17;stroke-width:1.8}
+
+.frame{width:100%;overflow:hidden;position:relative}
+.chrome{padding:6px 10px;display:flex;gap:5px}
+.chrome span{width:8px;height:8px;border-radius:50%;display:block}
+.apphead{display:flex;justify-content:space-between;align-items:center;padding:8px 14px}
+.apphead b{font-size:17px;font-weight:400}
+.apphead nav{display:flex;gap:14px;font-size:12px}
+.boardtitle{font-size:11px;padding:8px 14px 0}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px}
+.panel{width:100%;height:auto;display:block}
+.tokens{display:flex;flex-wrap:wrap;gap:4px 12px;padding:4px 14px 2px;font-size:10.5px}
+.sw{display:inline-flex;align-items:center;gap:5px}
+.sw i{width:12px;height:12px;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.2)}
+.fontline{font-size:10.5px;padding:2px 14px 12px}
+.triage-badge.two-way{background:#ecfeff;color:#0891b2}
+.category-badge.visual{background:#fce7f3;color:#be185d}
+.confidence-badge.lean{background:#d97706}
+</style></head>
+<body><svg width="0" height="0" style="position:absolute"><defs><filter id="mk-wobble"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter>
+      <filter id="mk-bleed"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter></defs></svg><svg width="0" height="0" style="position:absolute"><defs>
+<filter id="wob"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter>
+<filter id="bleed"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+<filter id="raster" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/><feColorMatrix in="n" type="saturate" values="0" result="g"/><feComponentTransfer in="g" result="g2"><feFuncA type="linear" slope=".18"/></feComponentTransfer><feGaussianBlur in="SourceGraphic" stdDeviation=".6" result="b"/><feBlend in="g2" in2="b" mode="multiply"/></filter>
+</defs></svg>
+<a href="index.html" class="back-link">← All Decisions</a>
+<header>
+  <span class="decision-number">Decision 6 of 8</span>
+  <h1>Editor Layout</h1>
+  <span class="category-badge ia">Info Architecture</span><span class="triage-badge two-way">🔁 Two-way door</span><span class="triage-badge stakes-med">Medium stakes</span>
+  <br><a class="preview-link" href="preview.html">See the tool so far →</a>
+  <p class="decision-description">
+    The agent has drafted the Late Latte board and the editor opens. This is the screen where designers <strong>change characters, resize things, rewrite bubbles and rearrange panels</strong>.
+    Every mockup below uses your Marker Comp tokens and the same four panels, with panel 3 selected.
+    What to look for: when you're editing, how much of the <strong>whole journey</strong> can you still see?
+  </p>
+  <p class="instruction">Respond with: <strong>"Option C"</strong> · <strong>"Option C but [change]"</strong> · <strong>"more options"</strong></p>
+</header>
+<main class="options-grid"><article class="option-card option-a not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option A</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Canvas + Library + Inspector</h2></div>
+      <div class="visual-preview"><div class="ed"><div class="ed-chrome"><i style="background:#ef4444"></i><i style="background:#eab308"></i><i style="background:#22c55e"></i></div>
+      <div class="ed-top"><span class="ed-brand">Storyboard</span><span class="ed-file">late-latte.storyboard.json</span><span class="ed-sp"></span><span class="ed-btn">Export ↓</span></div>
+      <div class="lay-a">
+  <aside class="lib"><div class="tabs"><b>Cast</b><span>Scenes</span><span>Devices</span></div><div class="libgrid"><svg viewBox="0 0 120 150" class="th"><rect x="1" y="1" width="118" height="148" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="3"/><g transform="translate(2.2 1.8)" filter="url(#bleed)"><path d="M43 48 Q60.0 44 77 48 L73 94 L47 94 Z" fill="#b9bec4"/></g><g filter="url(#wob)"><line x1="53" y1="90" x2="53" y2="114" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="53" y1="114" x2="52" y2="140" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="53" y1="90" x2="53" y2="114" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="53" y1="114" x2="52" y2="140" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="55" cy="140" rx="6" ry="3" fill="#1c1c1e"/><line x1="67" y1="90" x2="67" y2="114" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="67" y1="114" x2="69" y2="140" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="67" y1="90" x2="67" y2="114" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="67" y1="114" x2="69" y2="140" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="72" cy="140" rx="6" ry="3" fill="#1c1c1e"/><path d="M43 48 Q60.0 44 77 48 L73 94 L47 94 Z" fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linejoin="round"/><path d="M55 48 L60 58 L65 48" fill="none" stroke="#1c1c1e" stroke-width="1.4"/><line x1="48" y1="49" x2="44" y2="70" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="44" y1="70" x2="46" y2="92" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="48" y1="49" x2="44" y2="70" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="44" y1="70" x2="46" y2="92" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="46" cy="92" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><line x1="72" y1="49" x2="77" y2="68" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="77" y1="68" x2="64" y2="60" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="72" y1="49" x2="77" y2="68" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="77" y1="68" x2="64" y2="60" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="64" cy="60" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><circle cx="60" cy="30" r="12" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="2.1"/><path d="M48 29 Q48 15 60 18 Q72 16 72 28 Q62 21 48 29Z" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/><circle cx="50" cy="19" r="5" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/><path d="M56 32 v1.5 M64 32 v1.5 M57 36.5 q3 1.6 6 0" stroke="#1c1c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/></g><rect x="60" y="52" width="9" height="15" rx="2" fill="#8fd6dc" stroke="#1c1c1e" stroke-width="1.6" transform="rotate(-10 64 60)"/></svg><svg viewBox="0 0 120 150" class="th"><rect x="1" y="1" width="118" height="148" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="3"/><g transform="translate(2.2 1.8)" filter="url(#bleed)"><path d="M55 46 Q60.0 42 65 46 L64 92 L52 92 Z" fill="#d7dade"/></g><g filter="url(#wob)"><line x1="58" y1="88" x2="50" y2="112" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="50" y1="112" x2="42" y2="138" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="58" y1="88" x2="50" y2="112" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="50" y1="112" x2="42" y2="138" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="45" cy="138" rx="6" ry="3" fill="#1c1c1e"/><line x1="58" y1="88" x2="66" y2="112" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="66" y1="112" x2="74" y2="138" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="58" y1="88" x2="66" y2="112" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="66" y1="112" x2="74" y2="138" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="77" cy="138" rx="6" ry="3" fill="#1c1c1e"/><path d="M55 46 Q60.0 42 65 46 L64 92 L52 92 Z" fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linejoin="round"/><line x1="60" y1="47" x2="52" y2="66" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="52" y1="66" x2="50" y2="84" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="60" y1="47" x2="52" y2="66" stroke="#d7dade" stroke-width="4.9" stroke-linecap="round" /><line x1="52" y1="66" x2="50" y2="84" stroke="#d7dade" stroke-width="3.9" stroke-linecap="round" /><circle cx="50" cy="84" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><line x1="60" y1="47" x2="68" y2="66" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="68" y1="66" x2="76" y2="80" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="60" y1="47" x2="68" y2="66" stroke="#d7dade" stroke-width="4.9" stroke-linecap="round" /><line x1="68" y1="66" x2="76" y2="80" stroke="#d7dade" stroke-width="3.9" stroke-linecap="round" /><circle cx="76" cy="80" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><circle cx="62" cy="28" r="12" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="2.1"/><path d="M48 36 Q46 12 64 15 Q78 16 75 37 L71 25 Q62 22 53 25Z" fill="#3c4147" stroke="#1c1c1e" stroke-width="1.8"/><path d="M68 28 v1.5 M74 30 l3 2 l-3 1" stroke="#1c1c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/></g></svg><svg viewBox="0 0 120 150" class="th"><rect x="1" y="1" width="118" height="148" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="3"/><ellipse cx="82" cy="64" rx="7" ry="16" fill="none" stroke="#1c1c1e" stroke-width="2.4" transform="rotate(-20 82 64)"/><path d="M86 74 L104 96 M18 100 Q16 60 26 34 M92 20 L118 60" stroke="#1c1c1e" stroke-width="1.8" fill="none"/><rect x="96" y="70" width="18" height="12" fill="#8fd6dc" stroke="#1c1c1e" stroke-width="1.6"/><g transform="translate(2.2 1.8)" filter="url(#bleed)"><path d="M39 56 Q44.0 52 49 56 L46 98 L34 98 Z" fill="#b9bec4"/></g><g filter="url(#wob)"><line x1="40" y1="94" x2="72" y2="92" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="72" y1="92" x2="92" y2="116" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="40" y1="94" x2="72" y2="92" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="72" y1="92" x2="92" y2="116" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="95" cy="116" rx="6" ry="3" fill="#1c1c1e"/><line x1="40" y1="94" x2="70" y2="94" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="70" y1="94" x2="90" y2="120" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="40" y1="94" x2="70" y2="94" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="70" y1="94" x2="90" y2="120" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="93" cy="120" rx="6" ry="3" fill="#1c1c1e"/><path d="M39 56 Q44.0 52 49 56 L46 98 L34 98 Z" fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linejoin="round"/><line x1="44" y1="57" x2="62" y2="74" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="62" y1="74" x2="80" y2="62" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="44" y1="57" x2="62" y2="74" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="62" y1="74" x2="80" y2="62" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="80" cy="62" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><line x1="44" y1="57" x2="60" y2="78" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="60" y1="78" x2="78" y2="68" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="44" y1="57" x2="60" y2="78" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="60" y1="78" x2="78" y2="68" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="78" cy="68" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><circle cx="44" cy="40" r="12" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="2.1"/><path d="M32 39 Q32 25 44 28 Q56 26 56 38 Q46 31 32 39Z" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/><circle cx="34" cy="29" r="5" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/><path d="M50 40 v1.5 M56 42 l3 2 l-3 1" stroke="#1c1c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/></g></svg><svg viewBox="0 0 120 150" class="th"><rect x="1" y="1" width="118" height="148" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="3"/><path d="M78 84 L104 84 L98 64 L74 66 Z" fill="#b9bec4" stroke="#1c1c1e" stroke-width="1.8"/><path d="M80 68 L96 66 L100 80 L82 81Z" fill="#8fd6dc" stroke="none"/><path d="M20 100 H70 M30 100 V140 M64 100 V140" stroke="#1c1c1e" stroke-width="1.8" fill="none"/><path d="M70 90 H112 M104 90 V140" stroke="#1c1c1e" stroke-width="1.8" fill="none"/><g transform="translate(2.2 1.8)" filter="url(#bleed)"><path d="M41 62 Q46.0 58 51 62 L50 104 L38 104 Z" fill="#b9bec4"/></g><g filter="url(#wob)"><line x1="44" y1="100" x2="74" y2="100" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="74" y1="100" x2="76" y2="132" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="44" y1="100" x2="74" y2="100" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="74" y1="100" x2="76" y2="132" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="79" cy="132" rx="6" ry="3" fill="#1c1c1e"/><line x1="44" y1="100" x2="72" y2="102" stroke="#1c1c1e" stroke-width="9" stroke-linecap="round" /><line x1="72" y1="102" x2="72" y2="132" stroke="#1c1c1e" stroke-width="8" stroke-linecap="round" /><line x1="44" y1="100" x2="72" y2="102" stroke="#6f777f" stroke-width="5.4" stroke-linecap="round" /><line x1="72" y1="102" x2="72" y2="132" stroke="#6f777f" stroke-width="4.4" stroke-linecap="round" /><ellipse cx="75" cy="132" rx="6" ry="3" fill="#1c1c1e"/><path d="M41 62 Q46.0 58 51 62 L50 104 L38 104 Z" fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linejoin="round"/><line x1="46" y1="63" x2="58" y2="84" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="58" y1="84" x2="80" y2="80" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="46" y1="63" x2="58" y2="84" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="58" y1="84" x2="80" y2="80" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="80" cy="80" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><line x1="46" y1="63" x2="56" y2="86" stroke="#1c1c1e" stroke-width="8.5" stroke-linecap="round" /><line x1="56" y1="86" x2="78" y2="84" stroke="#1c1c1e" stroke-width="7.5" stroke-linecap="round" /><line x1="46" y1="63" x2="56" y2="86" stroke="#b9bec4" stroke-width="4.9" stroke-linecap="round" /><line x1="56" y1="86" x2="78" y2="84" stroke="#b9bec4" stroke-width="3.9" stroke-linecap="round" /><circle cx="78" cy="84" r="3.4" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="1.4"/><circle cx="46" cy="46" r="12" fill="#fbfaf7" stroke="#1c1c1e" stroke-width="2.1"/><path d="M34 45 Q34 31 46 34 Q58 32 58 44 Q48 37 34 45Z" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/><circle cx="36" cy="35" r="5" fill="#6f777f" stroke="#1c1c1e" stroke-width="1.8"/><path d="M52 46 v1.5 M58 48 l3 2 l-3 1" stroke="#1c1c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/></g></svg></div>
+     <div class="lbl">Bubbles</div><div class="chipsrow"><span>speech</span><span>thought</span><span>caption</span><span>time card</span></div>
+     <div class="lbl">Gestures</div><div class="chipsrow"><span>tap</span><span>swipe</span><span>cursor</span><span>wiggle</span></div></aside>
+  <main class="cv"><div class="grid2"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g><text x="120" y="66" text-anchor="middle" class="mk-title" font-size="19">THE LATE LATTE</text>
+                 <text x="120" y="90" text-anchor="middle" class="mk-hand" font-size="12">Maya · Tuesday · 8:14 am</text>
+                 <text x="120" y="112" text-anchor="middle" class="mk-hand" font-size="10" opacity=".75">ordered ahead on the app, 4 min ETA</text></g>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><rect x="138" y="14" width="88" height="32" rx="2" fill="#d7dade" stroke="none"/><rect x="128" y="86" width="112" height="42" fill="#d7dade" stroke="none"/><rect x="176" y="62" width="38" height="24" rx="3" fill="#6f777f" stroke="none"/><circle cx="152" cy="66" r="8" fill="#eceae6" stroke="none"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z" fill="#d7dade" stroke="none"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z" fill="#d7dade" stroke="none"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z" fill="#b9bec4" stroke="none"/><circle cx="69" cy="52" r="11" fill="#eceae6" stroke="none"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z" fill="#6f777f" stroke="none"/><circle cx="60" cy="42" r="5" fill="#6f777f" stroke="none"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)" fill="#8fd6dc" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><line x1="0" y1="128" x2="240" y2="128"/><rect x="138" y="14" width="88" height="32" rx="2"/><path d="M146 24 h40 M146 31 h52 M146 38 h30 M204 24 h14 M206 31 h12"/><rect x="128" y="86" width="112" height="42"/><rect x="176" y="62" width="38" height="24" rx="3"/><path d="M186 86 v-6 M204 86 v-6"/><circle cx="152" cy="66" r="8"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z"/><path d="M55 104 L57 128 M79 104 L82 128"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z"/><circle cx="69" cy="52" r="11"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z"/><circle cx="60" cy="42" r="5"/><path d="M57 68 L52 96"/><path d="M79 68 L88 86 L80 80"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)"/><path d="M52 128 h10 M77 128 h10"/></g><rect x="6" y="6" width="96" height="30" class="mk-capbox"/>
+                 <text x="12" y="19" class="mk-hand" font-size="9.5">In line anyway. Is my</text>
+                 <text x="12" y="30" class="mk-hand" font-size="9.5">order even started?</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><div class="selp"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="34" cy="102" r="19" fill="#6f777f" stroke="none"/><circle cx="22" cy="86" r="6" fill="#6f777f" stroke="none"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z" fill="#b9bec4" stroke="none"/><rect x="92" y="18" width="74" height="140" rx="11" fill="#6f777f" stroke="none"/><rect x="98" y="30" width="62" height="112" rx="3" fill="#8fd6dc" stroke="none"/><rect x="104" y="78" width="50" height="6" rx="3" fill="#fbfaf7" stroke="none"/><rect x="104" y="78" width="18" height="6" rx="3" fill="#6f777f" stroke="none"/><rect x="108" y="116" width="42" height="14" rx="4" fill="#fbfaf7" stroke="none"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z" fill="#eceae6" stroke="none"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z" fill="#fbfaf7" stroke="none"/><circle cx="44" cy="70" r="3.6" fill="#fbfaf7" stroke="none"/><circle cx="40" cy="77" r="2.2" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="34" cy="102" r="19"/><circle cx="22" cy="86" r="6"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z"/><rect x="92" y="18" width="74" height="140" rx="11"/><rect x="98" y="30" width="62" height="112" rx="3"/><path d="M104 72 h50"/><rect x="104" y="78" width="50" height="6" rx="3"/><rect x="104" y="78" width="18" height="6" rx="3"/><rect x="108" y="116" width="42" height="14" rx="4"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z"/><circle cx="44" cy="70" r="3.6"/><circle cx="40" cy="77" r="2.2"/></g><g stroke="#0e9aa7" fill="none" stroke-width="2.1" stroke-linecap="round">
+      <circle cx="129" cy="123" r="5"/><circle cx="129" cy="123" r="10" opacity=".6"/>
+      <path d="M114 110 l-5 -5 M129 106 v-7 M144 110 l5 -5"/></g><text x="47" y="34" text-anchor="middle" class="mk-hand" font-size="9">It said 4 min.</text>
+                 <text x="47" y="46" text-anchor="middle" class="mk-hand" font-size="9">That was 12 min</text>
+                 <text x="47" y="56" text-anchor="middle" class="mk-hand" font-size="9">ago…</text>
+                 <text x="129" y="46" text-anchor="middle" class="mk-hand" font-size="8">Order #214</text>
+                 <text x="129" y="64" text-anchor="middle" class="mk-hand" font-size="8">Preparing…</text>
+                 <text x="129" y="95" text-anchor="middle" class="mk-hand" font-size="8">ETA 4 min</text>
+                 <text x="129" y="126" text-anchor="middle" class="mk-hand" font-size="7.5">I'm here</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg></div><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="120" cy="62" r="30" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="120" cy="62" r="30"/><path d="M120 62 L120 40 M120 62 L136 70"/><path d="M120 34 v4 M148 62 h-4 M120 90 v-4 M92 62 h4"/><path d="M150 36 q8 -6 14 2 M154 28 q10 -4 16 6"/></g><text x="120" y="120" text-anchor="middle" class="mk-title" font-size="16">12 MINUTES LATER…</text>
+                 <text x="120" y="138" text-anchor="middle" class="mk-hand" font-size="9.5" opacity=".75">still no latte</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg></div></main>
+  <aside class="insp"><div class="lbl">Panel 3</div>
+     <div class="fld"><span>Shot</span><b>over-the-shoulder ▾</b></div><div class="fld"><span>Focus</span><b>device ▾</b></div>
+     <div class="fld"><span>Scene</span><b>coffee-shop/counter</b></div><div class="fld"><span>Cast</span><b>maya · impatient ▾</b></div>
+     <div class="fld"><span>Screen</span><b class="teal">order-status.png</b></div><div class="fld"><span>Thought</span><b>It said 4 min…</b></div>
+     <div class="fld"><span>Gesture</span><b class="teal">tap → "I'm here"</b></div></aside>
+</div></div></div>
+      <div class="option-summary">The familiar design-tool layout: an asset library on the left (cast, scenes, devices, bubbles, gestures), the board in the middle, and a property inspector on the right showing the selected panel's shot, focus, cast, screen and gesture. Every field in the inspector maps one-to-one onto the JSON, so it doubles as a way to learn the vocabulary. It's powerful and discoverable, but <strong>it's a lot of chrome</strong>, and it pulls attention toward settings rather than the story.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Designers know this layout from Figma</li><li>Everything is findable, and fields mirror the JSON exactly</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>The board gets about half the screen</li><li>Encourages fiddling with properties instead of thinking about the journey</li><li>Cramped on a laptop</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option A"</code></div>
+    </article><article class="option-card option-b not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option B</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Stage + Filmstrip</h2></div>
+      <div class="visual-preview"><div class="ed"><div class="ed-chrome"><i style="background:#ef4444"></i><i style="background:#eab308"></i><i style="background:#22c55e"></i></div>
+      <div class="ed-top"><span class="ed-brand">Storyboard</span><span class="ed-file">late-latte.storyboard.json</span><span class="ed-sp"></span><span class="ed-btn">Export ↓</span></div>
+      <div class="lay-b">
+  <aside class="tools"><span>Cast</span><span>Scene</span><span>Device</span><span>Bubble</span><span>Gesture</span></aside>
+  <main class="stage"><div class="selp"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="34" cy="102" r="19" fill="#6f777f" stroke="none"/><circle cx="22" cy="86" r="6" fill="#6f777f" stroke="none"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z" fill="#b9bec4" stroke="none"/><rect x="92" y="18" width="74" height="140" rx="11" fill="#6f777f" stroke="none"/><rect x="98" y="30" width="62" height="112" rx="3" fill="#8fd6dc" stroke="none"/><rect x="104" y="78" width="50" height="6" rx="3" fill="#fbfaf7" stroke="none"/><rect x="104" y="78" width="18" height="6" rx="3" fill="#6f777f" stroke="none"/><rect x="108" y="116" width="42" height="14" rx="4" fill="#fbfaf7" stroke="none"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z" fill="#eceae6" stroke="none"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z" fill="#fbfaf7" stroke="none"/><circle cx="44" cy="70" r="3.6" fill="#fbfaf7" stroke="none"/><circle cx="40" cy="77" r="2.2" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="34" cy="102" r="19"/><circle cx="22" cy="86" r="6"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z"/><rect x="92" y="18" width="74" height="140" rx="11"/><rect x="98" y="30" width="62" height="112" rx="3"/><path d="M104 72 h50"/><rect x="104" y="78" width="50" height="6" rx="3"/><rect x="104" y="78" width="18" height="6" rx="3"/><rect x="108" y="116" width="42" height="14" rx="4"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z"/><circle cx="44" cy="70" r="3.6"/><circle cx="40" cy="77" r="2.2"/></g><g stroke="#0e9aa7" fill="none" stroke-width="2.1" stroke-linecap="round">
+      <circle cx="129" cy="123" r="5"/><circle cx="129" cy="123" r="10" opacity=".6"/>
+      <path d="M114 110 l-5 -5 M129 106 v-7 M144 110 l5 -5"/></g><text x="47" y="34" text-anchor="middle" class="mk-hand" font-size="9">It said 4 min.</text>
+                 <text x="47" y="46" text-anchor="middle" class="mk-hand" font-size="9">That was 12 min</text>
+                 <text x="47" y="56" text-anchor="middle" class="mk-hand" font-size="9">ago…</text>
+                 <text x="129" y="46" text-anchor="middle" class="mk-hand" font-size="8">Order #214</text>
+                 <text x="129" y="64" text-anchor="middle" class="mk-hand" font-size="8">Preparing…</text>
+                 <text x="129" y="95" text-anchor="middle" class="mk-hand" font-size="8">ETA 4 min</text>
+                 <text x="129" y="126" text-anchor="middle" class="mk-hand" font-size="7.5">I'm here</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg></div><div class="stage-note">Panel 3 of 4 · over-the-shoulder</div></main>
+</div>
+<div class="film"><div class="fr"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g><text x="120" y="66" text-anchor="middle" class="mk-title" font-size="19">THE LATE LATTE</text>
+                 <text x="120" y="90" text-anchor="middle" class="mk-hand" font-size="12">Maya · Tuesday · 8:14 am</text>
+                 <text x="120" y="112" text-anchor="middle" class="mk-hand" font-size="10" opacity=".75">ordered ahead on the app, 4 min ETA</text></g>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><span>1</span></div><div class="fr"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><rect x="138" y="14" width="88" height="32" rx="2" fill="#d7dade" stroke="none"/><rect x="128" y="86" width="112" height="42" fill="#d7dade" stroke="none"/><rect x="176" y="62" width="38" height="24" rx="3" fill="#6f777f" stroke="none"/><circle cx="152" cy="66" r="8" fill="#eceae6" stroke="none"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z" fill="#d7dade" stroke="none"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z" fill="#d7dade" stroke="none"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z" fill="#b9bec4" stroke="none"/><circle cx="69" cy="52" r="11" fill="#eceae6" stroke="none"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z" fill="#6f777f" stroke="none"/><circle cx="60" cy="42" r="5" fill="#6f777f" stroke="none"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)" fill="#8fd6dc" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><line x1="0" y1="128" x2="240" y2="128"/><rect x="138" y="14" width="88" height="32" rx="2"/><path d="M146 24 h40 M146 31 h52 M146 38 h30 M204 24 h14 M206 31 h12"/><rect x="128" y="86" width="112" height="42"/><rect x="176" y="62" width="38" height="24" rx="3"/><path d="M186 86 v-6 M204 86 v-6"/><circle cx="152" cy="66" r="8"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z"/><path d="M55 104 L57 128 M79 104 L82 128"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z"/><circle cx="69" cy="52" r="11"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z"/><circle cx="60" cy="42" r="5"/><path d="M57 68 L52 96"/><path d="M79 68 L88 86 L80 80"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)"/><path d="M52 128 h10 M77 128 h10"/></g><rect x="6" y="6" width="96" height="30" class="mk-capbox"/>
+                 <text x="12" y="19" class="mk-hand" font-size="9.5">In line anyway. Is my</text>
+                 <text x="12" y="30" class="mk-hand" font-size="9.5">order even started?</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><span>2</span></div><div class="fr on"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="34" cy="102" r="19" fill="#6f777f" stroke="none"/><circle cx="22" cy="86" r="6" fill="#6f777f" stroke="none"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z" fill="#b9bec4" stroke="none"/><rect x="92" y="18" width="74" height="140" rx="11" fill="#6f777f" stroke="none"/><rect x="98" y="30" width="62" height="112" rx="3" fill="#8fd6dc" stroke="none"/><rect x="104" y="78" width="50" height="6" rx="3" fill="#fbfaf7" stroke="none"/><rect x="104" y="78" width="18" height="6" rx="3" fill="#6f777f" stroke="none"/><rect x="108" y="116" width="42" height="14" rx="4" fill="#fbfaf7" stroke="none"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z" fill="#eceae6" stroke="none"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z" fill="#fbfaf7" stroke="none"/><circle cx="44" cy="70" r="3.6" fill="#fbfaf7" stroke="none"/><circle cx="40" cy="77" r="2.2" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="34" cy="102" r="19"/><circle cx="22" cy="86" r="6"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z"/><rect x="92" y="18" width="74" height="140" rx="11"/><rect x="98" y="30" width="62" height="112" rx="3"/><path d="M104 72 h50"/><rect x="104" y="78" width="50" height="6" rx="3"/><rect x="104" y="78" width="18" height="6" rx="3"/><rect x="108" y="116" width="42" height="14" rx="4"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z"/><circle cx="44" cy="70" r="3.6"/><circle cx="40" cy="77" r="2.2"/></g><g stroke="#0e9aa7" fill="none" stroke-width="2.1" stroke-linecap="round">
+      <circle cx="129" cy="123" r="5"/><circle cx="129" cy="123" r="10" opacity=".6"/>
+      <path d="M114 110 l-5 -5 M129 106 v-7 M144 110 l5 -5"/></g><text x="47" y="34" text-anchor="middle" class="mk-hand" font-size="9">It said 4 min.</text>
+                 <text x="47" y="46" text-anchor="middle" class="mk-hand" font-size="9">That was 12 min</text>
+                 <text x="47" y="56" text-anchor="middle" class="mk-hand" font-size="9">ago…</text>
+                 <text x="129" y="46" text-anchor="middle" class="mk-hand" font-size="8">Order #214</text>
+                 <text x="129" y="64" text-anchor="middle" class="mk-hand" font-size="8">Preparing…</text>
+                 <text x="129" y="95" text-anchor="middle" class="mk-hand" font-size="8">ETA 4 min</text>
+                 <text x="129" y="126" text-anchor="middle" class="mk-hand" font-size="7.5">I'm here</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><span>3</span></div><div class="fr"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="120" cy="62" r="30" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="120" cy="62" r="30"/><path d="M120 62 L120 40 M120 62 L136 70"/><path d="M120 34 v4 M148 62 h-4 M120 90 v-4 M92 62 h4"/><path d="M150 36 q8 -6 14 2 M154 28 q10 -4 16 6"/></g><text x="120" y="120" text-anchor="middle" class="mk-title" font-size="16">12 MINUTES LATER…</text>
+                 <text x="120" y="138" text-anchor="middle" class="mk-hand" font-size="9.5" opacity=".75">still no latte</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><span>4</span></div><div class="fr add">+</div></div></div></div>
+      <div class="option-summary">One panel fills the stage and the whole sequence runs along a filmstrip at the bottom, like film storyboard tools and Keynote. It's great for <strong>crafting a single frame</strong>, with a big canvas for posing Maya's arm or placing a tap exactly. But you only ever see one moment in detail, and storyboards are about the <strong>flow between moments</strong>, which the filmstrip shows at thumbnail size.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>The most room for detailed posing and screen placement</li><li>Familiar from Storyboarder and slide tools</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Loses the whole-journey view where service-design insight happens</li><li>What you edit isn't what you export (the export is a page, not a slide)</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option B"</code></div>
+    </article><article class="option-card option-c chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option C</span>
+        <div class="card-badges"><span class="recommended-badge">My pick</span><span class="confidence-badge lean">Lean</span><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Page-First, Edit in Place</h2></div>
+      <div class="visual-preview"><div class="ed"><div class="ed-chrome"><i style="background:#ef4444"></i><i style="background:#eab308"></i><i style="background:#22c55e"></i></div>
+      <div class="ed-top"><span class="ed-brand">Storyboard</span><span class="ed-file">late-latte.storyboard.json</span><span class="ed-sp"></span><span class="ed-btn">Export ↓</span></div>
+      <div class="lay-c">
+  <div class="page"><div class="page-h">The Late Latte <small>Maya · commuter</small></div>
+    <div class="grid2"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g><text x="120" y="66" text-anchor="middle" class="mk-title" font-size="19">THE LATE LATTE</text>
+                 <text x="120" y="90" text-anchor="middle" class="mk-hand" font-size="12">Maya · Tuesday · 8:14 am</text>
+                 <text x="120" y="112" text-anchor="middle" class="mk-hand" font-size="10" opacity=".75">ordered ahead on the app, 4 min ETA</text></g>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><rect x="138" y="14" width="88" height="32" rx="2" fill="#d7dade" stroke="none"/><rect x="128" y="86" width="112" height="42" fill="#d7dade" stroke="none"/><rect x="176" y="62" width="38" height="24" rx="3" fill="#6f777f" stroke="none"/><circle cx="152" cy="66" r="8" fill="#eceae6" stroke="none"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z" fill="#d7dade" stroke="none"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z" fill="#d7dade" stroke="none"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z" fill="#b9bec4" stroke="none"/><circle cx="69" cy="52" r="11" fill="#eceae6" stroke="none"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z" fill="#6f777f" stroke="none"/><circle cx="60" cy="42" r="5" fill="#6f777f" stroke="none"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)" fill="#8fd6dc" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><line x1="0" y1="128" x2="240" y2="128"/><rect x="138" y="14" width="88" height="32" rx="2"/><path d="M146 24 h40 M146 31 h52 M146 38 h30 M204 24 h14 M206 31 h12"/><rect x="128" y="86" width="112" height="42"/><rect x="176" y="62" width="38" height="24" rx="3"/><path d="M186 86 v-6 M204 86 v-6"/><circle cx="152" cy="66" r="8"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z"/><path d="M55 104 L57 128 M79 104 L82 128"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z"/><circle cx="69" cy="52" r="11"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z"/><circle cx="60" cy="42" r="5"/><path d="M57 68 L52 96"/><path d="M79 68 L88 86 L80 80"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)"/><path d="M52 128 h10 M77 128 h10"/></g><rect x="6" y="6" width="96" height="30" class="mk-capbox"/>
+                 <text x="12" y="19" class="mk-hand" font-size="9.5">In line anyway. Is my</text>
+                 <text x="12" y="30" class="mk-hand" font-size="9.5">order even started?</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><div class="selwrap"><div class="ctx"><span>Shot ▾</span><span>Swap cast</span><span>+ Bubble</span><span class="teal">Screen ▾</span><span>⋯</span></div><div class="selp"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="34" cy="102" r="19" fill="#6f777f" stroke="none"/><circle cx="22" cy="86" r="6" fill="#6f777f" stroke="none"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z" fill="#b9bec4" stroke="none"/><rect x="92" y="18" width="74" height="140" rx="11" fill="#6f777f" stroke="none"/><rect x="98" y="30" width="62" height="112" rx="3" fill="#8fd6dc" stroke="none"/><rect x="104" y="78" width="50" height="6" rx="3" fill="#fbfaf7" stroke="none"/><rect x="104" y="78" width="18" height="6" rx="3" fill="#6f777f" stroke="none"/><rect x="108" y="116" width="42" height="14" rx="4" fill="#fbfaf7" stroke="none"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z" fill="#eceae6" stroke="none"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z" fill="#fbfaf7" stroke="none"/><circle cx="44" cy="70" r="3.6" fill="#fbfaf7" stroke="none"/><circle cx="40" cy="77" r="2.2" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="34" cy="102" r="19"/><circle cx="22" cy="86" r="6"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z"/><rect x="92" y="18" width="74" height="140" rx="11"/><rect x="98" y="30" width="62" height="112" rx="3"/><path d="M104 72 h50"/><rect x="104" y="78" width="50" height="6" rx="3"/><rect x="104" y="78" width="18" height="6" rx="3"/><rect x="108" y="116" width="42" height="14" rx="4"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z"/><circle cx="44" cy="70" r="3.6"/><circle cx="40" cy="77" r="2.2"/></g><g stroke="#0e9aa7" fill="none" stroke-width="2.1" stroke-linecap="round">
+      <circle cx="129" cy="123" r="5"/><circle cx="129" cy="123" r="10" opacity=".6"/>
+      <path d="M114 110 l-5 -5 M129 106 v-7 M144 110 l5 -5"/></g><text x="47" y="34" text-anchor="middle" class="mk-hand" font-size="9">It said 4 min.</text>
+                 <text x="47" y="46" text-anchor="middle" class="mk-hand" font-size="9">That was 12 min</text>
+                 <text x="47" y="56" text-anchor="middle" class="mk-hand" font-size="9">ago…</text>
+                 <text x="129" y="46" text-anchor="middle" class="mk-hand" font-size="8">Order #214</text>
+                 <text x="129" y="64" text-anchor="middle" class="mk-hand" font-size="8">Preparing…</text>
+                 <text x="129" y="95" text-anchor="middle" class="mk-hand" font-size="8">ETA 4 min</text>
+                 <text x="129" y="126" text-anchor="middle" class="mk-hand" font-size="7.5">I'm here</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg></div></div><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="120" cy="62" r="30" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="120" cy="62" r="30"/><path d="M120 62 L120 40 M120 62 L136 70"/><path d="M120 34 v4 M148 62 h-4 M120 90 v-4 M92 62 h4"/><path d="M150 36 q8 -6 14 2 M154 28 q10 -4 16 6"/></g><text x="120" y="120" text-anchor="middle" class="mk-title" font-size="16">12 MINUTES LATER…</text>
+                 <text x="120" y="138" text-anchor="middle" class="mk-hand" font-size="9.5" opacity=".75">still no latte</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg></div>
+  </div>
+  <div class="fab">+ Add</div><div class="layout-pill">Layout: 2×2 ▾</div>
+</div></div></div>
+      <div class="option-summary">The board <strong>is</strong> the editor: the exportable page sits in the middle and you click a panel to edit it right there. A small dark toolbar appears above the selection (shot, swap cast, add bubble, screen), <strong>+ Add</strong> opens the asset drawer only when you need it, and a layout menu switches between 2×2, 3×2, a 1×6 strip and so on. What you see is exactly what exports, and <strong>the whole journey is always visible</strong>.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>What you see is what you export</li><li>The whole journey stays visible while you edit, which is the point of the tool</li><li>Minimal chrome, so it fits the low-fi, sketchbook feel</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>Detailed posing happens at panel size (needs zoom-to-panel)</li><li>Contextual toolbars hide features until you select something</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option C"</code></div>
+    </article><article class="option-card option-d not-chosen">
+      <div class="card-header"><div class="card-header-top"><span class="option-label">Option D</span>
+        <div class="card-badges"><span class="chosen-badge">Chosen</span></div></div>
+        <h2 class="option-title">Journey Lanes</h2></div>
+      <div class="visual-preview"><div class="ed"><div class="ed-chrome"><i style="background:#ef4444"></i><i style="background:#eab308"></i><i style="background:#22c55e"></i></div>
+      <div class="ed-top"><span class="ed-brand">Storyboard</span><span class="ed-file">late-latte.storyboard.json</span><span class="ed-sp"></span><span class="ed-btn">Export ↓</span></div>
+      <div class="lay-d">
+  <div class="row4"><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g><text x="120" y="66" text-anchor="middle" class="mk-title" font-size="19">THE LATE LATTE</text>
+                 <text x="120" y="90" text-anchor="middle" class="mk-hand" font-size="12">Maya · Tuesday · 8:14 am</text>
+                 <text x="120" y="112" text-anchor="middle" class="mk-hand" font-size="10" opacity=".75">ordered ahead on the app, 4 min ETA</text></g>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><rect x="138" y="14" width="88" height="32" rx="2" fill="#d7dade" stroke="none"/><rect x="128" y="86" width="112" height="42" fill="#d7dade" stroke="none"/><rect x="176" y="62" width="38" height="24" rx="3" fill="#6f777f" stroke="none"/><circle cx="152" cy="66" r="8" fill="#eceae6" stroke="none"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z" fill="#d7dade" stroke="none"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z" fill="#d7dade" stroke="none"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z" fill="#b9bec4" stroke="none"/><circle cx="69" cy="52" r="11" fill="#eceae6" stroke="none"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z" fill="#6f777f" stroke="none"/><circle cx="60" cy="42" r="5" fill="#6f777f" stroke="none"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)" fill="#8fd6dc" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><line x1="0" y1="128" x2="240" y2="128"/><rect x="138" y="14" width="88" height="32" rx="2"/><path d="M146 24 h40 M146 31 h52 M146 38 h30 M204 24 h14 M206 31 h12"/><rect x="128" y="86" width="112" height="42"/><rect x="176" y="62" width="38" height="24" rx="3"/><path d="M186 86 v-6 M204 86 v-6"/><circle cx="152" cy="66" r="8"/><path d="M141 76 Q152 72 163 76 L165 86 L139 86 Z"/><path d="M118 0 v14 M110 22 Q118 10 126 22 Z"/><path d="M55 104 L57 128 M79 104 L82 128"/><path d="M56 65 Q68 60 80 65 L85 104 L51 104 Z"/><circle cx="69" cy="52" r="11"/><path d="M58 49 Q60 38 70 40 Q80 40 80 50 Q74 44 64 48 Z"/><circle cx="60" cy="42" r="5"/><path d="M57 68 L52 96"/><path d="M79 68 L88 86 L80 80"/><rect x="73" y="71" width="9" height="14" rx="2" transform="rotate(-12 77 78)"/><path d="M52 128 h10 M77 128 h10"/></g><rect x="6" y="6" width="96" height="30" class="mk-capbox"/>
+                 <text x="12" y="19" class="mk-hand" font-size="9.5">In line anyway. Is my</text>
+                 <text x="12" y="30" class="mk-hand" font-size="9.5">order even started?</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="34" cy="102" r="19" fill="#6f777f" stroke="none"/><circle cx="22" cy="86" r="6" fill="#6f777f" stroke="none"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z" fill="#b9bec4" stroke="none"/><rect x="92" y="18" width="74" height="140" rx="11" fill="#6f777f" stroke="none"/><rect x="98" y="30" width="62" height="112" rx="3" fill="#8fd6dc" stroke="none"/><rect x="104" y="78" width="50" height="6" rx="3" fill="#fbfaf7" stroke="none"/><rect x="104" y="78" width="18" height="6" rx="3" fill="#6f777f" stroke="none"/><rect x="108" y="116" width="42" height="14" rx="4" fill="#fbfaf7" stroke="none"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z" fill="#eceae6" stroke="none"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z" fill="#fbfaf7" stroke="none"/><circle cx="44" cy="70" r="3.6" fill="#fbfaf7" stroke="none"/><circle cx="40" cy="77" r="2.2" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="34" cy="102" r="19"/><circle cx="22" cy="86" r="6"/><path d="M0 150 Q14 112 64 116 Q74 120 74 150 Z"/><rect x="92" y="18" width="74" height="140" rx="11"/><rect x="98" y="30" width="62" height="112" rx="3"/><path d="M104 72 h50"/><rect x="104" y="78" width="50" height="6" rx="3"/><rect x="104" y="78" width="18" height="6" rx="3"/><rect x="108" y="116" width="42" height="14" rx="4"/><path d="M150 150 Q146 128 138 118 Q132 112 136 108 Q142 104 150 114 L168 132 L170 150 Z"/><path d="M10 42 Q6 20 30 18 Q40 4 60 14 Q80 8 84 26 Q98 34 86 48 Q84 64 60 60 Q44 70 30 60 Q8 62 10 42 Z"/><circle cx="44" cy="70" r="3.6"/><circle cx="40" cy="77" r="2.2"/></g><g stroke="#0e9aa7" fill="none" stroke-width="2.1" stroke-linecap="round">
+      <circle cx="129" cy="123" r="5"/><circle cx="129" cy="123" r="10" opacity=".6"/>
+      <path d="M114 110 l-5 -5 M129 106 v-7 M144 110 l5 -5"/></g><text x="47" y="34" text-anchor="middle" class="mk-hand" font-size="9">It said 4 min.</text>
+                 <text x="47" y="46" text-anchor="middle" class="mk-hand" font-size="9">That was 12 min</text>
+                 <text x="47" y="56" text-anchor="middle" class="mk-hand" font-size="9">ago…</text>
+                 <text x="129" y="46" text-anchor="middle" class="mk-hand" font-size="8">Order #214</text>
+                 <text x="129" y="64" text-anchor="middle" class="mk-hand" font-size="8">Preparing…</text>
+                 <text x="129" y="95" text-anchor="middle" class="mk-hand" font-size="8">ETA 4 min</text>
+                 <text x="129" y="126" text-anchor="middle" class="mk-hand" font-size="7.5">I'm here</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg><svg viewBox="0 0 240 150" class="panel">
+      <rect width="240" height="150" fill="#fbfaf7"/>
+      
+      <g transform="translate(2.2 1.8)" filter="url(#mk-bleed)" opacity="1"><circle cx="120" cy="62" r="30" fill="#fbfaf7" stroke="none"/></g><g fill="none" stroke="#1c1c1e" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" filter="url(#mk-wobble)"><circle cx="120" cy="62" r="30"/><path d="M120 62 L120 40 M120 62 L136 70"/><path d="M120 34 v4 M148 62 h-4 M120 90 v-4 M92 62 h4"/><path d="M150 36 q8 -6 14 2 M154 28 q10 -4 16 6"/></g><text x="120" y="120" text-anchor="middle" class="mk-title" font-size="16">12 MINUTES LATER…</text>
+                 <text x="120" y="138" text-anchor="middle" class="mk-hand" font-size="9.5" opacity=".75">still no latte</text>
+      <rect x="1.5" y="1.5" width="237" height="147" fill="none" stroke="#1c1c1e" stroke-width="2.6" filter="url(#mk-wobble)"/>
+    </svg></div>
+  <div class="lane"><span class="ln">Feeling</span><div class="lc"><svg viewBox="0 0 400 60" class="curve" preserveAspectRatio="none"><path d="M0 18 H400" stroke="#d7dade" stroke-dasharray="4 4"/><path d="M0 42 H400" stroke="#d7dade" stroke-dasharray="4 4"/>
+      <path d="M50 20 C120 20 130 30 150 34 S 250 50 250 52 S 330 56 350 58" fill="none" stroke="#1c1c1e" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="50" cy="20" r="4" fill="#1c1c1e"/><circle cx="150" cy="34" r="4" fill="#1c1c1e"/><circle cx="250" cy="52" r="4" fill="#1c1c1e"/><circle cx="350" cy="58" r="4" fill="#1c1c1e"/></svg></div></div>
+  <div class="lane"><span class="ln">Product</span><div class="lc dots"><i class="off"></i><i class="on"></i><i class="on"></i><i class="off"></i></div></div>
+  <div class="lane"><span class="ln">Workaround</span><div class="lc notes"><span></span><span class="n">stands in line anyway</span><span class="n">refreshes 3×</span><span class="n">asks barista</span></div></div>
+</div></div></div>
+      <div class="option-summary">Panels run left to right, with <strong>service-design lanes</strong> underneath: a <strong>Feeling</strong> curve, a <strong>Product</strong> row marking which moments involve the software (teal), and a <strong>Workaround</strong> row for sticky notes on what people really do. It's the most direct expression of your thesis: the empty product squares and the dipping feeling curve make the <strong>messiness of real life</strong> impossible to ignore. But it turns a storyboard into half a journey map, which is more to fill in and more to explain.</div>
+      <div class="verdict"><div class="pros"><h3>Works well when</h3><ul><li>Forces the service-design questions: where are we absent, and where does it hurt?</li><li>The agent can fill the lanes from the prose too</li><li>A differentiated artifact no comic maker has</li></ul></div>
+        <div class="cons"><h3>Watch out for</h3><ul><li>More than you asked for, and a heavier first draft</li><li>Wide horizontal layout exports awkwardly to slides</li><li>The lanes add input effort to every panel</li></ul></div></div>
+      <div class="card-footer"><code class="tell-ai">Respond with: "Option D"</code></div>
+    </article></main>
+
+<section class="case-against">
+  <h2>The case against my pick</h2>
+  <p>Your whole reason for building this is to make people <strong>think like service designers</strong>, and D is the only layout that actively <strong>makes</strong> them. C is a well-made comic editor, and people could use it to draw a happy-path marketing story without noticing where Maya's life gets messy.
+  The lanes in D turn the gaps into something visible on screen: an empty product square, a dip in the curve, a workaround sticky note.
+  If you'd rather the tool push the thinking than just allow it, choose D, or <strong>C with D's lanes as a toggle</strong> ("Show journey lanes") that also exports.</p>
+</section>
+<section class="assumptions">
+  <h2>This recommendation assumes</h2>
+  <ul>
+    <li>The exported image is the storyboard page itself, and people want to edit exactly that</li>
+    <li>The agent does most of the heavy composition, so the editor is mostly for tweaks, not building from scratch</li>
+    <li>Designers mostly work on laptops, where two side panels squeeze the board</li>
+  </ul>
+</section>
+
+<section class="comparison-section">
+  <h2>How They Compare</h2>
+  <div class="comparison-table-wrapper"><table class="comparison-table">
+    <thead><tr><th></th><th class="col-a">A: Library + Inspector</th><th class="col-b">B: Stage + Filmstrip</th><th class="col-c col-chosen">C: Page-First</th><th class="col-d">D: Journey Lanes</th></tr></thead>
+    <tbody>
+      <tr><td>Whole journey visible while editing</td><td>Yes, but small</td><td>Thumbnails only</td><td class="col-chosen">Yes, full size</td><td>Yes, plus lanes</td></tr>
+      <tr><td>Room for detailed posing</td><td>Medium</td><td>Most</td><td class="col-chosen">Medium (zoom to panel)</td><td>Least</td></tr>
+      <tr><td>What you see = what you export</td><td>Mostly</td><td>No</td><td class="col-chosen">Exactly</td><td>Yes (wide format)</td></tr>
+      <tr><td>Pushes service-design thinking</td><td>Low</td><td>Low</td><td class="col-chosen">Medium</td><td>High</td></tr>
+      <tr><td>Discoverability</td><td>High</td><td>Medium</td><td class="col-chosen">Medium (contextual)</td><td>Medium</td></tr>
+      <tr><td>Fits a laptop screen</td><td>Cramped</td><td>Good</td><td class="col-chosen">Good</td><td>Good (scrolls sideways)</td></tr>
+      <tr><td>Undo cost</td><td>Low</td><td>Low</td><td class="col-chosen">Low: layout is UI only, the JSON doesn't change</td><td>Medium: lanes add fields to the JSON</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<div class="page-footer">
+  <p>Respond with: <strong>"Option C"</strong>, <strong>"Option C but with D's lanes as a toggle"</strong>, or <strong>"more options"</strong></p>
+  <p>To change a past decision: <strong>"for decision-005 I want Option C instead"</strong></p>
+</div>
+</body></html>
