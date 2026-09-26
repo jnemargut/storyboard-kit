@@ -2,7 +2,9 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Resvg } from "@resvg/resvg-js";
+import { initRenderer, renderPNG } from "./resvg";
+
+export { initRenderer };
 import { PDFDocument } from "pdf-lib";
 import type { Board } from "./types";
 import { pageSize, panelRect, renderBoardSVG, productShare } from "./render";
@@ -10,7 +12,8 @@ import { isScene } from "./types";
 import { toScript } from "./script";
 
 export const FONT_DIR = fileURLToPath(new URL("../assets/fonts/", import.meta.url));
-export const FONT_FILES = ["PermanentMarker-Regular.ttf", "PatrickHand-Regular.ttf"].map((f) => join(FONT_DIR, f));
+let fontBuffers: Uint8Array[] | undefined;
+const boardFonts = () => (fontBuffers ??= ["PermanentMarker-Regular.ttf", "PatrickHand-Regular.ttf"].map((f) => readFileSync(join(FONT_DIR, f))));
 
 const MIME: Record<string, string> = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif" };
 
@@ -65,7 +68,7 @@ export function bakeScreen(absPath: string, cacheDir: string, roughness = 1): Bu
   const w = Math.round(size.w * scale), h = Math.round(size.h * scale);
   const mime = MIME[extname(absPath).toLowerCase()] ?? "image/png";
   const svg = duotoneSVG(`data:${mime};base64,${buf.toString("base64")}`, w, h, roughness);
-  const png = new Resvg(svg, { fitTo: { mode: "original" } }).render().asPng();
+  const png = renderPNG(svg);
   mkdirSync(cacheDir, { recursive: true });
   writeFileSync(out, png);
   return png;
@@ -131,7 +134,7 @@ function cropPanels(board: Board, boardFile: string, scale: number): Buffer[] {
   return board.panels.map((_, i) => {
     const r = panelRect(board, i);
     const crop = `<svg xmlns="http://www.w3.org/2000/svg" width="${r.w * scale}" height="${r.h * scale}"><image href="data:image/png;base64,${full}" x="${-r.x * scale}" y="${-r.y * scale}" width="${width * scale}" height="${height * scale}"/></svg>`;
-    return new Resvg(crop, { fitTo: { mode: "original" } }).render().asPng();
+    return renderPNG(crop);
   });
 }
 
@@ -221,12 +224,7 @@ document.getElementById("copy").onclick=async()=>{const md=[...document.querySel
 }
 
 export function svgToPNG(svg: string, scale = 2): Buffer {
-  const r = new Resvg(svg, {
-    fitTo: { mode: "zoom", value: scale },
-    font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: "Patrick Hand" },
-    imageRendering: 0,
-  });
-  return r.render().asPng();
+  return renderPNG(svg, { scale, fonts: boardFonts() });
 }
 
 export async function pngToPDF(png: Buffer, widthPx: number, heightPx: number): Promise<Uint8Array> {

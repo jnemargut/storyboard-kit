@@ -10,23 +10,34 @@ You turn a designer's loose description ("Maya orders coffee ahead, it's late, s
 everything in a low-fi marker style where **the software is the only thing in color (teal)**, so the board
 shows where the product actually shows up in someone's day and where it doesn't.
 
+## Running the tool
+
+Everything runs through one bundled script in this skill's folder (it needs Node.js 18+ and nothing else):
+
+```bash
+node "${CLAUDE_SKILL_DIR}/scripts/storyboard.mjs" <command>
+```
+
+`${CLAUDE_SKILL_DIR}` is the folder this SKILL.md is in. If your agent doesn't fill it in, use that folder's
+path. **Below, `sb` is short for that whole command.**
+
 ## Workflow
 
-1. **Look up the vocabulary. Don't guess.** `npx storyboardkit vocab` lists categories; `npx storyboardkit vocab poses`,
-   `npx storyboardkit vocab scenes` (with marks), `npx storyboardkit vocab shots`, etc. `npx storyboardkit vocab --grep hospital` searches
+1. **Look up the vocabulary. Don't guess.** `sb vocab` lists categories; `sb vocab poses`,
+   `sb vocab scenes` (with marks), `sb vocab shots`, etc. `sb vocab --grep hospital` searches
    every category. If a place you need doesn't exist, pick the closest scene and say so in `label` or a `caption`.
    Full list: [references/vocabulary.md](references/vocabulary.md).
 2. **Write the file**: `<name>.storyboard.json`. Shape: [references/format.md](references/format.md).
    Worked example: [references/example.md](references/example.md).
-3. **Validate and fix** until clean: `npx storyboardkit validate <file>`. Errors say exactly what to change
+3. **Validate and fix** until clean: `sb validate <file>`. Errors say exactly what to change
    ("did you mean …"). Warnings are storytelling nudges; take them seriously.
-   Then run `npx storyboardkit critique <file>`. It's a service-design reality check (does it start before the product?
+   Then run `sb critique <file>`. It's a service-design reality check (does it start before the product?
    show a workaround? let the feeling dip?). Fix what makes the story truer, not just greener.
-4. **Open the editor** in the background (it keeps running): `npx storyboardkit dev <file>`. Tell the designer the URL.
+4. **Open the editor** in the background (it keeps running): `sb dev <file>`. Tell the designer the URL.
    Their tweaks save into the same file in real time.
 5. **Iterate on the same file.** Re-read it before each edit, because the designer may have changed things.
    Never delete or rewrite `layout` entries (those are the designer's manual nudges) unless asked.
-6. **Export** when asked: `npx storyboardkit export <file> --png` (also `--pdf`, `--svg`, `--scale 3`,
+6. **Export** when asked: `sb export <file> --png` (also `--pdf`, `--svg`, `--scale 3`,
    `--pptx` for a slide per panel with speaker notes, `--html` for a share page with comment boxes).
 7. **The designer may paste a pointer** like `In x.storyboard.json: panel 3 (id "in-line"): the bubble "bubble-0" …`.
    That's exactly the element to change. Use the id and path it gives.

@@ -5,5 +5,5 @@ export default defineConfig({
   root: "src/editor",
   base: "./",
   plugins: [react()],
-  build: { outDir: "../../dist/editor", emptyOutDir: true },
+  build: { outDir: "../../skills/storyboard/scripts/editor", emptyOutDir: true },
 });

@@ -1,7 +1,7 @@
 import { readFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { validate, suggest } from "../src/validate";
 import { applyOps, formatStoryboard } from "../src/json";
 import { renderBoardSVG } from "../src/render";
@@ -9,7 +9,9 @@ import { SCENE_DEFS } from "../src/render/scenes";
 import { POSE_DEFS } from "../src/render/rig";
 import { SCENE_MARKS, SCENES, POSES, MOODS, SHOTS, DEVICES, ANGLES, ids } from "../src/vocab";
 import { toScript } from "../src/script";
-import { bakeScreen, imageSize } from "../src/export";
+import { bakeScreen, imageSize, initRenderer } from "../src/export";
+
+beforeAll(() => initRenderer());
 import { buildSchema } from "../src/schema";
 import { critique } from "../src/critique";
 import { productShare, feelingOf } from "../src/render";

@@ -1,4 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { spawn, spawnSync } from "node:child_process";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -6,22 +7,27 @@ import { VOCAB, SCENE_MARKS, type VocabCategory } from "../vocab";
 import { validate, formatResult } from "../validate";
 import { formatStoryboard } from "../json";
 import { toScript } from "../script";
-import { AGENTS_BLOCK, CLI } from "../skill";
-import { boardToSVG, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";
+import { agentsBlock } from "../skill";
+import { boardToSVG, initRenderer, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";
 import { formatCritique } from "../critique";
 import { pageSize } from "../render";
 import type { Board } from "../types";
 import { dev } from "./dev";
 
-const PKG_ROOT = fileURLToPath(new URL("../", import.meta.url));
+/** This script lives in <skill>/scripts/storyboard.mjs, so the skill folder is one level up. */
+const SKILL_ROOT = fileURLToPath(new URL("../", import.meta.url));
+const SELF = fileURLToPath(import.meta.url);
+const RUN = `node "${SELF}"`;
 
 const HELP = `storyboard: low-fi service-design storyboards your coding agent drafts and you tweak.
+It's an agent skill: ${SKILL_ROOT}
 
-Usage: ${CLI} <command> [options]
+Usage: ${RUN} <command> [options]
 
   draft "<what happens>" [--file x.storyboard.json] [--agent claude|codex]
                                   One step: your coding agent drafts the board, then the editor opens
-  init [dir]                      Set up a project: AGENTS.md/CLAUDE.md block + agent skill + a playground board (+ --example)
+  install [--project] [--codex]   Install this skill for Claude Code (~/.claude/skills), or into this project (+ AGENTS.md pointer)
+  init [dir] [--example]          Start a folder with a playground board (+ the Late Latte example)
   vocab [category] [--grep x]     List poses, scenes (+marks), shots, moods, devices… (--json)
   validate <file> [--json]        Check a storyboard; errors include fixes
   critique <file>                 Service-design reality check, with a revision request to paste to your agent
@@ -32,7 +38,7 @@ Usage: ${CLI} <command> [options]
   format <file>                   Rewrite the file in canonical, diff-friendly formatting
   new <file> [--title "…"]        Create a starter storyboard
 
-Docs for agents: the storyboard skill (installed by init) or ${CLI} vocab.`;
+Docs for agents: ${join(SKILL_ROOT, "SKILL.md")}`;
 
 function args(argv: string[]) {
   const pos: string[] = [];
@@ -66,17 +72,16 @@ function upsertBlock(path: string, block: string) {
   writeFileSync(path, text);
 }
 
-function copyDir(src: string, dst: string) {
-  mkdirSync(dst, { recursive: true });
-  for (const f of ["SKILL.md", "references/vocabulary.md", "references/format.md", "references/example.md", "references/schema.json"]) {
-    mkdirSync(dirname(join(dst, f)), { recursive: true });
-    writeFileSync(join(dst, f), readFileSync(join(src, f)));
-  }
+/** Copy the whole skill folder (docs, bundled script, editor, fonts, examples). */
+function installTo(dst: string): string {
+  if (resolve(dst) === resolve(SKILL_ROOT)) return dst;
+  rmSync(dst, { recursive: true, force: true });
+  mkdirSync(dirname(dst), { recursive: true });
+  cpSync(SKILL_ROOT, dst, { recursive: true, filter: (src) => !src.includes(".storyboard-cache") });
+  return dst;
 }
 
-export const SCHEMA_REF = "./.agents/skills/storyboard/references/schema.json";
 const STARTER = (title: string): Board => ({
-  $schema: SCHEMA_REF,
   schemaVersion: 1,
   title,
   persona: "Alex, first-time customer",
@@ -92,6 +97,7 @@ const STARTER = (title: string): Board => ({
 async function main() {
   const [cmd, ...rest] = process.argv.slice(2);
   const { pos, flags } = args(rest);
+  if (cmd === "export" || cmd === "dev" || cmd === "draft") await initRenderer();
   switch (cmd) {
     case "vocab": {
       const cat = pos[0] as VocabCategory | "marks" | undefined;
@@ -103,7 +109,7 @@ async function main() {
         return;
       }
       if (!cat) {
-        console.log("Categories:\n" + Object.entries(VOCAB).map(([k, v]) => `  ${k.padEnd(12)} ${v.map((x) => x.id).slice(0, 7).join(", ")}${v.length > 7 ? ", …" : ""}`).join("\n") + `\n  ${"marks".padEnd(12)} per-scene positions (${CLI} vocab marks)\n\nDetails: ${CLI} vocab <category> [--grep text]`);
+        console.log("Categories:\n" + Object.entries(VOCAB).map(([k, v]) => `  ${k.padEnd(12)} ${v.map((x) => x.id).slice(0, 7).join(", ")}${v.length > 7 ? ", …" : ""}`).join("\n") + `\n  ${"marks".padEnd(12)} per-scene positions (vocab marks)\n\nDetails: vocab <category> [--grep text]`);
         return;
       }
       if (cat === "marks") { for (const [s, m] of Object.entries(SCENE_MARKS)) console.log(`${s.padEnd(14)} ${m.join(", ")}`); return; }
@@ -174,29 +180,39 @@ async function main() {
       const file = pos[0] ?? "journey.storyboard.json";
       if (existsSync(file)) { console.error(`${file} already exists.`); process.exit(1); }
       writeFileSync(file, formatStoryboard(STARTER(typeof flags.title === "string" ? flags.title : "Untitled journey")));
-      console.log(`✓ created ${file}\n  next: ${CLI} dev ${file}`);
+      console.log(`✓ created ${file}\n  next: ${RUN} dev ${file}`);
+      return;
+    }
+    case "install": {
+      const done: string[] = [];
+      if (flags.project) {
+        done.push(installTo(resolve(".claude/skills/storyboard")), installTo(resolve(".agents/skills/storyboard")));
+        upsertBlock("AGENTS.md", agentsBlock(".agents/skills/storyboard"));
+        done.push("AGENTS.md (pointer for agents that don't load skills on their own)");
+      } else {
+        done.push(installTo(join(homedir(), ".claude/skills/storyboard")));
+        if (flags.codex) done.push(installTo(join(homedir(), ".codex/skills/storyboard")));
+      }
+      console.log(`✓ storyboard skill installed:\n  ${done.join("\n  ")}\n\nRestart your agent, then ask: "storyboard <someone> doing <something>…"`);
       return;
     }
     case "init": {
       const dir = resolve(pos[0] ?? ".");
       mkdirSync(dir, { recursive: true });
-      upsertBlock(join(dir, "AGENTS.md"), AGENTS_BLOCK);
-      upsertBlock(join(dir, "CLAUDE.md"), AGENTS_BLOCK);
-      const skillSrc = join(PKG_ROOT, "skill");
-      copyDir(skillSrc, join(dir, ".agents/skills/storyboard"));
-      copyDir(skillSrc, join(dir, ".claude/skills/storyboard"));
-      const done = ["AGENTS.md, CLAUDE.md (storyboard block)", ".agents/skills/storyboard/ (portable skill)", ".claude/skills/storyboard/ (Claude Code)"];
+      const done: string[] = [];
       if (!readdirSync(dir).some((f) => f.endsWith(".storyboard.json"))) {
         writeFileSync(join(dir, "playground.storyboard.json"), formatStoryboard(STARTER("Playground")));
         done.push("playground.storyboard.json (a board to experiment on)");
       }
       if (flags.example) {
         mkdirSync(join(dir, "screens"), { recursive: true });
-        writeFileSync(join(dir, "late-latte.storyboard.json"), readFileSync(join(PKG_ROOT, "examples/late-latte.storyboard.json")).toString().replace('"../schema.json"', `"${SCHEMA_REF}"`));
-        writeFileSync(join(dir, "screens/order-status.png"), readFileSync(join(PKG_ROOT, "examples/screens/order-status.png")));
+        const ex = JSON.parse(readFileSync(join(SKILL_ROOT, "examples/late-latte.storyboard.json"), "utf8"));
+        delete ex.$schema;
+        writeFileSync(join(dir, "late-latte.storyboard.json"), formatStoryboard(ex));
+        writeFileSync(join(dir, "screens/order-status.png"), readFileSync(join(SKILL_ROOT, "examples/screens/order-status.png")));
         done.push("late-latte.storyboard.json + screens/ (example)");
       }
-      console.log(`✓ storyboard set up in ${dir}\n  ${done.join("\n  ")}\n\nNow ask your agent: "storyboard <someone> doing <something>…"`);
+      console.log(done.length ? `✓ ${dir}\n  ${done.join("\n  ")}` : "Nothing to do: this folder already has a storyboard.");
       return;
     }
     case undefined: case "help": case "--help": case "-h":
@@ -224,25 +240,21 @@ async function draft(prompt: string, flags: Record<string, string | boolean>) {
   if (!prompt.trim()) { console.error('Usage: storyboard draft "Maya orders coffee ahead; it\'s late; she gives up and asks the barista"'); process.exit(2); }
   const file = typeof flags.file === "string" ? flags.file : `${prompt.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").split("-").slice(0, 4).join("-") || "journey"}.storyboard.json`;
   const agent = typeof flags.agent === "string" ? flags.agent : ["claude", "codex"].find(has);
-  if (!existsSync(join(".agents", "skills", "storyboard", "SKILL.md"))) {
-    upsertBlock("AGENTS.md", AGENTS_BLOCK); upsertBlock("CLAUDE.md", AGENTS_BLOCK);
-    copyDir(join(PKG_ROOT, "skill"), join(".agents/skills/storyboard")); copyDir(join(PKG_ROOT, "skill"), join(".claude/skills/storyboard"));
-  }
-  const cli = `node "${fileURLToPath(new URL("./cli.js", import.meta.url))}"`;
+  const cli = RUN;
   const instruction = [
-    `Draft a service-design storyboard. Read .agents/skills/storyboard/SKILL.md first and follow it.`,
-    `Run the storyboard CLI as: ${cli} <command> (wherever docs say ${CLI}).`,
+    `Draft a service-design storyboard. Read ${join(SKILL_ROOT, "SKILL.md")} first and follow it.`,
+    `Wherever it says \`sb\`, run: ${cli}`,
     `Write ${file}. Run \`${cli} validate ${file}\` until clean, then \`${cli} critique ${file}\` and fix the findings that make the story truer.`,
     `Do not run \`dev\`. When done, reply with one line: the file name.`,
     ``, `The designer's request: ${prompt}`,
   ].join("\n");
   if (!agent || !has(agent)) {
-    console.log(`No coding agent CLI found (looked for claude, codex). Paste this into your agent instead:\n\n${instruction}\n\nThen run: ${CLI} dev ${file}`);
+    console.log(`No coding agent CLI found (looked for claude, codex). Paste this into your agent instead:\n\n${instruction}\n\nThen run: ${RUN} dev ${file}`);
     return;
   }
   const args = agent === "codex"
     ? ["exec", "--full-auto", instruction]
-    : ["-p", instruction, "--permission-mode", "acceptEdits", "--allowedTools", "Bash(node:*),Read,Write,Edit,Glob,Grep"];
+    : ["-p", instruction, "--permission-mode", "acceptEdits", "--allowedTools", "Bash(node:*),Read,Write,Edit,Glob,Grep", "--add-dir", SKILL_ROOT];
   console.log(`Asking ${agent} to draft ${file}… (this takes a minute or two)`);
   const code = await new Promise<number>((ok) => spawn(agent, args, { stdio: ["ignore", "inherit", "inherit"] }).on("close", (c) => ok(c ?? 1)));
   if (!existsSync(file)) { console.error(`\n${agent} finished (exit ${code}) but ${file} wasn't created. Try again with more detail, or run it in your agent directly.`); process.exit(1); }

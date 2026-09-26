@@ -1,6 +1,6 @@
 # Storyboard vocabulary
 
-Generated from the tool. Query live with `npx storyboardkit vocab <category> [--grep text]`.
+Generated from the tool. Query live with `sb vocab <category> [--grep text]`.
 
 ## scenes
 

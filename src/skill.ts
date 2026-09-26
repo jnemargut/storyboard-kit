@@ -1,9 +1,7 @@
 import { SCENE_MARKS, VOCAB, type Entry } from "./vocab";
 
-import pkg from "../package.json";
-
-/** How docs tell agents to run the CLI. Follows the package name, so renaming for npm is a one-line change. */
-export const CLI = `npx ${pkg.name}`;
+/** Shorthand used throughout the docs for "run this skill's bundled script". Defined at the top of SKILL.md. */
+export const CLI = "sb";
 
 export const SKILL_MD = `---
 name: storyboard
@@ -16,6 +14,17 @@ You turn a designer's loose description ("Maya orders coffee ahead, it's late, s
 \`*.storyboard.json\` file, validate it, and open an editor where the designer tweaks it. The tool draws
 everything in a low-fi marker style where **the software is the only thing in color (teal)**, so the board
 shows where the product actually shows up in someone's day and where it doesn't.
+
+## Running the tool
+
+Everything runs through one bundled script in this skill's folder (it needs Node.js 18+ and nothing else):
+
+\`\`\`bash
+node "\${CLAUDE_SKILL_DIR}/scripts/storyboard.mjs" <command>
+\`\`\`
+
+\`\${CLAUDE_SKILL_DIR}\` is the folder this SKILL.md is in. If your agent doesn't fill it in, use that folder's
+path. **Below, \`sb\` is short for that whole command.**
 
 ## Workflow
 
@@ -154,11 +163,12 @@ uses a time card for the wait, and ends on the consequence for the person.
 `;
 }
 
-export const AGENTS_BLOCK = `<!-- storyboard:start -->
-## Storyboards (storyboardkit)
+/** Pointer for AGENTS.md, for agents that don't discover skills on their own. */
+export const agentsBlock = (skillDir: string) => `<!-- storyboard:start -->
+## Storyboards (storyboardkit skill)
 
-For storyboards, customer-journey comics or day-in-the-life panels, use the \`storyboard\` skill
-(\`.agents/skills/storyboard/SKILL.md\`; in Claude Code, the storyboard skill) and this CLI:
+For storyboards, customer-journey comics or day-in-the-life panels, read \`${skillDir}/SKILL.md\` and follow it.
+\`sb\` there means: \`node ${skillDir}/scripts/storyboard.mjs\`.
 
 - \`${CLI} vocab [category] [--grep x]\` looks up poses, scenes, shots, devices and moods. Don't invent values.
 - Write \`<name>.storyboard.json\`, then run \`${CLI} validate <file>\` and fix every error.

@@ -1,4 +1,4 @@
-// End-to-end smoke test of the real editor: `npm run build && node tests/e2e.mjs`
+// End-to-end smoke test of the real editor, run from the built skill: `npm run build && npm run e2e`
 // Drives the dev server with system Chrome and checks that edits land in the JSON file.
 import { spawn } from "node:child_process";
 import { cpSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -16,7 +16,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let failures = 0;
 const check = (ok, msg) => { console.log(`${ok ? "PASS" : "FAIL"} ${msg}`); if (!ok) failures++; };
 
-const server = spawn("node", ["dist/cli.js", "dev", file, "--no-open", "--port", "4400"], { stdio: ["ignore", "pipe", "inherit"] });
+const server = spawn("node", ["skills/storyboard/scripts/storyboard.mjs", "dev", file, "--no-open", "--port", "4400"], { stdio: ["ignore", "pipe", "inherit"] });
 await new Promise((ok) => server.stdout.on("data", (d) => String(d).includes("localhost") && ok()));
 const url = "http://localhost:4400/";
 
