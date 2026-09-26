@@ -79,10 +79,13 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
     const d = f.dir;
     const sweep = d > 0 ? 0 : 1;
     // front-top of forehead → over the top → back of head → nape → behind the ear → fringe above the eye
-    const cap = `M${hx + d * 0.6 * r} ${hy - 0.78 * r} A${R} ${R} 0 0 ${sweep} ${hx - d * R} ${hy - 0.05 * r} L${hx - d * 0.82 * r} ${hy + 0.55 * r} Q${hx - d * 0.2 * r} ${hy + 0.35 * r} ${hx - d * 0.1 * r} ${hy - 0.05 * r} Q${hx + d * 0.2 * r} ${hy - 0.35 * r} ${hx + d * 0.6 * r} ${hy - 0.78 * r} Z`;
+    // hairline: forehead → temple → sideburn → behind the ear → nape, so the face and ear stay clear
+    const cap = `M${hx + d * 0.62 * r} ${hy - 0.8 * r} A${R} ${R} 0 0 ${sweep} ${hx - d * R} ${hy + 0.05 * r} L${hx - d * 0.78 * r} ${hy + 0.58 * r} Q${hx - d * 0.42 * r} ${hy + 0.32 * r} ${hx - d * 0.34 * r} ${hy + 0.02 * r} L${hx - d * 0.1 * r} ${hy - 0.38 * r} Q${hx + d * 0.22 * r} ${hy - 0.52 * r} ${hx + d * 0.62 * r} ${hy - 0.8 * r} Z`;
+    const ear = !["long", "afro"].includes(cast.hair ?? "short") && <path d={`M${hx - d * 0.12 * r} ${hy - 0.12 * r} q${-d * 0.3 * r} ${-0.04 * r} ${-d * 0.28 * r} ${0.22 * r} q${d * 0.02 * r} ${0.22 * r} ${d * 0.24 * r} ${0.2 * r}`} fill="none" stroke={ink} strokeWidth={1.5} strokeLinecap="round" />;
     return (
       <g>
         <path d={cap} {...st} {...(cast.hair === "afro" ? { stroke: "none" } : {})} />
+        {ear}
         {cast.hair === "bun" && <circle cx={hx - d * 0.78 * r} cy={hy - 0.85 * r} r={r * 0.42} {...st} />}
         {cast.hair === "curly" && [0, 1, 2].map((i) => <circle key={i} cx={hx - d * (0.2 + i * 0.35) * r} cy={hy - (0.95 - i * 0.12) * r} r={r * 0.32} {...st} />)}
       </g>
@@ -92,10 +95,14 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
   // front and three-quarter: shell over the top, fringe edge well above the eyes
   const o = f.angle === "three-quarter" ? -f.dir * 0.18 * r : 0; // part shifts away from the face
   const L = hx - r, Rt = hx + r;
+  // short hair stops at the temples so the sides of the face show; longer styles come down past the ears
+  const sideY = cast.hair === "short" || cast.hair === "buzz" ? hy - 0.2 * r : hy - 0.08 * r;
+  // the cap hugs the head: an arc around the head's own centre, from temple to temple
+  const sx = Math.sqrt(Math.max(0, R * R - (hy - sideY) ** 2));
   const fringe = cast.hair === "short"
-    ? `Q${hx + o + 0.55 * r} ${hy - 0.25 * r} ${hx + o} ${hy - 0.5 * r} Q${hx + o - 0.35 * r} ${hy - 0.62 * r} ${L} ${hy - 0.08 * r}` // side-swept
+    ? `Q${hx + o + 0.4 * r} ${hy - 0.66 * r} ${hx + o - 0.08 * r} ${hy - 0.6 * r} Q${hx + o - 0.55 * r} ${hy - 0.56 * r} ${hx - sx} ${sideY}` // soft side part
     : `Q${hx + o + 0.5 * r} ${hy - 0.62 * r} ${hx + o} ${hy - 0.48 * r} Q${hx + o - 0.5 * r} ${hy - 0.62 * r} ${L} ${hy - 0.08 * r}`;
-  const cap = `M${L} ${hy - 0.08 * r} A${R} ${R} 0 0 1 ${Rt} ${hy - 0.08 * r} ${fringe} Z`;
+  const cap = `M${hx - sx} ${sideY} A${R} ${R} 0 0 1 ${hx + sx} ${sideY} ${fringe} Z`;
   // the afro's cap is a half-circle over the whole crown, so no forehead band shows; it merges into the cloud behind
   if (cast.hair === "afro") {
     const k = r + 1.5; // centred on the face and a touch bigger, so no sliver of forehead shows above it
@@ -107,7 +114,7 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
   }
   return (
     <g>
-      <path d={cap} {...st} />
+      <path d={cap} {...st} {...(sideY !== hy - 0.08 * r ? { strokeWidth: 1.3 } : {})} />
       {cast.hair === "bun" && <circle cx={hx + o * 0.5} cy={hy - r - 3} r={r * 0.42} {...st} />}
     </g>
   );
@@ -116,14 +123,43 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
 // ------------------------------------------------------------------ faces
 
 /** Comic symbols floating near the head: they carry the mood when the face is small or turned away. */
-function emanata(mood: Mood, hx: number, hy: number, r: number, side: number): ReactNode {
-  const x = hx + side * (r + 5), y = hy - r * 0.9;
+/**
+ * How far hair, hats and headphones reach past the bare head (as multiples of r): `side` horizontally,
+ * `top` above the centre. Mood marks go outside this so they never sit on a bun, a brim or a chef's hat.
+ */
+export function headExtent(cast: CastMember, f: Figure): { side: number; top: number } {
+  const sideView = f.view === "side";
+  let side = 1, top = 1;
+  const grow = (sd: number, tp: number) => { side = Math.max(side, sd); top = Math.max(top, tp); };
+  switch (cast.hair) {
+    case "afro": grow(1.42, 1.62); break;
+    case "curly": grow(sideView ? 1.2 : 1.5, 1.25); break;
+    case "bun": grow(1.1, 1.9); break;
+    case "long": grow(1.2, 1.1); break;
+    case "hijab": grow(1.25, 1.25); break;
+  }
+  if ((cast.accessories ?? []).includes("headphones")) grow(1.35, 1.8);
+  const lift = cast.hair === "afro" ? 0.35 : cast.hair === "bun" || cast.hair === "curly" ? 0.12 : 0;
+  switch (cast.hat) {
+    case "cap": grow(sideView ? 2 : 1.15, 1.15 + lift); break;
+    case "beanie": grow(1.15, 1.6 + lift); break;
+    case "hard-hat": grow(sideView ? 2.05 : 1.35, 1.35 + lift); break;
+    case "chef-hat": grow(1.3, 2.55 + lift); break;
+    case "uniform-cap": grow(sideView ? 1.55 : 1.25, 1.45 + lift); break;
+    case "sun-hat": grow(1.9, 1.4 + lift); break;
+    case "surgical-cap": grow(1.1, 1.25 + lift); break;
+  }
+  return { side, top };
+}
+
+function emanata(mood: Mood, hx: number, hy: number, r: number, side: number, ext = { side: 1, top: 1 }): ReactNode {
+  const x = hx + side * (r * ext.side + 5), y = hy - r * 0.9;
   const s = line(1.8);
   switch (mood) {
     case "confused":
       return <text x={x} y={y + 2} textAnchor="middle" fontFamily="Permanent Marker" fontSize={r * 1.1} fill={ink}>?</text>;
     case "surprised":
-      return <path d={`M${hx - 0.7 * r} ${hy - r - 4} l-3 -6 M${hx} ${hy - r - 5} v-7 M${hx + 0.7 * r} ${hy - r - 4} l3 -6`} {...s} />;
+      return <path d={`M${hx - 0.7 * r} ${hy - r * ext.top - 4} l-3 -6 M${hx} ${hy - r * ext.top - 5} v-7 M${hx + 0.7 * r} ${hy - r * ext.top - 4} l3 -6`} {...s} />;
     case "stressed":
       return <g>{[0, 1].map((i) => <path key={i} d={`M${x + i * 5 * side} ${y + i * 7} q-2.6 5 0 6.6 q2.6 -1.6 0 -6.6z`} fill={C.paper} stroke={ink} strokeWidth={1.4} />)}</g>;
     case "frustrated": // anger mark
@@ -250,6 +286,32 @@ function sideFace(f: Figure, mood: Mood, hx: number, hy: number, r: number): Rea
   );
 }
 
+/** Sideburns running into a full chin that frames the mouth, plus a moustache. Drawn under the face features. */
+function Beard({ f, hx, hy, r, fill }: { f: Figure; hx: number; hy: number; r: number; fill: string }) {
+  // no outline of its own: an inked edge all round turns a beard into a chin strap; the jaw line underneath is enough
+  const st = { fill, stroke: "none" };
+  const jaw = { fill: "none", stroke: ink, strokeWidth: 2, strokeLinecap: "round" as const };
+  if (f.view === "side") {
+    const d = f.dir, mx = hx + d * 0.66 * r;
+    return (
+      <g>
+        <path d={`M${hx - d * 0.3 * r} ${hy + 0.3 * r} Q${hx - d * 0.2 * r} ${hy + 0.9 * r} ${hx + d * 0.45 * r} ${hy + 1.1 * r} Q${hx + d * 0.8 * r} ${hy + 1.04 * r} ${hx + d * 0.84 * r} ${hy + 0.72 * r} Q${hx + d * 0.55 * r} ${hy + 0.8 * r} ${hx + d * 0.42 * r} ${hy + 0.58 * r} Q${hx + d * 0.1 * r} ${hy + 0.5 * r} ${hx - d * 0.08 * r} ${hy + 0.3 * r} Z`} {...st} />
+        <path d={`M${hx - d * 0.3 * r} ${hy + 0.3 * r} Q${hx - d * 0.2 * r} ${hy + 0.9 * r} ${hx + d * 0.45 * r} ${hy + 1.1 * r} Q${hx + d * 0.8 * r} ${hy + 1.04 * r} ${hx + d * 0.84 * r} ${hy + 0.72 * r}`} {...jaw} />
+        <path d={`M${mx - d * 0.2 * r} ${hy + 0.4 * r} Q${mx} ${hy + 0.28 * r} ${mx + d * 0.18 * r} ${hy + 0.4 * r} Q${mx} ${hy + 0.36 * r} ${mx - d * 0.2 * r} ${hy + 0.4 * r} Z`} {...st} />
+      </g>
+    );
+  }
+  const o = f.angle === "three-quarter" ? 0.22 * r * f.dir : 0; // the mouth shifts toward the facing side
+  const cx = hx + o;
+  return (
+    <g>
+      <path d={`M${hx - 0.93 * r} ${hy + 0.3 * r} Q${cx - 0.6 * r} ${hy + 0.7 * r} ${cx - 0.32 * r} ${hy + 0.73 * r} Q${cx} ${hy + 0.88 * r} ${cx + 0.32 * r} ${hy + 0.73 * r} Q${cx + 0.6 * r} ${hy + 0.7 * r} ${hx + 0.93 * r} ${hy + 0.3 * r} Q${hx + r + 0.5} ${hy + 1.02 * r} ${cx} ${hy + 1.22 * r} Q${hx - r - 0.5} ${hy + 1.02 * r} ${hx - 0.93 * r} ${hy + 0.3 * r} Z`} {...st} />
+      <path d={`M${cx - 0.34 * r} ${hy + 0.44 * r} Q${cx} ${hy + 0.22 * r} ${cx + 0.34 * r} ${hy + 0.44 * r} Q${cx} ${hy + 0.36 * r} ${cx - 0.34 * r} ${hy + 0.44 * r} Z`} {...st} />
+      <path d={`M${hx - 0.93 * r} ${hy + 0.3 * r} Q${hx - r - 0.5} ${hy + 1.02 * r} ${cx} ${hy + 1.22 * r} Q${hx + r + 0.5} ${hy + 1.02 * r} ${hx + 0.93 * r} ${hy + 0.3 * r}`} {...jaw} />
+    </g>
+  );
+}
+
 /** Head circle (or a face framed by a hijab), features, facial hair, hair, glasses, headphones, emanata. */
 export function HeadFront({ f, cast, mood, hx, hy, r, skin }: { f: Figure; cast: CastMember; mood: Mood; hx: number; hy: number; r: number; skin: string }) {
   const acc = new Set(cast.accessories ?? []);
@@ -265,9 +327,7 @@ export function HeadFront({ f, cast, mood, hx, hy, r, skin }: { f: Figure; cast:
         : cast.hair === "afro" && !back
           ? <g><circle cx={hx} cy={hy} r={r} fill={skin} /><path d={`M${hx - r * 0.97} ${hy + r * 0.25} A${r} ${r} 0 0 0 ${hx + r * 0.97} ${hy + r * 0.25}`} {...line(2.1)} /></g>
           : !hijab && <circle cx={hx} cy={hy} r={r} fill={skin} stroke={ink} strokeWidth={2.1} />}
-      {acc.has("beard") && !back && (side
-        ? <path d={`M${hx - f.dir * 0.1 * r} ${hy + 0.35 * r} Q${hx + f.dir * 0.4 * r} ${hy + 1.2 * r} ${hx + f.dir * 0.85 * r} ${hy + 0.55 * r} Q${hx + f.dir * 0.4 * r} ${hy + 0.72 * r} ${hx - f.dir * 0.1 * r} ${hy + 0.35 * r} Z`} fill={hairColor(cast)} stroke={ink} strokeWidth={1.4} />
-        : <path d={`M${hx - r + 1.5} ${hy + 0.25 * r} Q${hx} ${hy + r + 5} ${hx + r - 1.5} ${hy + 0.25 * r} Q${hx + 0.4 * r} ${hy + 0.85 * r} ${hx} ${hy + 0.85 * r} Q${hx - 0.4 * r} ${hy + 0.85 * r} ${hx - r + 1.5} ${hy + 0.25 * r} Z`} fill={hairColor(cast)} stroke={ink} strokeWidth={1.4} />)}
+      {acc.has("beard") && !back && <Beard f={f} hx={hx} hy={hy} r={r} fill={hairColor(cast)} />}
       {!back && (side ? sideFace(f, mood, hx, hy, r) : frontFace(f, mood, hx, hy, r))}
       {hairFront(cast, f, hx, hy, r)}
       {hijab && !back && <path d={`M${fx - (side ? 0.62 : 0.8) * r} ${hy - 0.05 * r} Q${fx} ${hy - 1.05 * r} ${fx + (side ? 0.62 : 0.8) * r} ${hy - 0.05 * r}`} {...line(1.4)} />}
@@ -276,7 +336,7 @@ export function HeadFront({ f, cast, mood, hx, hy, r, skin }: { f: Figure; cast:
         : <g {...line(1.6)}>{[-1, 1].map((k) => <circle key={k} cx={hx + (f.angle === "three-quarter" ? 0.28 * r * f.dir : 0) + k * (f.angle === "three-quarter" ? 0.3 : 0.37) * r} cy={hy + 0.05 * r} r={0.3 * r} />)}</g>)}
       {acc.has("headphones") && <g><path d={`M${hx - r - 1} ${hy} Q${hx} ${hy - r - 10} ${hx + r + 1} ${hy}`} fill="none" stroke={ink} strokeWidth={2.4} /><rect x={hx - r - 4} y={hy - 4} width={5} height={9} rx={2} fill={C.g7} stroke={ink} strokeWidth={1.3} /><rect x={hx + r - 1} y={hy - 4} width={5} height={9} rx={2} fill={C.g7} stroke={ink} strokeWidth={1.3} /></g>}
       <Hat cast={cast} f={f} hx={hx} hy={hy} r={r} />
-      {emanata(mood, hx, hy, r, back ? 1 : d)}
+      {emanata(mood, hx, hy, r, back ? 1 : d, headExtent(cast, f))}
     </g>
   );
 }

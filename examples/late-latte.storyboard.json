@@ -5,9 +5,9 @@
   "persona": "Marcus, busy commuter",
   "subtitle": "Journey: mobile order-ahead",
   "cast": {
-    "marcus": { "name": "Marcus", "skin": "tone-4", "hair": "short", "outfit": "jacket", "accessories": ["bag", "beard"] },
+    "marcus": { "name": "Marcus", "skin": "tone-4", "hair": "short", "outfit": "jacket", "accessories": ["bag"] },
     "leo": { "name": "Leo", "skin": "tone-4", "hair": "curly", "age": "child", "outfit": "hoodie" },
-    "sam": { "name": "Sam", "skin": "tone-1", "hair": "long", "hairShade": "light", "outfit": "apron" }
+    "sam": { "name": "Sam", "skin": "tone-1", "hair": "bun", "outfit": "apron" }
   },
   "panels": [
     { "id": "title", "type": "title", "title": "The Late Latte", "subtitle": "Marcus · Tuesday · ordered ahead, 4 min ETA" },

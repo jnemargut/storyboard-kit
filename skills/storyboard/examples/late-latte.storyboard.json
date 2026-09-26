@@ -11,8 +11,7 @@
       "hair": "short",
       "outfit": "jacket",
       "accessories": [
-        "bag",
-        "beard"
+        "bag"
       ]
     },
     "leo": {
@@ -25,8 +24,7 @@
     "sam": {
       "name": "Sam",
       "skin": "tone-1",
-      "hair": "long",
-      "hairShade": "light",
+      "hair": "bun",
       "outfit": "apron"
     }
   },
