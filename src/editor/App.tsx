@@ -215,7 +215,6 @@ export function App() {
         if (b && f) window.setTimeout(() => setEditing({ sel: s, field: f.field, value: f.value, box: b }), 0);
         return;
       }
-      if (t.closest("[data-lane-product]")) flash("Teal = a device showing the product in this panel. Mark a device as Personal to turn it off.");
       setSel({ panel: pid, el: "__panel", kind: "panel" });
       return;
     }
@@ -622,8 +621,8 @@ function TopBar(props: {
       <TextSize board={props.board} commit={props.commit} />
       <button className="btn" onClick={props.undo} disabled={!props.canUndo} title="Undo (Cmd+Z)">Undo</button>
       <button className="btn" onClick={props.redo} disabled={!props.canRedo} title="Redo (Shift+Cmd+Z)">Redo</button>
-      <button className={`btn${lanes ? " on" : ""}`} onClick={() => props.commit(lanes ? [{ path: ["page", "lanes"], delete: true }] : [{ path: ["page", "lanes"], value: true }], lanes ? "Journey lanes hidden" : "Journey lanes on: feeling, product, workaround")}
-        title="Show service-design lanes under each panel: how they feel, whether the product is there, and their workaround">Journey lanes</button>
+      <button className={`btn${lanes ? " on" : ""}`} onClick={() => props.commit(lanes ? [{ path: ["page", "lanes"], delete: true }] : [{ path: ["page", "lanes"], value: true }], lanes ? "Journey lanes hidden" : "Journey lanes on: how they feel and how they work around gaps")}
+        title="Show service-design lanes under each panel: how they feel, and how they work around gaps">Journey lanes</button>
       <div className="menu">
         <button className="btn" onClick={() => toggle("brand")} title="Your company's name/logo on storefronts and signs">Brand</button>
         {menu === "brand" && (

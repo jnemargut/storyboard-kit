@@ -3,10 +3,10 @@
 **Comic strips about your customers, drawn by your coding agent.**
 
 You tell Claude Code (or Codex) what someone's day looks like. It sketches a storyboard. You poke at it in a
-little editor until it feels true. Then you drop it in your deck and watch everyone realize the app is only in
-3 of the 8 moments that matter.
+little editor until it feels true. Then you drop it in your deck and the room starts talking about the person's
+whole day, not just the screens.
 
-![Storyboard Kit sizzle reel](docs/sizzle-c6aae4e.gif)
+![Storyboard Kit sizzle reel](docs/sizzle-6bdeb97.gif)
 
 ## Why though
 
@@ -14,10 +14,10 @@ Most product flows start at the app's home screen. Real life doesn't. People are
 asking the barista, texting a friend, screenshotting a code because the app logged them out again.
 
 Storyboard Kit draws all of that in a scrappy marker style where **only your product is in color (teal)**.
-Everything else is grey. So the board shows, pretty bluntly, where your product helps and where people are
-on their own. The header even keeps score: *"Product in 3 of 8 moments."*
+Everything else is grey, so your product sits inside the rest of someone's life instead of at the center of it.
+You see what comes before it, what happens around it, and where people quietly work around it.
 
-![The Late Latte, an example storyboard](docs/late-latte-aceede9.png)
+![The Late Latte, an example storyboard](docs/late-latte-a7a0f70.png)
 
 ## Install (about 30 seconds)
 
@@ -53,9 +53,9 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 
 ## What's in the box
 
-![Meet the cast](docs/cast-eda2333.png)
+![Meet the cast](docs/cast-f841dde.png)
 
-![A few of the scenes](docs/scenes-52664d6.png)
+![A few of the scenes](docs/scenes-e79b389.png)
 
 - **A cast you build from parts.** 4 skin tones, 9 hair styles, 4 body types,
   3 ages, 16 outfits (scrubs, hi-vis, chef whites, lab coat, uniform, overalls and friends), 7 hats, plus
@@ -89,12 +89,12 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 
 **Journey lanes**
 
-A strip under each panel: how the person feels, whether your product is there, and the workaround they used.
+A strip under each panel: how the person feels, and the workaround they used when something didn't work.
 A feeling line with every step named runs across the bottom of the page.
 
 **Play mode**
 
-![Play mode with sharpie markup](docs/play-cdbbe6c.png)
+![Play mode with sharpie markup](docs/play-c75a265.png)
 
 Hit **▶ Play** (or P) to present the board one step at a time, with a big pointer the room can follow.
 

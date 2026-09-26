@@ -143,10 +143,10 @@ describe("text size", () => {
 });
 
 describe("service-design layer", () => {
-  it("counts product moments", () => {
-    expect(productShare(example)).toEqual({ withProduct: 5, moments: 6 });
-    const svg = renderBoardSVG(example, { asset });
-    expect(svg).toContain("Product in");
+  it("never draws a product score on the board or exports", () => {
+    const svg = renderBoardSVG({ ...example, page: { ...example.page, lanes: true } }, { asset });
+    expect(svg).not.toMatch(/moments|no product|data-lane-product/);
+    expect(productShare(example)).toEqual({ withProduct: 5, moments: 6 }); // still used by critique's "is it a feature tour?" check
   });
   it("journey lanes render per panel plus a journey summary", () => {
     const b = applyOps(example, [{ path: ["page", "lanes"], value: true }, { path: ["panels", 6, "workaround"], value: "asks the barista" }]);

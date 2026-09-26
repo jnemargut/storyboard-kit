@@ -1,6 +1,6 @@
 /**
  * Play mode: the board as a slideshow for a crit. One panel at a time, as big as the screen allows, with the
- * step name, a strip of every step (teal where the product shows up), and optional speaker notes.
+ * step name, a strip of every step, and optional speaker notes.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Op } from "../json";
@@ -11,7 +11,7 @@ import { MARKER } from "../render/tokens";
 import { Swatches } from "./Swatches";
 import { isScene } from "../types";
 import { feelingOf, stepName, WOBBLE_FILTER } from "../render/board";
-import { PanelArt, panelHasProduct, type RenderOptions } from "../render/panel";
+import { PanelArt, type RenderOptions } from "../render/panel";
 
 const FEEL = ["awful", "bad", "okay", "good", "great"];
 
@@ -179,7 +179,7 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
 
       <nav className="present-strip" aria-label="Steps">
         {board.panels.map((q, k) => (
-          <button key={q.id} className={`${k === i ? "on" : ""}${isScene(q) && panelHasProduct(q) ? " product" : ""}${!isScene(q) ? " card" : ""}`}
+          <button key={q.id} className={`${k === i ? "on" : ""}${!isScene(q) ? " card" : ""}`}
             onClick={() => go(k)} title={`${k + 1}${stepName(q) ? ` · ${stepName(q)}` : ""}`} aria-current={k === i ? "step" : undefined}>
             <span className="tick" />
             <span className="lbl">{k + 1}</span>

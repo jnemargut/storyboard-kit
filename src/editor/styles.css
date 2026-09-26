@@ -149,7 +149,6 @@ button, select, input, textarea { font: inherit; color: inherit; }
 .present-strip { display: flex; justify-content: center; gap: 6px; padding: var(--space-4) var(--space-5) var(--space-2); flex-wrap: wrap; }
 .present-strip button { background: none; border: none; color: var(--color-500); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px 4px; font-family: var(--font-mono); font-size: 11px; }
 .present-strip .tick { width: 28px; height: 6px; background: var(--color-700); }
-.present-strip .product .tick { background: var(--color-product); }
 .present-strip .card .tick { height: 2px; margin: 2px 0; }
 .present-strip .on { color: var(--color-paper); }
 .present-strip .on .tick { outline: 2px solid var(--color-paper); outline-offset: 2px; }

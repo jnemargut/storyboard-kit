@@ -24,8 +24,8 @@ export function critique(b: Board): { findings: Finding[]; share: { withProduct:
   } else strengths.push("Starts in real life, before the product shows up.");
 
   if (share.withProduct === share.moments && share.moments >= 3) {
-    f.push({ id: "always-on", title: "The product is in every moment", why: "That's a feature tour, not a day. The gaps between product moments are where the insights are.", ask: `Add at least two moments without the product: waiting, switching to something else, or dealing with the outcome.` });
-  } else if (share.moments >= 3) strengths.push(`The product is absent in ${share.moments - share.withProduct} of ${share.moments} moments, so the gaps are visible.`);
+    f.push({ id: "always-on", title: "The product is in every moment", why: "That's a feature tour, not a day. What happens around the product (the trigger, the wait, the aftermath) is where the insights are.", ask: `Add at least two moments without the product: waiting, switching to something else, or dealing with the outcome.` });
+  } else if (share.moments >= 3) strengths.push("Some moments happen without the product, so you can see the rest of the day around it.");
 
   const hasWait = b.panels.some((p) => p.type === "time");
   const workaroundish = scenes.some((p) => p.workaround || (p.bubbles ?? []).some((x) => PERSONAL.test(x.text)) || (p.devices ?? []).some((d) => d.product === false) || (p.characters ?? []).some((c) => typeof c.device === "object" && c.device.product === false));
@@ -55,7 +55,8 @@ export function critique(b: Board): { findings: Finding[]; share: { withProduct:
 
 export function formatCritique(b: Board, file: string): string {
   const { findings, share, strengths } = critique(b);
-  const out = [`Reality check: ${b.title}`, share.moments ? `Product in ${share.withProduct} of ${share.moments} moments.` : "", ""];
+  void share;
+  const out = [`Reality check: ${b.title}`, ""];
   if (strengths.length) out.push("Working:", ...strengths.map((s) => `  + ${s}`), "");
   if (!findings.length) { out.push("Nothing obvious to fix. This reads like a real day. Ask a teammate to poke holes in it."); return out.join("\n"); }
   out.push("Worth changing:", ...findings.map((x) => `  - ${x.title}. ${x.why}`), "");

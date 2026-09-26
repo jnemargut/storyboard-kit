@@ -7,7 +7,7 @@ import { initRenderer, renderPNG } from "./resvg";
 export { initRenderer };
 import { PDFDocument } from "pdf-lib";
 import type { Board } from "./types";
-import { pageSize, panelRect, renderBoardSVG, productShare } from "./render";
+import { pageSize, panelRect, renderBoardSVG } from "./render";
 import { isScene } from "./types";
 import { toScript } from "./script";
 
@@ -168,11 +168,10 @@ export async function toPPTX(board: Board, boardFile: string): Promise<Buffer> {
   pptx.layout = "LAYOUT_WIDE";
   pptx.title = board.title;
   const pngs = panelPNGs(board, boardFile, 3);
-  const share = productShare(board);
   const cover = pptx.addSlide();
   cover.background = { color: "FBFAF7" };
   cover.addText(board.title, { x: 0.7, y: 2.4, w: 12, h: 1.2, fontFace: "Permanent Marker", fontSize: 44, color: "1C1C1E" });
-  const meta = [board.persona && `Persona: ${board.persona}`, board.subtitle, share.moments ? `Product in ${share.withProduct} of ${share.moments} moments` : ""].filter(Boolean).join("  ·  ");
+  const meta = [board.persona && `Persona: ${board.persona}`, board.subtitle].filter(Boolean).join("  ·  ");
   cover.addText(meta, { x: 0.7, y: 3.6, w: 12, h: 0.6, fontFace: "Patrick Hand", fontSize: 20, color: "4D535A" });
   board.panels.forEach((p, i) => {
     const slide = pptx.addSlide();
@@ -190,7 +189,6 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 /** A single self-contained HTML file to share: panels, transcript, and a comment box per panel (saved in the viewer's browser, copyable as Markdown). */
 export function toShareHTML(board: Board, boardFile: string): string {
   const pngs = panelPNGs(board, boardFile, 3);
-  const share = productShare(board);
   const face = (f: string, file: string) => `@font-face{font-family:"${f}";src:url(data:font/ttf;base64,${readFileSync(join(FONT_DIR, file)).toString("base64")})}`;
   const key = `storyboard-comments:${board.title}`;
   const cards = board.panels.map((p, i) => `
@@ -219,7 +217,7 @@ footer{max-width:1100px;margin:0 auto;padding:8px 16px 40px}
 button{font:inherit;font-size:16px;background:var(--ink);color:var(--paper);border:0;padding:8px 14px;cursor:pointer}
 .ok{margin-left:10px;color:var(--teal)}
 </style></head><body>
-<header><h1>${esc(board.title)}</h1><p class="meta">${esc([board.persona && `Persona: ${board.persona}`, board.subtitle].filter(Boolean).join(" · "))}${share.moments ? ` · <span class="share">Product in ${share.withProduct} of ${share.moments} moments</span>` : ""}</p></header>
+<header><h1>${esc(board.title)}</h1><p class="meta">${esc([board.persona && `Persona: ${board.persona}`, board.subtitle].filter(Boolean).join(" · "))}</p></header>
 <main>${cards}</main>
 <footer><button id="copy">Copy my comments</button><span class="ok" id="ok" hidden>Copied as Markdown. Paste them back to the designer.</span></footer>
 <script>

@@ -90,7 +90,7 @@ The point is to see the product from inside the customer's life, not to illustra
   under the panel and names the points on the journey chart, which is meaningless without them.
 - **Fill the journey lanes.** For each scene panel set \`feeling\` (-2 awful … 2 great) and, where people route
   around a gap, \`workaround\` ("asks the barista"). The designer can switch on \`page.lanes\` to show them, plus
-  a feeling line and "Product in N of M moments".
+  a feeling line across the whole journey.
 - Crowds: people in the same pose get automatic small variations. Set \`variant\` (1–3) only if asked.
 - A screen seen from the side (car dashboard, a TV across the room) can use \`"tilt": "left"\` or \`"right"\`.
 - Leave text sizes alone. Designers set \`page.textScale\` and per-element \`layout.scale\` in the editor.
