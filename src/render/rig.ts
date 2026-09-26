@@ -95,7 +95,30 @@ export interface Figure {
 const BODY_W: Record<string, number> = { slim: 0.86, average: 1, broad: 1.18, plus: 1.28 };
 
 /** Resolve a character's joints in its local space (feet at 0,0), applying view, facing, body and age. */
-export function figure(pose: Pose, angle: Angle, facing: "left" | "right", cast: CastMember): Figure {
+const add = (p: Pt, d: Pt): Pt => [p[0] + d[0], p[1] + d[1]];
+
+/** Small natural variations so several people in one pose don't look cloned. 0 = none. */
+function vary(j: Joints, pose: Pose, side: boolean, v: number) {
+  if (!v || j.seated) return;
+  const freeLeft = ["standing", "holding-phone", "phone-to-ear", "waving", "pointing"].includes(pose);
+  const standingLegs = pose !== "walking";
+  if (v === 1) {
+    j.head = add(j.head, [1.6, 0.6]);
+    if (freeLeft) { j.elL = add(j.elL, side ? [-3, 1] : [-5, 2]); j.hdL = side ? add(j.hdL, [-2, -3]) : [j.hipL[0] - 7, j.hipL[1] - 3]; } // hand on hip
+  } else if (v === 2) {
+    j.head = add(j.head, [-1.4, 0.8]);
+    if (standingLegs) { j.knL = add(j.knL, [side ? 3 : 2, 0]); j.ftL = add(j.ftL, [side ? 5 : -3, 0]); j.hipL = add(j.hipL, [0, 1.5]); } // weight on one leg
+    if (freeLeft) { j.elL = add(j.elL, [1, 0]); j.hdL = add(j.hdL, [2, -5]); } // hand in pocket
+  } else if (v === 3) {
+    if (standingLegs) { j.ftL = add(j.ftL, [side ? -6 : -5, 0]); j.ftR = add(j.ftR, [side ? 4 : 5, 0]); } // wider stance
+    if (freeLeft) { j.elL = add(j.elL, [-2, -2]); j.hdL = add(j.hdL, [4, -10]); } // arm across, holding strap
+  }
+}
+
+/** Stable 1–3 from a string, so the same person keeps the same variation in a panel. */
+export const autoVariant = (key: string) => ([...key].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % 3) + 1;
+
+export function figure(pose: Pose, angle: Angle, facing: "left" | "right", cast: CastMember, variant = 0): Figure {
   const wheelchair = cast.accessories?.includes("wheelchair");
   let p: Pose = pose;
   if (wheelchair && !POSE_DEFS[p].front.seated) p = p === "holding-phone" || p === "phone-to-ear" ? p : "sitting";
@@ -109,6 +132,7 @@ export function figure(pose: Pose, angle: Angle, facing: "left" | "right", cast:
     const lift = 12;
     j = { ...base, elR: [src.elR[0], src.elR[1] + lift], hdR: [src.hdR[0], src.hdR[1] + lift] };
   }
+  vary(j, p, side, variant);
   const dir: 1 | -1 = facing === "left" ? -1 : 1;
   const w = BODY_W[cast.body ?? "average"] ?? 1;
   const mapX = (pt: Pt): Pt => [pt[0] * (side ? 1 : w) * (angle === "three-quarter" ? 0.88 : 1), pt[1]];

@@ -11,6 +11,8 @@ import type { Pt } from "./rig";
 
 export interface RenderOptions {
   asset: AssetResolver;
+  /** Unprocessed images (brand logo). Falls back to `asset`. */
+  raw?: AssetResolver;
   /** Wobble filter on (off while dragging in the editor). */
   wobble?: boolean;
 }
@@ -18,12 +20,15 @@ export interface RenderOptions {
 const ink = C.ink;
 const clip = (pid: string, el: string) => `sb-${pid}-${el.replace(/[^a-z0-9-]/gi, "_")}`;
 
-function CharEl({ c, pid, cam }: { c: CharPlaced; pid: string; cam: { s: number } }) {
+function CharEl({ c, pid, cam, layout }: { c: CharPlaced; pid: string; cam: { s: number }; layout?: ScenePanel["layout"] }) {
   if (c.ov.hidden) return null;
   const dx = (c.ov.dx ?? 0) / cam.s, dy = (c.ov.dy ?? 0) / cam.s;
   const k = c.s * (c.ov.scale ?? 1);
-  const held = c.held ? (
-    <g transform={`translate(${c.held.cx} ${c.held.cy}) rotate(${c.held.rot}) scale(${c.held.scale})`} data-drop={`char:${c.id}`}>
+  const hov = layout?.[`${c.id}.device`] ?? {};
+  const hk = cam.s * k;
+  const held = c.held && !hov.hidden ? (
+    <g data-el={`${c.id}.device`} data-kind="device" data-drop={`char:${c.id}`}
+      transform={`translate(${c.held.cx + (hov.dx ?? 0) / hk} ${c.held.cy + (hov.dy ?? 0) / hk}) rotate(${c.held.rot + (hov.rotate ?? 0)}) scale(${c.held.scale * (hov.scale ?? 1)})`}>
       <Device type={c.held.type} href={c.held.href} product={c.held.product} clipId={clip(pid, `${c.id}-held`)} />
     </g>
   ) : undefined;
@@ -38,7 +43,7 @@ function DevEl({ d, pid, cam }: { d: DevPlaced; pid: string; cam: { s: number } 
   if (d.ov.hidden) return null;
   const dx = (d.ov.dx ?? 0) / cam.s, dy = (d.ov.dy ?? 0) / cam.s;
   return (
-    <g data-el={d.id} data-kind="device" data-drop={`device:${d.id}`} transform={`translate(${d.x + dx} ${d.y + dy}) rotate(${d.rot + (d.ov.rotate ?? 0)}) scale(${d.s * (d.ov.scale ?? 1)})`}>
+    <g data-el={d.id} data-kind="device" data-drop={`device:${d.id}`} transform={`translate(${d.x + dx} ${d.y + dy}) rotate(${d.rot + (d.ov.rotate ?? 0)}) scale(${d.s * (d.ov.scale ?? 1)})${d.tilt ? ` skewY(${d.tilt === "left" ? -14 : 14}) scale(0.82 1)` : ""}`}>
       <Device type={d.type} href={d.href} product={d.product} clipId={clip(pid, d.id)} />
     </g>
   );
@@ -58,7 +63,8 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
   const devOv = panel.layout?.[`${devId}.screen`] ?? {};
   const dcx = g.dcx + (devOv.dx ?? 0), dcy = g.dcy + (devOv.dy ?? 0), ds = g.ds * (devOv.scale ?? 1);
   const def = devType ? DEVICE_DEFS[devType] : undefined;
-  const handheld = devType ? ["phone", "tablet", "watch"].includes(devType) : false;
+  // hands only when someone is actually holding it; a phone on a table is shown on its own
+  const handheld = !!owner?.held && !!devType && ["phone", "tablet", "watch"].includes(devType);
   const arm = (from: Pt, to: Pt, w: number) => (
     <g><line x1={from[0]} y1={from[1]} x2={to[0]} y2={to[1]} stroke={ink} strokeWidth={w + 4} strokeLinecap="round" /><line x1={from[0]} y1={from[1]} x2={to[0]} y2={to[1]} stroke={sleeve} strokeWidth={w} strokeLinecap="round" /></g>
   );
@@ -80,7 +86,7 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
       <g>
         {device}
         <g data-el={c.id} data-kind="character" transform={`translate(${cx} ${cy}) scale(${S})`}>
-          <Character f={c.fig} cast={c.cast} mood={c.mood} />
+          <Character f={c.fig} cast={c.cast} mood={c.mood} hideArm={handheld ? "left" : undefined} />
         </g>
         {handheld && <g data-el={c.id} data-kind="character">{arm(shoulder, handP, 13)}{hand(handP, 9)}</g>}
       </g>
@@ -103,6 +109,9 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
 
 function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePanel; opts: RenderOptions }) {
   const pid = panel.id;
+  const ts = board.page?.textScale ?? 1;
+  const b = board.page?.brand;
+  const brand = b && (b.name || b.logo) ? { name: b.name, logoHref: b.logo ? (opts.raw ?? opts.asset)(b.logo) : undefined } : undefined;
   const L = layoutPanel(board, panel, opts.asset);
   const cam = L.camera;
   const wob = opts.wobble === false ? undefined : "url(#sb-wobble)";
@@ -111,18 +120,18 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
   const reserved: Rect[] = [];
   let cap: ReturnType<typeof captionBox> | undefined;
   if (panel.caption) {
-    cap = captionBox(panel.caption);
     const ov = panel.layout?.caption ?? {};
+    cap = captionBox(panel.caption, ts * (ov.scale ?? 1));
     cap = { ...cap, x: cap.x + (ov.dx ?? 0), y: cap.y + (ov.dy ?? 0) };
     reserved.push(cap);
   }
   for (const a of Object.values(L.anchors)) if (a.screen && a.screen.w > 14) reserved.push(a.screen);
-  const bubbles = placeBubbles(panel, L.anchors, reserved);
+  const bubbles = placeBubbles(panel, L.anchors, reserved, ts);
   const taken: Rect[] = [...reserved, ...bubbles];
   const callouts = (panel.callouts ?? []).map((co, i) => {
     const id = co.id ?? `callout-${i}`;
-    const size = 11.5;
-    const lines = wrap(co.text, size, 120);
+    const size = 12.5 * ts * (panel.layout?.[id]?.scale ?? 1);
+    const lines = wrap(co.text, size, 120 * Math.max(1, size / 14));
     const w = Math.max(...lines.map((l) => textWidth(l, size))) + 12, h = lines.length * size * 1.15 + 9;
     const a = co.target ? L.anchors[co.target] : undefined;
     const to: Pt | undefined = a ? (a.screen ? [a.screen.x + a.screen.w / 2, a.screen.y + a.screen.h / 2] : [a.box.x + a.box.w / 2, a.box.y + 10]) : undefined;
@@ -146,7 +155,7 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
   const byLayer = (behind: boolean) => (
     <>
       {L.devices.filter((d) => d.behind === behind).map((d) => <DevEl key={d.id} d={d} pid={pid} cam={cam} />)}
-      {L.chars.filter((c) => c.behind === behind).map((c) => <CharEl key={c.id} c={c} pid={pid} cam={cam} />)}
+      {L.chars.filter((c) => c.behind === behind).map((c) => <CharEl key={c.id} c={c} pid={pid} cam={cam} layout={panel.layout} />)}
     </>
   );
 
@@ -155,12 +164,12 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
       <g filter={wob}>
         {L.special ? (
           <>
-            <g opacity={0.35} transform={`translate(${cam.tx} ${cam.ty}) scale(${cam.s})`}><SceneBack id={panel.scene} /><SceneFront id={panel.scene} /></g>
+            <g opacity={0.35} transform={`translate(${cam.tx} ${cam.ty}) scale(${cam.s})`}><SceneBack id={panel.scene} brand={brand} /><SceneFront id={panel.scene} /></g>
             <SpecialArt L={L} pid={pid} board={board} panel={panel} />
           </>
         ) : (
           <g transform={`translate(${cam.tx} ${cam.ty}) scale(${cam.s})`}>
-            <SceneBack id={panel.scene} />
+            <SceneBack id={panel.scene} brand={brand} />
             {byLayer(true)}
             <SceneFront id={panel.scene} />
             {byLayer(false)}
@@ -193,43 +202,48 @@ function TimeIcon({ icon, x, y }: { icon: TimePanel["icon"]; x: number; y: numbe
   }
 }
 
-function CardBody({ panel }: { panel: Panel }) {
+function CardBody({ panel, ts }: { panel: Panel; ts: number }) {
   const ov = (id: string) => panel.layout?.[id] ?? {};
+  const k = (id: string) => ts * (ov(id).scale ?? 1);
   const shift = (id: string) => `translate(${ov(id).dx ?? 0} ${ov(id).dy ?? 0})`;
   if (panel.type === "title") {
-    const lines = wrap(panel.title.toUpperCase(), 30, 340, ADV_TITLE);
-    const lh = 34;
+    const tsz = 30 * k("title");
+    const lines = wrap(panel.title.toUpperCase(), tsz, 350, ADV_TITLE);
+    const lh = tsz * 1.13;
+    const ssz = 16 * k("subtitle");
     const top = 118 - ((lines.length - 1) * lh) / 2;
     return (
       <>
         <g data-el="title" data-kind="text" transform={shift("title")}>
-          <text textAnchor="middle" fontFamily={FONT.title} fontSize={30} fill={ink}>{lines.map((l, i) => <tspan key={i} x={200} y={top + i * lh}>{l}</tspan>)}</text>
+          <text textAnchor="middle" fontFamily={FONT.title} fontSize={tsz} fill={ink}>{lines.map((l, i) => <tspan key={i} x={200} y={top + i * lh}>{l}</tspan>)}</text>
         </g>
         {panel.subtitle && (
           <g data-el="subtitle" data-kind="text" transform={shift("subtitle")}>
-            <text textAnchor="middle" fontFamily={FONT.hand} fontSize={16} fill={C.g8}>{wrap(panel.subtitle, 16, 330).map((l, i) => <tspan key={i} x={200} y={top + lines.length * lh + 6 + i * 19}>{l}</tspan>)}</text>
+            <text textAnchor="middle" fontFamily={FONT.hand} fontSize={ssz} fill={C.g8}>{wrap(panel.subtitle, ssz, 340).map((l, i) => <tspan key={i} x={200} y={top + lines.length * lh + ssz * 0.4 + i * ssz * 1.2}>{l}</tspan>)}</text>
           </g>
         )}
       </>
     );
   }
   if (panel.type === "time") {
-    const lines = wrap(panel.text.toUpperCase(), 24, 350, ADV_TITLE);
+    const tsz = 24 * k("text");
+    const lines = wrap(panel.text.toUpperCase(), tsz, 350, ADV_TITLE);
     return (
       <>
-        <g data-el="icon" data-kind="text" transform={shift("icon")}><TimeIcon icon={panel.icon} x={200} y={96} /></g>
+        <g data-el="icon" data-kind="text" transform={`${shift("icon")} translate(200 96) scale(${ov("icon").scale ?? 1}) translate(-200 -96)`}><TimeIcon icon={panel.icon} x={200} y={96} /></g>
         <g data-el="text" data-kind="text" transform={shift("text")}>
-          <text textAnchor="middle" fontFamily={FONT.title} fontSize={24} fill={ink}>{lines.map((l, i) => <tspan key={i} x={200} y={170 + i * 28}>{l}</tspan>)}</text>
+          <text textAnchor="middle" fontFamily={FONT.title} fontSize={tsz} fill={ink}>{lines.map((l, i) => <tspan key={i} x={200} y={150 + tsz * 0.85 + i * tsz * 1.15}>{l}</tspan>)}</text>
         </g>
       </>
     );
   }
   if (panel.type === "text") {
-    const lines = wrap(panel.text, 19, 330);
-    const top = 136 - ((lines.length - 1) * 23) / 2;
+    const tsz = 19 * k("text");
+    const lines = wrap(panel.text, tsz, 340);
+    const top = 136 - ((lines.length - 1) * tsz * 1.2) / 2;
     return (
       <g data-el="text" data-kind="text" transform={shift("text")}>
-        <text textAnchor="middle" fontFamily={FONT.hand} fontSize={19} fill={ink}>{lines.map((l, i) => <tspan key={i} x={200} y={top + i * 23}>{l}</tspan>)}</text>
+        <text textAnchor="middle" fontFamily={FONT.hand} fontSize={tsz} fill={ink}>{lines.map((l, i) => <tspan key={i} x={200} y={top + i * tsz * 1.2}>{l}</tspan>)}</text>
       </g>
     );
   }
@@ -244,7 +258,7 @@ export function PanelArt({ board, panel, opts }: { board: Board; panel: Panel; o
       <clipPath id={`sb-clip-${pid}`}><rect x={0} y={0} width={PANEL_W} height={PANEL_H} /></clipPath>
       <rect x={0} y={0} width={PANEL_W} height={PANEL_H} fill={C.paper} data-el="__panel" />
       <g clipPath={`url(#sb-clip-${pid})`}>
-        {isScene(panel) ? <ScenePanelBody board={board} panel={panel} opts={opts} /> : <CardBody panel={panel} />}
+        {isScene(panel) ? <ScenePanelBody board={board} panel={panel} opts={opts} /> : <CardBody panel={panel} ts={board.page?.textScale ?? 1} />}
       </g>
       <rect x={1.3} y={1.3} width={PANEL_W - 2.6} height={PANEL_H - 2.6} fill="none" stroke={ink} strokeWidth={2.6} filter={wob} pointerEvents="none" />
     </g>

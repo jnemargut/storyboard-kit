@@ -41,6 +41,8 @@ export interface CharacterInPanel {
   facing?: "left" | "right";
   at?: string;
   device?: HeldDevice | DeviceType;
+  /** 1–3: small natural variations of the pose so a crowd doesn't look cloned. Auto if omitted. */
+  variant?: number;
 }
 
 export interface SceneDevice {
@@ -49,6 +51,8 @@ export interface SceneDevice {
   at?: string;
   screen?: string;
   product?: boolean;
+  /** Turned away from the viewer (e.g. a dashboard screen seen from the side). */
+  tilt?: "left" | "right";
 }
 
 export interface Bubble {
@@ -92,6 +96,10 @@ export interface ScenePanel extends PanelBase {
   caption?: string;
   callouts?: Callout[];
   gestures?: Gesture[];
+  /** Journey lane: how the person feels here, -2 (awful) … 2 (great). Defaults from the main character's mood. */
+  feeling?: number;
+  /** Journey lane: what they do to get around a gap ("asks the barista", "screenshots the code"). */
+  workaround?: string;
 }
 
 export interface TitlePanel extends PanelBase {
@@ -119,7 +127,12 @@ export interface Board {
   title: string;
   subtitle?: string;
   persona?: string;
-  page?: { columns?: number };
+  /**
+   * columns: panels across. textScale: multiplies every text size (default 1).
+   * lanes: show service-design lanes (feeling, product, workaround) under each panel.
+   * brand: your company's name/logo on storefronts and signs in the scenes.
+   */
+  page?: { columns?: number; textScale?: number; lanes?: boolean; brand?: { name?: string; logo?: string } };
   cast: Record<string, CastMember>;
   panels: Panel[];
   notes?: string;

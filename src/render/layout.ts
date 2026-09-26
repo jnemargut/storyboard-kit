@@ -1,9 +1,9 @@
 import type { Board, Bubble, CastMember, CharacterInPanel, LayoutOverride, ScenePanel } from "../types";
-import type { DeviceType, Mood } from "../vocab";
-import { figure, type Figure, type Pt } from "./rig";
+import { HANDHELD, type DeviceType, type Mood, type Pose } from "../vocab";
+import { autoVariant, figure, type Figure, type Pt } from "./rig";
 import { DEVICE_DEFS, type Rect } from "./devices";
 import { SCENE_DEFS } from "./scenes";
-import { PANEL_H, PANEL_W } from "./tokens";
+import { FLOOR_Y, PANEL_H, PANEL_W } from "./tokens";
 
 export interface Camera { s: number; tx: number; ty: number }
 export const toPanel = (c: Camera, p: Pt): Pt => [p[0] * c.s + c.tx, p[1] * c.s + c.ty];
@@ -22,6 +22,7 @@ export interface CharPlaced {
   cast: CastMember;
   fig: Figure;
   mood: Mood;
+  pose: Pose;
   x: number; y: number; s: number;
   behind: boolean;
   held?: HeldPlacement;
@@ -38,6 +39,7 @@ export interface DevPlaced {
   x: number; y: number; s: number; rot: number;
   behind: boolean;
   ov: LayoutOverride;
+  tilt?: "left" | "right";
 }
 
 export interface Anchor {
@@ -80,10 +82,12 @@ export function heldDeviceOf(c: CharacterInPanel): { type: DeviceType; screen?: 
   return typeof c.device === "string" ? { type: c.device } : c.device;
 }
 
-/** Phone poses without a device still get a phone in hand, a personal (grey) one. */
+export const isHandheld = (t: DeviceType) => (HANDHELD as readonly string[]).includes(t);
+
+/** Phone poses without a device still get a phone in hand, a personal (grey) one. Non-handheld devices are never held. */
 export function effectiveDevice(c: CharacterInPanel): { type: DeviceType; screen?: string; product: boolean } | undefined {
   const d = heldDeviceOf(c);
-  if (d) return { ...d, product: d.product !== false };
+  if (d && isHandheld(d.type)) return { ...d, product: d.product !== false };
   if (c.pose === "holding-phone" || c.pose === "phone-to-ear") return { type: "phone", product: false };
   return undefined;
 }
@@ -127,6 +131,8 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
 
   // ---- characters
   const list = panel.characters ?? [];
+  /** Non-handheld devices given to a character are stood beside them instead (kiosk, car display…). */
+  const besides: { charId: string; type: DeviceType; screen?: string; product: boolean; x: number; dir: number; behind: boolean }[] = [];
   const autoMarks = scene.order.filter((m) => !list.some((c) => c.at === m));
   list.forEach((c) => {
     const id = c.id ?? c.who;
@@ -136,13 +142,15 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     used.add(markName);
     const mark = scene.marks[markName];
     const held = effectiveDevice(c);
-    let pose = c.pose ?? (held ? "holding-phone" : "standing");
+    const raw = heldDeviceOf(c);
+    const beside = raw && !isHandheld(raw.type) ? raw : undefined;
+    let pose = c.pose ?? (held ? "holding-phone" : beside ? "pointing" : "standing");
     if (mark.seated && ["standing", "holding-phone"].includes(pose)) pose = pose === "holding-phone" ? "sitting-laptop" : "sitting";
     if (mark.seated && heldDeviceOf(c)?.type === "phone" && pose === "sitting-laptop") pose = "sitting";
     if (panel.scene === "car" && markName === "driver-seat" && !c.pose) pose = "driving";
     const angle = c.angle ?? (pose === "walking" || pose === "driving" || mark.seated ? "side" : "three-quarter");
     const facing = c.facing ?? mark.facing ?? "right";
-    const fig = figure(pose, angle, facing, cast);
+    const fig = figure(pose, angle, facing, cast, c.variant ?? autoVariant(`${panel.id}:${id}`));
     const heldP = held ? holdPlacement(fig, held.type, pose, held.screen ? asset(held.screen) : undefined, held.product) : undefined;
     if (heldP && pose === "sitting" && held?.type === "phone") {
       // seated with a phone: lift the phone hand to chest height
@@ -150,8 +158,9 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
       fig.j.hdR = [fig.j.shR[0] + 14 * fig.dir, fig.j.shR[1] + 8];
       Object.assign(heldP, holdPlacement(fig, "phone", "holding-phone", heldP.href, heldP.product));
     }
+    if (beside) besides.push({ charId: id, type: beside.type, screen: beside.screen, product: beside.product !== false, x: mark.x + 52 * fig.dir, dir: fig.dir, behind: !!mark.behind });
     chars.push({
-      id, who: c.who, cast, fig, mood: c.mood ?? "neutral",
+      id, who: c.who, cast, fig, mood: c.mood ?? "neutral", pose,
       x: mark.x, y: mark.y, s: CHAR_SCALE * (mark.scale ?? 1) * fig.scale, behind: !!mark.behind,
       held: heldP, ov: ovOf(panel, id),
       stool: !!fig.j.seated && !mark.seated && panel.scene !== "car",
@@ -172,8 +181,17 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     // sit on the surface: shift up by half height for things on tables
     const onSurface = mark?.surface !== undefined;
     const y = onSurface ? spot.y - (def.h * s) / 2 : spot.y;
-    devices.push({ id, type: d.type, product: d.product !== false, href: d.screen ? asset(d.screen) : undefined, x: spot.x, y, s, rot: 0, behind: !!(spot as { behind?: boolean }).behind, ov: ovOf(panel, id) });
+    devices.push({ id, type: d.type, product: d.product !== false, href: d.screen ? asset(d.screen) : undefined, x: spot.x, y, s, rot: 0, behind: !!(spot as { behind?: boolean }).behind, ov: ovOf(panel, id), tilt: d.tilt });
   });
+  const proxy: Record<string, string> = {};
+  for (const b of besides) {
+    const id = `${b.charId}.device`;
+    const s = PLACED_SCALE[b.type] ?? 0.4;
+    const h = DEVICE_DEFS[b.type].h * s;
+    const floorStanding = b.type === "kiosk";
+    devices.push({ id, type: b.type, product: b.product, href: b.screen ? asset(b.screen) : undefined, x: b.x, y: floorStanding ? FLOOR_Y - h / 2 : FLOOR_Y - 96, s, rot: 0, behind: b.behind, ov: ovOf(panel, id) });
+    proxy[b.charId] = id;
+  }
 
   // ---- camera
   const focusChar = chars.find((c) => c.id === panel.focus) ?? (panel.focus ? undefined : chars.find((c) => c.held) ?? chars[0]);
@@ -196,6 +214,13 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     camera = clampCam({ s, tx: 200 - hx * s, ty: 128 - hy * s });
   }
 
+  // ---- designer's pan/zoom of this panel (layout["__camera"])
+  const camOv = ovOf(panel, "__camera");
+  if (camOv.dx || camOv.dy || camOv.scale) {
+    const z = camOv.scale ?? 1;
+    camera = { s: camera.s * z, tx: 200 - (200 - camera.tx) * z + (camOv.dx ?? 0), ty: 130 - (130 - camera.ty) * z + (camOv.dy ?? 0) };
+  }
+
   // ---- special compositions
   let special: Special = null;
   if (shot === "over-the-shoulder" || shot === "screen" || shot === "pov") {
@@ -211,7 +236,9 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     }
     if (shot === "over-the-shoulder" && (owner ?? focusChar)) {
       const who = (owner ?? focusChar)!;
-      const fig = figure(who.fig.j.seated ? "sitting" : "standing", "back", "right", who.cast);
+      // seen from behind: honour the chosen pose (the device arm is redrawn reaching for the screen)
+      const backPose: Pose = ["holding-phone", "phone-to-ear", "sitting-laptop"].includes(who.pose) ? (who.fig.j.seated ? "sitting" : "standing") : who.pose;
+      const fig = figure(backPose, "back", "right", who.cast);
       special = { kind: "ots", char: { ...who, fig }, device: dev ? { ...holdPlacement(who.fig, dev.type, "holding-phone", dev.href, dev.product), id: dev.id, type: dev.type, href: dev.href } : undefined };
     } else if (dev) {
       special = { kind: shot === "pov" ? "pov" : "screen", device: dev };
@@ -258,9 +285,11 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
       if (c.held) {
         const def = DEVICE_DEFS[c.held.type];
         if (def.screen) {
-          const local = xformRect(def.screen, c.held.cx, c.held.cy, c.held.scale, c.held.rot);
+          const hov = ovOf(panel, `${c.id}.device`);
+          const hs = hov.scale ?? 1;
+          const local = xformRect(def.screen, c.held.cx, c.held.cy, c.held.scale * hs, c.held.rot);
           const p0 = toPanel(camera, [c.x + local.x * k, c.y + local.y * k]);
-          a.screen = { x: p0[0] + dx, y: p0[1] + dy, w: local.w * k * camera.s, h: local.h * k * camera.s };
+          a.screen = { x: p0[0] + dx + (hov.dx ?? 0), y: p0[1] + dy + (hov.dy ?? 0), w: local.w * k * camera.s, h: local.h * k * camera.s };
           a.product = c.held.product;
         }
       }
@@ -279,6 +308,9 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
         a.screen = { x: q[0] + dx, y: q[1] + dy, w: sr.w * camera.s, h: sr.h * camera.s };
       }
       anchors[d.id] = a;
+    }
+    for (const [charId, devId] of Object.entries(proxy)) {
+      if (anchors[charId] && anchors[devId]) { anchors[charId].screen = anchors[devId].screen; anchors[charId].product = anchors[devId].product; }
     }
   }
   return { camera, chars, devices, anchors, special };
@@ -342,21 +374,22 @@ export interface BubbleBox {
 
 const overlaps = (a: Rect, b: Rect, pad = 4) => a.x < b.x + b.w + pad && b.x < a.x + a.w + pad && a.y < b.y + b.h + pad && b.y < a.y + a.h + pad;
 
-export function captionBox(text: string): Rect & { lines: string[]; size: number } {
-  const size = 12.5;
-  const lines = wrap(text, size, 196);
+export function captionBox(text: string, k = 1): Rect & { lines: string[]; size: number } {
+  const size = 13.5 * k;
+  const lines = wrap(text, size, Math.min(360, 196 * Math.max(1, k * 0.9)));
   const w = Math.max(...lines.map((l) => textWidth(l, size))) + 16;
   return { x: 7, y: 7, w, h: lines.length * size * 1.18 + 10, lines, size };
 }
 
-export function placeBubbles(panel: ScenePanel, anchors: Record<string, Anchor>, reserved: Rect[]): BubbleBox[] {
+export function placeBubbles(panel: ScenePanel, anchors: Record<string, Anchor>, reserved: Rect[], textScale = 1): BubbleBox[] {
   const out: BubbleBox[] = [];
   const taken = [...reserved];
   (panel.bubbles ?? []).forEach((b, i) => {
     const id = b.id ?? `bubble-${i}`;
-    const size = b.type === "shout" ? 14 : 13;
+    const k = textScale * (panel.layout?.[id]?.scale ?? 1);
+    const size = (b.type === "shout" ? 15.5 : 14.5) * k;
     const adv = b.type === "shout" ? 0.6 : undefined;
-    const lines = wrap(b.type === "shout" ? b.text.toUpperCase() : b.text, size, b.type === "thought" ? 118 : 134, adv);
+    const lines = wrap(b.type === "shout" ? b.text.toUpperCase() : b.text, size, (b.type === "thought" ? 124 : 140) * Math.min(1.8, Math.max(1, k * 0.85)), adv);
     const tw = Math.max(...lines.map((l) => textWidth(l, size, adv)));
     const padX = b.type === "thought" ? 16 : b.type === "shout" ? 16 : 11;
     const padY = b.type === "thought" ? 12 : b.type === "shout" ? 12 : 8;

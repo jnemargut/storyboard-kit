@@ -10,5 +10,5 @@ writeFileSync("skill/SKILL.md", SKILL_MD);
 writeFileSync("skill/references/vocabulary.md", vocabularyMd());
 writeFileSync("skill/references/format.md", FORMAT_MD);
 writeFileSync("skill/references/schema.json", schema);
-writeFileSync("skill/references/example.md", exampleMd(readFileSync("examples/late-latte.storyboard.json", "utf8")));
+writeFileSync("skill/references/example.md", exampleMd(readFileSync("tests/fixtures/late-latte.storyboard.json", "utf8").replaceAll("../../examples/screens/", "./screens/")));
 console.log("wrote schema.json and skill/");

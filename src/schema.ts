@@ -42,7 +42,7 @@ export function buildSchema() {
       subtitle: { type: "string" },
       persona: { type: "string", description: "Who this is about, e.g. 'Maya, busy commuter'." },
       notes: { type: "string" },
-      page: { type: "object", additionalProperties: false, properties: { columns: { type: "integer", minimum: 1, maximum: 6 } } },
+      page: { type: "object", additionalProperties: false, properties: { columns: { type: "integer", minimum: 1, maximum: 6 }, textScale: { type: "number", minimum: 0.5, maximum: 2.5, description: "Multiplies all text sizes (1 = default). Designers usually set this in the editor." }, lanes: { type: "boolean", description: "Show journey lanes (feeling, product, workaround) under each panel." }, brand: { type: "object", additionalProperties: false, properties: { name: { type: "string", description: "Shown on storefronts/signs." }, logo: { type: "string", description: "Path to a logo image." } } } } },
       cast: {
         type: "object",
         description: "Everyone who appears, keyed by id (lowercase).",
@@ -91,6 +91,8 @@ export function buildSchema() {
                 shot: oneOf(SHOTS),
                 focus: { type: "string", description: "Id of the character or device the camera frames." },
                 caption: { type: "string", description: "Narration box in the top-left corner." },
+                feeling: { type: "integer", minimum: -2, maximum: 2, description: "Journey lane: -2 awful … 2 great. Omit to derive from the main character's mood." },
+                workaround: { type: "string", description: "Journey lane: what they do to route around a gap (e.g. 'asks the barista')." },
                 characters: {
                   type: "array",
                   items: {
@@ -103,8 +105,9 @@ export function buildSchema() {
                       pose: oneOf(POSES), mood: oneOf(MOODS), angle: oneOf(ANGLES),
                       facing: { enum: [...FACING] },
                       at: { type: "string", description: "A mark in the scene (see `storyboard vocab marks`)." },
+                      variant: { type: "integer", minimum: 1, maximum: 3, description: "Pose variation 1–3 (auto if omitted)." },
                       device: {
-                        description: "Device in their hands.",
+                        description: "Device in their hands: phone, tablet, laptop or watch only. Kiosks, car displays, TVs etc. go in the panel's `devices`.",
                         oneOf: [device, { type: "object", required: ["type"], additionalProperties: false, properties: { type: device, screen: { type: "string" }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn grey, not teal. Default true." } } }],
                       },
                     },
@@ -114,7 +117,7 @@ export function buildSchema() {
                   type: "array",
                   items: {
                     type: "object", required: ["type"], additionalProperties: false,
-                    properties: { id: { type: "string" }, type: device, at: { type: "string" }, screen: { type: "string", description: "Path to a screen image, relative to the storyboard file." }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn grey, not teal. Default true." } },
+                    properties: { id: { type: "string" }, type: device, at: { type: "string" }, tilt: { enum: ["left", "right"], description: "Screen turned away from the viewer." }, screen: { type: "string", description: "Path to a screen image, relative to the storyboard file." }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn grey, not teal. Default true." } },
                   },
                 },
                 bubbles: {

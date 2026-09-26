@@ -7,8 +7,9 @@ import { join } from "node:path";
 import { chromium } from "playwright";
 
 const dir = mkdtempSync(join(tmpdir(), "sb-e2e-"));
-cpSync("examples", dir, { recursive: true });
+cpSync("examples/screens", join(dir, "screens"), { recursive: true });
 const file = join(dir, "late-latte.storyboard.json");
+writeFileSync(file, readFileSync("tests/fixtures/late-latte.storyboard.json", "utf8").replaceAll("../../examples/screens/", "./screens/"));
 const read = () => JSON.parse(readFileSync(file, "utf8"));
 const shots = process.env.SHOTS ?? ".scratch";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -20,7 +21,8 @@ await new Promise((ok) => server.stdout.on("data", (d) => String(d).includes("lo
 const url = "http://localhost:4400/";
 
 const browser = await chromium.launch({ channel: "chrome" });
-const page = await browser.newPage({ viewport: { width: 1500, height: 1000 } });
+const ctx = await browser.newContext({ viewport: { width: 1500, height: 1000 }, permissions: ["clipboard-read", "clipboard-write"] });
+const page = await ctx.newPage();
 try {
   await page.goto(url);
   await page.waitForSelector("svg[data-board]");
@@ -81,6 +83,73 @@ try {
   await page.keyboard.press("Meta+z");
   await sleep(600);
   check(read().panels[2].characters[0].device === "phone", "undo reverts the file");
+
+  // board-wide text size
+  await page.getByRole("button", { name: "Larger text" }).click();
+  await sleep(400);
+  check(read().page?.textScale === 1.1, `text size control writes page.textScale (${read().page?.textScale})`);
+
+  // edit the board title (header outside the panels)
+  await page.locator('[data-header="title"]').dblclick();
+  await page.locator("textarea.inline-edit").fill("The Very Late Latte");
+  await page.keyboard.press("Enter");
+  await sleep(400);
+  check(read().title === "The Very Late Latte", "board title is editable in place");
+
+  // held phone is its own selectable thing: move it, then put it down
+  const phone = page.locator('g[data-panel="in-line"] [data-el="maya.device"]');
+  const pb = await phone.boundingBox();
+  await page.mouse.move(pb.x + pb.width / 2, pb.y + pb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(pb.x + pb.width / 2 + 25, pb.y + pb.height / 2, { steps: 5 });
+  await page.mouse.up();
+  await sleep(400);
+  check((read().panels[3].layout?.["maya.device"]?.dx ?? 0) > 0, "held phone can be moved on its own");
+  await page.getByRole("button", { name: "Put down" }).click();
+  await sleep(400);
+  const p4 = read().panels[3];
+  check(!p4.characters[0].device && p4.devices?.[0]?.type === "phone", "Put down moves the phone from her hand into the scene");
+
+  // journey lanes + feeling
+  await page.getByRole("button", { name: "Journey lanes" }).click();
+  await sleep(400);
+  check(read().page?.lanes === true && (await page.locator("[data-journey]").count()) === 1, "Journey lanes toggle shows lanes and the journey summary");
+  await page.locator('[data-lane="asks"]').click();
+  await page.locator('.ctx select[aria-label^="How they feel"]').selectOption("-2");
+  await sleep(400);
+  check(read().panels[6].feeling === -2, "feeling is editable from the panel toolbar");
+
+  // poses tab: select a person, click a pose
+  await page.locator('g[data-panel="commute"] [data-el="maya"]').first().click();
+  await page.getByRole("button", { name: "Poses" }).click();
+  await page.locator(".tile", { hasText: "phone-to-ear" }).click();
+  await sleep(400);
+  check(read().panels[7].characters[0].pose === "phone-to-ear", "Poses tab applies a pose to the selected person");
+
+  // ask agent copies a precise pointer
+  await page.getByRole("button", { name: "Ask agent" }).click();
+  await sleep(200);
+  const ref = await page.evaluate(() => navigator.clipboard.readText());
+  check(ref.includes('panel 8 (id "commute"') && ref.includes("maya"), `Ask agent copies a pointer (${ref.slice(0, 60)}…)`);
+
+  // copy + paste a panel (clipboard events)
+  await page.locator('g[data-panel="later"] rect[data-el="__panel"]').click({ position: { x: 12, y: 12 }, force: true });
+  const n0 = read().panels.length;
+  await page.evaluate(() => {
+    const dt = new DataTransfer();
+    document.dispatchEvent(new ClipboardEvent("copy", { clipboardData: dt, bubbles: true }));
+    document.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, bubbles: true }));
+  });
+  await sleep(500);
+  check(read().panels.length === n0 + 1 && read().panels[6].id === "later-2", "copy/paste duplicates a panel with a fresh id");
+
+  // zoom to panel
+  await page.getByRole("button", { name: "Zoom to panel" }).click();
+  await sleep(300);
+  check((await page.getByRole("button", { name: /^Zoom: \d+%/ }).count()) === 1, "Zoom to panel zooms the editor");
+  await page.screenshot({ path: `${shots}/e2e-4-zoomed.png` });
+  await page.getByRole("button", { name: /^Zoom:/ }).click();
+  await page.getByRole("button", { name: "Fit to window" }).click();
 
   await page.mouse.click(5, 990);
   await page.screenshot({ path: `${shots}/e2e-3-after.png` });

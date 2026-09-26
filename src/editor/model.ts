@@ -4,7 +4,7 @@ import type { Board, Bubble, CharacterInPanel, Gesture, LayoutOverride, Panel, S
 import { isScene } from "../types";
 import type { DeviceType } from "../vocab";
 
-export type Kind = "panel" | "character" | "device" | "bubble" | "caption" | "gesture" | "callout" | "text";
+export type Kind = "panel" | "character" | "device" | "bubble" | "caption" | "gesture" | "callout" | "text" | "header" | "label";
 export interface Sel { panel: string; el: string; kind: Kind }
 
 export const panelIndex = (b: Board, id: string) => b.panels.findIndex((p) => p.id === id);
@@ -14,7 +14,7 @@ type ArrKey = "characters" | "devices" | "bubbles" | "gestures" | "callouts";
 /** Map a rendered element id back to the JSON array + index it came from. */
 export function locate(p: Panel, el: string): { key: ArrKey; index: number } | undefined {
   if (!isScene(p)) return undefined;
-  const base = el.endsWith(".screen") ? el.slice(0, -".screen".length) : el;
+  const base = el.replace(/\.(screen|device)$/, "");
   const ci = (p.characters ?? []).findIndex((c) => (c.id ?? c.who) === base);
   if (ci >= 0) return { key: "characters", index: ci };
   const counts: Record<string, number> = {};
@@ -94,4 +94,98 @@ export function heldScreenOps(b: Board, sel: Sel, screenPath: string): Op[] {
     return [{ path: ["panels", pi, "characters", loc.index, "device"], value: { type: dev, screen: screenPath } }];
   }
   return [];
+}
+
+/** Take a held device out of someone's hand and place it in the scene. */
+export function putDownOps(b: Board, sel: Sel): Op[] {
+  const pi = panelIndex(b, sel.panel);
+  const p = b.panels[pi] as ScenePanel;
+  const loc = locate(p, sel.el);
+  if (!loc || loc.key !== "characters") return [];
+  const c = p.characters![loc.index];
+  const d = typeof c.device === "string" ? { type: c.device } : c.device;
+  if (!d) return [];
+  return [
+    { path: ["panels", pi, "characters", loc.index, "device"], delete: true },
+    { path: ["panels", pi, "layout", `${c.id ?? c.who}.device`], delete: true },
+    { path: ["panels", pi, "devices", (p.devices ?? []).length], value: { ...d } },
+  ];
+}
+
+/** Hand a placed (handheld) device to a character in the same panel. */
+export function handToOps(b: Board, sel: Sel, charId: string): Op[] {
+  const pi = panelIndex(b, sel.panel);
+  const p = b.panels[pi] as ScenePanel;
+  const loc = locate(p, sel.el);
+  const ci = (p.characters ?? []).findIndex((c) => (c.id ?? c.who) === charId);
+  if (!loc || loc.key !== "devices" || ci < 0) return [];
+  const { id: _id, at: _at, ...d } = p.devices![loc.index];
+  return [
+    { path: ["panels", pi, "characters", ci, "device"], value: d.screen || d.product === false ? d : d.type },
+    ...resetLayoutOps(pi, sel.el),
+    { path: ["panels", pi, "devices", loc.index], delete: true },
+  ];
+}
+
+// ------------------------------------------------------------ clipboard
+export type Clip =
+  | { storyboardClip: 1; kind: "panel"; panel: Panel; cast: Board["cast"] }
+  | { storyboardClip: 1; kind: "character"; item: ScenePanel["characters"] extends (infer T)[] | undefined ? T : never; cast: Board["cast"] }
+  | { storyboardClip: 1; kind: "bubble" | "device" | "gesture" | "callout"; item: unknown };
+
+/** What gets copied for the current selection (with any cast members it needs). */
+export function clipFor(b: Board, sel: Sel): Clip | undefined {
+  const pi = panelIndex(b, sel.panel);
+  const p = b.panels[pi];
+  if (!p) return undefined;
+  if (sel.kind === "panel") {
+    const who = isScene(p) ? (p.characters ?? []).map((c) => c.who) : [];
+    return { storyboardClip: 1, kind: "panel", panel: p, cast: Object.fromEntries(who.map((w) => [w, b.cast[w] ?? {}])) };
+  }
+  const loc = locate(p, sel.el);
+  if (!loc || !isScene(p)) return undefined;
+  const item = (p[loc.key] as unknown[])[loc.index];
+  if (loc.key === "characters") {
+    const c = item as NonNullable<ScenePanel["characters"]>[number];
+    return { storyboardClip: 1, kind: "character", item: c, cast: { [c.who]: b.cast[c.who] ?? {} } };
+  }
+  const kind = ({ devices: "device", bubbles: "bubble", gestures: "gesture", callouts: "callout" } as const)[loc.key as "devices" | "bubbles" | "gestures" | "callouts"];
+  return kind ? { storyboardClip: 1, kind, item } : undefined;
+}
+
+/** Ops to paste a clip next to / into the current selection. Undefined = not a storyboard clip. */
+export function pasteOps(b: Board, raw: unknown, sel: Sel | null): { ops: Op[]; label: string; select?: Sel } | string | undefined {
+  if (!raw || typeof raw !== "object" || (raw as { storyboardClip?: number }).storyboardClip !== 1) return undefined;
+  const clip = raw as Clip;
+  const ops: Op[] = [];
+  const addCast = (cast: Board["cast"]) => {
+    for (const [id, m] of Object.entries(cast)) if (!b.cast[id]) ops.push({ path: ["cast", id], value: m });
+  };
+  const pi = sel ? panelIndex(b, sel.panel) : -1;
+  if (clip.kind === "panel") {
+    addCast(clip.cast);
+    const panel = structuredClone(clip.panel);
+    panel.id = newPanelId(b, panel.id);
+    const at = pi >= 0 ? pi + 1 : b.panels.length;
+    ops.push(...insertPanelOps(at, panel));
+    return { ops, label: "Panel pasted", select: { panel: panel.id, el: "__panel", kind: "panel" } };
+  }
+  const p = b.panels[pi];
+  if (!p || !isScene(p)) return "Select a scene panel to paste into.";
+  const ids = new Set((p.characters ?? []).map((c) => c.id ?? c.who));
+  if (clip.kind === "character") {
+    addCast(clip.cast);
+    const c = structuredClone(clip.item);
+    delete c.at;
+    let id = c.id ?? c.who;
+    if (ids.has(id)) { let n = 2; while (ids.has(`${c.who}-${n}`)) n++; id = `${c.who}-${n}`; c.id = id; }
+    ops.push({ path: ["panels", pi, "characters", (p.characters ?? []).length], value: c });
+    return { ops, label: "Person pasted", select: { panel: p.id, el: id, kind: "character" } };
+  }
+  const key = ({ device: "devices", bubble: "bubbles", gesture: "gestures", callout: "callouts" } as const)[clip.kind];
+  const item = structuredClone(clip.item) as Record<string, unknown>;
+  for (const ref of ["from", "on", "target"]) if (typeof item[ref] === "string" && !ids.has(item[ref] as string) && !(p.devices ?? []).some((d) => (d.id ?? d.type) === item[ref])) delete item[ref];
+  delete item.id;
+  ops.push({ path: ["panels", pi, key, ((p as unknown as Record<string, unknown[]>)[key] ?? []).length], value: item });
+  return { ops, label: `${clip.kind} pasted` };
 }

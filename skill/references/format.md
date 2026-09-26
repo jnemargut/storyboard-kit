@@ -19,6 +19,8 @@
       "focus": "maya",                       // optional: who/what the camera frames
       "label": "The app still says 4 min",   // optional caption under the panel
       "caption": "8:14 · In line anyway.",    // optional narration box inside the panel
+      "feeling": -1,                          // journey lane: -2 awful … 2 great
+      "workaround": "asks the barista",       // journey lane: how they route around a gap
       "characters": [{
         "who": "maya", "pose": "holding-phone", "mood": "frustrated",
         "angle": "three-quarter", "facing": "right", "at": "counter",   // at = a scene mark

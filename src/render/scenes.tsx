@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { DeviceType, SceneId } from "../vocab";
 import { C, FLOOR_Y, OFFSET } from "./tokens";
+import { MORE_SCENES } from "./scenes-more";
 
 export interface Mark {
   x: number;
@@ -23,6 +24,8 @@ export interface SceneDef {
   /** Natural spot per device type when a placed device has no `at`. */
   spots: Partial<Record<DeviceType, { x: number; y: number; behind?: boolean }>>;
   defaultSpot: { x: number; y: number };
+  /** Where the brand name/logo goes (storefronts, signs). */
+  sign?: { x: number; y: number; w: number; h: number };
 }
 
 const ink = C.ink;
@@ -41,7 +44,7 @@ const L = ({ d, sw = 1.5, color = ink }: { d: string; sw?: number; color?: strin
 );
 const floor = <L d={`M0 ${FLOOR_Y} H400`} sw={2.1} />;
 
-export const SCENE_DEFS: Record<SceneId, SceneDef> = {
+const BASE_SCENES: Record<string, SceneDef> = {
   "coffee-shop": {
     back: () => (
       <g>
@@ -64,14 +67,15 @@ export const SCENE_DEFS: Record<SceneId, SceneDef> = {
     ),
     marks: {
       counter: { x: 208, y: FLOOR_Y, facing: "right" },
-      queue: { x: 140, y: FLOOR_Y, facing: "right" },
-      table: { x: 110, y: FLOOR_Y, facing: "left", surface: 186 },
+      queue: { x: 158, y: FLOOR_Y, facing: "right" },
+      table: { x: 118, y: FLOOR_Y, facing: "left", surface: 186 },
       door: { x: 34, y: FLOOR_Y, facing: "right" },
       barista: { x: 330, y: FLOOR_Y, facing: "left", behind: true },
     },
     order: ["counter", "barista", "queue", "table", "door"],
     spots: { "payment-terminal": { x: 262, y: 164 }, kiosk: { x: 170, y: 164 }, phone: { x: 84, y: 181 }, tablet: { x: 84, y: 178 } },
     defaultSpot: { x: 84, y: 176 },
+    sign: { x: 262, y: 70, w: 100, h: 20 },
   },
   kitchen: {
     back: () => (
@@ -230,6 +234,7 @@ export const SCENE_DEFS: Record<SceneId, SceneDef> = {
     order: ["sidewalk", "curb", "storefront", "crossing"],
     spots: { kiosk: { x: 250, y: 164 } },
     defaultSpot: { x: 250, y: 164 },
+    sign: { x: 24, y: 74, w: 132, h: 16 },
   },
   transit: {
     back: () => (
@@ -274,6 +279,7 @@ export const SCENE_DEFS: Record<SceneId, SceneDef> = {
     order: ["checkout", "cashier", "aisle", "entrance"],
     spots: { "payment-terminal": { x: 232, y: 165 }, kiosk: { x: 250, y: 164 } },
     defaultSpot: { x: 232, y: 165 },
+    sign: { x: 170, y: 24, w: 170, h: 24 },
   },
   hospital: {
     back: () => (
@@ -338,9 +344,26 @@ export const SCENE_DEFS: Record<SceneId, SceneDef> = {
   },
 };
 
-export function SceneBack({ id }: { id: SceneId }) {
+export const SCENE_DEFS = { ...BASE_SCENES, ...MORE_SCENES } as Record<SceneId, SceneDef>;
+
+export interface Brand { name?: string; logoHref?: string }
+
+function Sign({ r, brand }: { r: { x: number; y: number; w: number; h: number }; brand: Brand }) {
+  const logoW = brand.logoHref ? r.h - 4 : 0;
+  const name = brand.name ?? "";
+  const size = Math.min(r.h * 0.72, ((r.w - logoW - 10) / Math.max(1, name.length)) * 1.45);
+  return (
+    <g data-sign>
+      <rect x={r.x} y={r.y} width={r.w} height={r.h} fill={C.paper} stroke={C.ink} strokeWidth={1.8} />
+      {brand.logoHref && <image href={brand.logoHref} x={r.x + 3} y={r.y + 2} width={logoW} height={r.h - 4} preserveAspectRatio="xMidYMid meet" filter="url(#sb-gray)" />}
+      {name && <text x={r.x + logoW + (r.w - logoW) / 2 + (logoW ? 2 : 0)} y={r.y + r.h / 2 + size * 0.36} textAnchor="middle" fontFamily="Permanent Marker" fontSize={size} fill={C.ink}>{name}</text>}
+    </g>
+  );
+}
+
+export function SceneBack({ id, brand }: { id: SceneId; brand?: Brand }) {
   const s = SCENE_DEFS[id];
-  return <g>{s.back()}{id !== "blank" && id !== "street" && floor}</g>;
+  return <g>{s.back()}{id !== "blank" && id !== "street" && floor}{brand && (brand.name || brand.logoHref) && s.sign && <Sign r={s.sign} brand={brand} />}</g>;
 }
 
 export function SceneFront({ id }: { id: SceneId }) {

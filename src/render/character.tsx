@@ -124,10 +124,12 @@ export interface CharacterProps {
   held?: ReactNode;
   /** Draw a simple stool when seated somewhere without furniture. */
   stool?: boolean;
+  /** Skip one arm (e.g. over-the-shoulder shots redraw it reaching for the device). */
+  hideArm?: "left" | "right";
 }
 
 /** Draws a character in local space (feet at 0,0). */
-export function Character({ f, cast, mood, held, stool }: CharacterProps) {
+export function Character({ f, cast, mood, held, stool, hideArm }: CharacterProps) {
   const j = f.j;
   const skin = SKIN[cast.skin ?? "tone-2"];
   const outfit = cast.outfit ?? "jacket";
@@ -173,8 +175,8 @@ export function Character({ f, cast, mood, held, stool }: CharacterProps) {
   );
   // draw the far arm first
   const farFirst = side || f.view === "back";
-  const armL = arm(j.shL, j.elL, j.hdL, "al");
-  const armR = arm(j.shR, j.elR, j.hdR, "ar");
+  const armL = hideArm === "left" ? null : arm(j.shL, j.elL, j.hdL, "al");
+  const armR = hideArm === "right" ? null : arm(j.shR, j.elR, j.hdR, "ar");
 
   const hipY = Math.max(j.hipL[1], j.hipR[1]);
   const seatX = (j.hipL[0] + j.hipR[0]) / 2 + (side ? -2 * f.dir : 0);

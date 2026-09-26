@@ -20,6 +20,16 @@ export const SCENES = [
   e("store", "Shop checkout: counter, shelves, payment terminal. Marks: checkout, cashier (behind the counter), aisle, entrance."),
   e("hospital", "Ward with a patient bed, IV pole and nurses' station. Marks: bed, bedside, corridor, station (behind the counter)."),
   e("school", "School entrance: fence, gate, doors, sign. Marks: sidewalk, gate, door."),
+  e("airport", "Gate seating, departure board, check-in counter, plane in the window. Marks: check-in, agent (behind the counter), gate-seat, window."),
+  e("restaurant", "Table for two, pendant lights, waiter. Marks: table-left, table-right, waiter, door."),
+  e("gym", "Treadmill, weights rack, bench, mirror. Marks: floor, treadmill, bench, mirror."),
+  e("clinic", "Doctor's waiting room with reception desk. Marks: waiting (seated), reception, receptionist (behind the desk), door."),
+  e("parking", "Parking garage: parked car, EV charger, pillar. Marks: car-door, charger, walkway."),
+  e("bus-stop", "Bus shelter with bench, schedule and sign. Marks: bench, shelter, sidewalk, curb."),
+  e("park", "Trees, a bench and a path. Marks: bench, path, tree."),
+  e("home-office", "Desk at home by a window, bookshelf. Marks: desk-chair, bookshelf, door."),
+  e("hotel", "Front desk with bell, elevator, luggage cart. Marks: desk, clerk (behind the desk), lobby, elevator."),
+  e("classroom", "Whiteboard, desks, clock. Marks: desk, back-row, teacher, board."),
   e("blank", "Empty panel with a floor line. Marks: left, center, right."),
 ] as const;
 
@@ -36,6 +46,16 @@ export const SCENE_MARKS: Record<string, string[]> = {
   store: ["checkout", "cashier", "aisle", "entrance"],
   hospital: ["bed", "bedside", "corridor", "station"],
   school: ["sidewalk", "gate", "door"],
+  airport: ["check-in", "agent", "gate-seat", "window"],
+  restaurant: ["table-left", "table-right", "waiter", "door"],
+  gym: ["floor", "treadmill", "bench", "mirror"],
+  clinic: ["waiting", "reception", "receptionist", "door"],
+  parking: ["car-door", "charger", "walkway"],
+  "bus-stop": ["bench", "shelter", "sidewalk", "curb"],
+  park: ["bench", "path", "tree"],
+  "home-office": ["desk-chair", "bookshelf", "door"],
+  hotel: ["desk", "clerk", "lobby", "elevator"],
+  classroom: ["desk", "back-row", "teacher", "board"],
   blank: ["left", "center", "right"],
 };
 
@@ -96,6 +116,9 @@ export const DEVICES = [
   e("kiosk", "Self-service kiosk or ordering screen."),
   e("payment-terminal", "Card reader at a checkout."),
 ] as const;
+
+/** Devices a person can hold. Everything else (kiosk, car display, TV…) is placed in the scene. */
+export const HANDHELD = ["phone", "tablet", "laptop", "watch"] as const;
 
 export const BUBBLES = [
   e("speech", "Someone says something out loud."),

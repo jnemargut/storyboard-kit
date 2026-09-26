@@ -11,9 +11,12 @@ import { SCENE_MARKS, SCENES, POSES, MOODS, SHOTS, DEVICES, ANGLES, ids } from "
 import { toScript } from "../src/script";
 import { bakeScreen, imageSize } from "../src/export";
 import { buildSchema } from "../src/schema";
+import { critique } from "../src/critique";
+import { productShare, feelingOf } from "../src/render";
+import { clipFor, pasteOps } from "../src/editor/model";
 import type { Board } from "../src/types";
 
-const example: Board = JSON.parse(readFileSync("examples/late-latte.storyboard.json", "utf8"));
+const example: Board = JSON.parse(readFileSync("tests/fixtures/late-latte.storyboard.json", "utf8"));
 const asset = () => undefined;
 
 describe("vocabulary stays in sync with the renderer", () => {
@@ -98,6 +101,118 @@ describe("agent-eval regressions", () => {
     const svg = renderBoardSVG(base({ characters: [{ who: "p", pose: "phone-to-ear" }] }), { asset });
     expect(svg).toContain('data-drop="char:p"');
     expect(svg).not.toContain("#8fd6dc");
+  });
+});
+
+describe("devices: held vs placed", () => {
+  const b = (chars: unknown[], extra: Record<string, unknown> = {}): Board =>
+    ({ schemaVersion: 1, title: "t", cast: { p: {} }, panels: [{ id: "a", scene: "coffee-shop", characters: chars, ...extra }] }) as unknown as Board;
+  it("only handheld devices can be held", () => {
+    const r = validate(b([{ who: "p", device: "kiosk" }]));
+    expect(r.errors[0].message).toContain("can't be held");
+    expect(r.errors[0].hint).toContain('"devices"');
+  });
+  it("a non-handheld device given to someone is drawn beside them, and gestures land on it", () => {
+    const svg = renderBoardSVG(b([{ who: "p", device: "kiosk" }], { gestures: [{ type: "tap", on: "p" }] }), { asset });
+    expect(svg).toContain('data-el="p.device"');
+    expect(svg).toContain('data-el="gesture-0"');
+  });
+  it("held devices are separately selectable and movable", () => {
+    const moved = applyOps(b([{ who: "p", device: "phone" }]), [{ path: ["panels", 0, "layout", "p.device", "dx"], value: 20 }]);
+    const svg = renderBoardSVG(moved, { asset });
+    expect(svg).toContain('data-el="p.device"');
+    expect(svg).not.toBe(renderBoardSVG(b([{ who: "p", device: "phone" }]), { asset }));
+  });
+  it("a phone on its own (no person) in a screen shot has no hands", () => {
+    const svg = renderBoardSVG(b([], { shot: "screen", devices: [{ type: "phone" }] }), { asset });
+    expect(svg).not.toContain('data-kind="character"');
+  });
+});
+
+describe("text size", () => {
+  it("page.textScale and per-element scale grow the text", () => {
+    const base: Board = JSON.parse(JSON.stringify(example));
+    const big = applyOps(base, [{ path: ["page", "textScale"], value: 1.5 }, { path: ["panels", 3, "layout", "bubble-0", "scale"], value: 1.4 }]);
+    const size = (svg: string) => Math.max(...[...svg.matchAll(/font-size="([\d.]+)"/g)].map((m) => Number(m[1])));
+    expect(size(renderBoardSVG(big, { asset }))).toBeGreaterThan(size(renderBoardSVG(base, { asset })));
+    expect(validate(big).ok).toBe(true);
+  });
+});
+
+describe("service-design layer", () => {
+  it("counts product moments", () => {
+    expect(productShare(example)).toEqual({ withProduct: 5, moments: 6 });
+    const svg = renderBoardSVG(example, { asset });
+    expect(svg).toContain("Product in");
+  });
+  it("journey lanes render per panel plus a journey summary", () => {
+    const b = applyOps(example, [{ path: ["page", "lanes"], value: true }, { path: ["panels", 6, "workaround"], value: "asks the barista" }]);
+    const svg = renderBoardSVG(b, { asset });
+    expect(svg).toContain('data-lane="asks"');
+    expect(svg).toContain("data-journey");
+    expect(svg).toContain("asks the barista");
+    expect(validate(b).ok).toBe(true);
+  });
+  it("feeling comes from the field, else the main character's mood", () => {
+    expect(feelingOf(example.panels[4])).toBe(-2); // frustrated
+    expect(feelingOf({ ...example.panels[4], feeling: 1 } as never)).toBe(1);
+    expect(feelingOf(example.panels[0])).toBeUndefined();
+  });
+  it("critique flags happy paths and praises honest ones", () => {
+    const happy: Board = {
+      schemaVersion: 1, title: "Happy", persona: "Ana, shopper", cast: { a: {} },
+      panels: [1, 2, 3, 4].map((i) => ({ id: `p${i}`, scene: "store" as const, characters: [{ who: "a", device: "phone" as const, mood: "happy" as const }] })),
+    };
+    const ids = critique(happy).findings.map((f) => f.id);
+    expect(ids).toEqual(expect.arrayContaining(["trigger", "always-on", "workaround", "happy-path", "unsaid", "camera", "alone"]));
+    const honest = critique(example);
+    expect(honest.strengths.length).toBeGreaterThan(1);
+    expect(honest.findings.map((f) => f.id)).not.toContain("always-on");
+  });
+});
+
+describe("art + scene options", () => {
+  it("pose variants change the drawing but not the pose", () => {
+    const one = (v: number) => renderBoardSVG({ schemaVersion: 1, title: "t", cast: { a: {} }, panels: [{ id: "p", scene: "blank", characters: [{ who: "a", variant: v }] }] }, { asset });
+    expect(one(1)).not.toBe(one(2));
+    expect(one(2)).not.toBe(one(3));
+  });
+  it("brand name appears on scene signage", () => {
+    const b = applyOps(example, [{ path: ["page", "brand"], value: { name: "Brewly" } }]);
+    expect(renderBoardSVG(b, { asset })).toContain("Brewly");
+    expect(validate(b).ok).toBe(true);
+  });
+  it("panel camera pan/zoom and device tilt change the render", () => {
+    const base: Board = { schemaVersion: 1, title: "t", cast: { a: {} }, panels: [{ id: "p", scene: "car", characters: [{ who: "a" }], devices: [{ type: "car-display" }] }] };
+    const panned = applyOps(base, [{ path: ["panels", 0, "layout", "__camera"], value: { dx: 30, scale: 1.4 } }]);
+    const tilted = applyOps(base, [{ path: ["panels", 0, "devices", 0, "tilt"], value: "left" }]);
+    const r = renderBoardSVG(base, { asset });
+    expect(renderBoardSVG(panned, { asset })).not.toBe(r);
+    expect(renderBoardSVG(tilted, { asset })).toContain("skewY");
+  });
+});
+
+describe("clipboard", () => {
+  it("copies a person with their cast entry and pastes into another board", () => {
+    const clip = clipFor(example, { panel: "in-line", el: "sam", kind: "character" })!;
+    const other: Board = { schemaVersion: 1, title: "Other", cast: {}, panels: [{ id: "x", scene: "office" }] };
+    const res = pasteOps(other, JSON.parse(JSON.stringify(clip)), { panel: "x", el: "__panel", kind: "panel" });
+    if (!res || typeof res === "string") throw new Error(String(res));
+    const next = applyOps(other, res.ops);
+    expect(next.cast.sam).toBeDefined();
+    expect((next.panels[0] as never as { characters: { who: string }[] }).characters[0].who).toBe("sam");
+    expect(validate(next).ok).toBe(true);
+  });
+  it("pastes a panel with a fresh id", () => {
+    const clip = clipFor(example, { panel: "in-line", el: "__panel", kind: "panel" })!;
+    const res = pasteOps(example, clip, { panel: "in-line", el: "__panel", kind: "panel" });
+    if (!res || typeof res === "string") throw new Error(String(res));
+    const next = applyOps(example, res.ops);
+    expect(next.panels[4].id).toBe("in-line-2");
+    expect(validate(next).ok).toBe(true);
+  });
+  it("ignores clipboard text that isn't a storyboard clip", () => {
+    expect(pasteOps(example, { hello: 1 }, null)).toBeUndefined();
   });
 });
 

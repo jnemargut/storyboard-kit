@@ -2,7 +2,8 @@ import { useState } from "react";
 import type { Op } from "../json";
 import type { Board, CastMember, Panel, ScenePanel } from "../types";
 import { isScene } from "../types";
-import { ACCESSORIES, AGES, BODY, BUBBLES, DEVICES, GESTURES, HAIR, HAIR_SHADE, OUTFITS, SCENES, SKIN, ids, type DeviceType } from "../vocab";
+import { ACCESSORIES, AGES, BODY, BUBBLES, DEVICES, GESTURES, HAIR, HAIR_SHADE, OUTFITS, POSES, SCENES, SKIN, ids, type DeviceType, type Pose, type SceneId } from "../vocab";
+import { SceneBack, SceneFront } from "../render/scenes";
 import { Character } from "../render/character";
 import { Device, DEVICE_DEFS } from "../render/devices";
 import { figure } from "../render/rig";
@@ -15,7 +16,8 @@ export type AddPayload =
   | { kind: "caption" }
   | { kind: "callout" }
   | { kind: "device"; type: DeviceType }
-  | { kind: "gesture"; type: string };
+  | { kind: "gesture"; type: string }
+  | { kind: "pose"; pose: string };
 
 type AddResult = { ops: Op[]; label?: string; select?: Sel } | string;
 
@@ -42,6 +44,10 @@ export function applyAdd(board: Board, a: AddPayload, pi: number, sel: Sel | nul
   const push = (key: string, item: unknown): Op => ({ path: ["panels", pi, key, ((p as unknown as Record<string, unknown[]>)[key] ?? []).length], value: item });
 
   switch (a.kind) {
+    case "pose": {
+      if (!selChar) return "Select a person first, or drop the pose onto one.";
+      return { ops: [{ path: ["panels", pi, "characters", charIds.indexOf(selChar), "pose"], value: a.pose }], label: `Pose: ${a.pose}` };
+    }
     case "character": {
       const taken = charIds.includes(a.who);
       const item = taken ? { who: a.who, id: `${a.who}-${charIds.length + 1}` } : { who: a.who };
@@ -131,13 +137,30 @@ function CastEditor({ id, m, commit }: { id: string; m: CastMember; commit: (ops
   );
 }
 
-const TABS = ["People", "Bubbles & notes", "Devices", "Gestures", "Panels", "Cast"] as const;
+function SceneThumb({ id }: { id: SceneId }) {
+  return (
+    <svg width={116} height={75} viewBox="0 0 400 260" style={{ background: "#fbfaf7" }}>
+      <SceneBack id={id} /><SceneFront id={id} />
+      <rect x={1} y={1} width={398} height={258} fill="none" stroke="#1c1c1e" strokeWidth={4} />
+    </svg>
+  );
+}
+
+function PoseThumb({ pose, cast }: { pose: Pose; cast: CastMember }) {
+  const f = figure(pose, pose === "walking" || pose === "driving" ? "side" : "three-quarter", "right", cast);
+  return (
+    <svg width={56} height={72} viewBox="-40 -136 80 144">
+      <Character f={f} cast={cast} mood="neutral" stool={!!f.j.seated} />
+    </svg>
+  );
+}
+
+const TABS = ["People", "Poses", "Bubbles & notes", "Devices", "Gestures", "Panels", "Cast"] as const;
 
 export function Drawer({ board, sel, commit, setSel, flash }: {
   board: Board; sel: Sel | null; commit: (ops: Op[], label?: string) => Promise<void>; setSel: (s: Sel | null) => void; flash: (m: string) => void;
 }) {
   const [tab, setTab] = useState<(typeof TABS)[number] | null>(null);
-  const [scene, setScene] = useState("coffee-shop");
   const pi = sel ? panelIndex(board, sel.panel) : board.panels.length - 1;
   const add = (a: AddPayload) => {
     const res = applyAdd(board, a, pi, sel);
@@ -175,11 +198,25 @@ export function Drawer({ board, sel, commit, setSel, flash }: {
             <Tile key={d} payload={{ kind: "device", type: d as DeviceType }} onAdd={add} name={d} sub={["phone", "tablet", "laptop", "watch"].includes(d) ? "hand it to the selected person" : "place in the scene"} teal><DeviceIcon type={d as DeviceType} /></Tile>
           ))}
           {tab === "Gestures" && ids(GESTURES).map((g) => <Tile key={g} payload={{ kind: "gesture", type: g }} onAdd={add} name={g} sub="on a screen" teal />)}
+          {tab === "Poses" && (
+            <div className="thumbs">
+              {ids(POSES).map((p) => {
+                const who = sel && sel.kind === "character" ? (board.panels[pi] as ScenePanel)?.characters?.find((c) => (c.id ?? c.who) === sel.el)?.who : undefined;
+                return <Tile key={p} payload={{ kind: "pose", pose: p }} onAdd={add} name={p}><PoseThumb pose={p as Pose} cast={(who && board.cast[who]) || {}} /></Tile>;
+              })}
+              <span className="hint">Select a person, then click a pose, or drag it onto anyone.</span>
+            </div>
+          )}
           {tab === "Panels" && (
             <>
-              <div className="tile" style={{ cursor: "default" }}>
-                <select value={scene} onChange={(e) => setScene(e.target.value)}>{ids(SCENES).map((s) => <option key={s}>{s}</option>)}</select>
-                <button className="btn" style={{ marginTop: 4 }} onClick={() => add({ kind: "panel", panel: "scene", scene })}>+ Scene panel</button>
+              <div className="thumbs">
+                {ids(SCENES).map((sc) => (
+                  <div key={sc} className="thumb" draggable title="Click to add a panel after the selected one, or drag onto the board"
+                    onDragStart={(e) => e.dataTransfer.setData("application/x-storyboard", JSON.stringify({ kind: "panel", panel: "scene", scene: sc }))}
+                    onClick={() => add({ kind: "panel", panel: "scene", scene: sc })}>
+                    <SceneThumb id={sc as SceneId} /><span>{sc}</span>
+                  </div>
+                ))}
               </div>
               <Tile payload={{ kind: "panel", panel: "title" }} onAdd={add} name="Title card" />
               <Tile payload={{ kind: "panel", panel: "time" }} onAdd={add} name="Time passes" sub="'12 minutes later…'" />

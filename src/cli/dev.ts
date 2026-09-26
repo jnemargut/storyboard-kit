@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import { applyOps, formatStoryboard, type Op } from "../json";
 import { validate } from "../validate";
-import { bakeScreen, boardToSVG, cacheDirFor, pngToPDF, svgToPNG } from "../export";
+import { bakeScreen, boardToSVG, cacheDirFor, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";
 import { pageSize } from "../render";
 import type { Board } from "../types";
 
@@ -22,7 +22,7 @@ export async function dev(file: string, o: DevOptions) {
   const base = dirname(abs);
   const cache = cacheDirFor(abs);
   if (!existsSync(abs)) throw new Error(`No such file: ${file}. Create it first (see \`storyboard vocab\` and the skill).`);
-  if (!existsSync(join(EDITOR_DIR, "index.html"))) throw new Error("Editor build missing. Run `npm run build` in the storyboard-cli package.");
+  if (!existsSync(join(EDITOR_DIR, "index.html"))) throw new Error("Editor build missing. Run `npm run build` in the storyboardkit package.");
 
   let lastWritten = "";
   let version = 0;
@@ -116,6 +116,14 @@ export async function dev(file: string, o: DevOptions) {
         const scale = Number(url.searchParams.get("scale") ?? 2);
         const board = read();
         const stem = basename(abs).replace(/\.storyboard\.json$|\.json$/, "");
+        if (fmt === "pptx") {
+          res.writeHead(200, { "content-type": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "content-disposition": `attachment; filename="${stem}.pptx"` });
+          return res.end(await toPPTX(board, abs));
+        }
+        if (fmt === "html") {
+          res.writeHead(200, { "content-type": "text/html; charset=utf-8", "content-disposition": `attachment; filename="${stem}.html"` });
+          return res.end(toShareHTML(board, abs));
+        }
         if (fmt === "svg") {
           res.writeHead(200, { "content-type": "image/svg+xml", "content-disposition": `attachment; filename="${stem}.svg"` });
           return res.end(boardToSVG(board, abs, true));

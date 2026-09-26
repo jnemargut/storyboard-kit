@@ -1,6 +1,9 @@
 import { SCENE_MARKS, VOCAB, type Entry } from "./vocab";
 
-export const CLI = "npx storyboard-cli";
+import pkg from "../package.json";
+
+/** How docs tell agents to run the CLI. Follows the package name, so renaming for npm is a one-line change. */
+export const CLI = `npx ${pkg.name}`;
 
 export const SKILL_MD = `---
 name: storyboard
@@ -24,11 +27,16 @@ shows where the product actually shows up in someone's day and where it doesn't.
    Worked example: [references/example.md](references/example.md).
 3. **Validate and fix** until clean: \`${CLI} validate <file>\`. Errors say exactly what to change
    ("did you mean …"). Warnings are storytelling nudges; take them seriously.
+   Then run \`${CLI} critique <file>\`. It's a service-design reality check (does it start before the product?
+   show a workaround? let the feeling dip?). Fix what makes the story truer, not just greener.
 4. **Open the editor** in the background (it keeps running): \`${CLI} dev <file>\`. Tell the designer the URL.
    Their tweaks save into the same file in real time.
 5. **Iterate on the same file.** Re-read it before each edit, because the designer may have changed things.
    Never delete or rewrite \`layout\` entries (those are the designer's manual nudges) unless asked.
-6. **Export** when asked: \`${CLI} export <file> --png\` (also \`--pdf\`, \`--svg\`, \`--scale 3\`).
+6. **Export** when asked: \`${CLI} export <file> --png\` (also \`--pdf\`, \`--svg\`, \`--scale 3\`,
+   \`--pptx\` for a slide per panel with speaker notes, \`--html\` for a share page with comment boxes).
+7. **The designer may paste a pointer** like \`In x.storyboard.json: panel 3 (id "in-line"): the bubble "bubble-0" …\`.
+   That's exactly the element to change. Use the id and path it gives.
 
 ## Craft: what makes a storyboard useful
 
@@ -52,6 +60,15 @@ The point is to see the product from inside the customer's life, not to illustra
   is not the product: give that device \`"product": false\` (e.g. \`"device": { "type": "phone", "product": false }\`)
   and it's drawn grey. Phone poses (\`holding-phone\`, \`phone-to-ear\`) without a device get a grey phone
   automatically. This is how the board shows where the product helps and where people route around it.
+- **Hold only what a hand holds.** \`device\` on a character is for phone, tablet, laptop or watch. Kiosks, car
+  displays, TVs, terminals and smart speakers go in the panel's \`devices\` (optionally \`"at"\` a mark), and
+  gestures point \`"on"\` them by id. A phone lying on a table is also a panel device, with no person needed.
+- **Fill the journey lanes.** For each scene panel set \`feeling\` (-2 awful … 2 great) and, where people route
+  around a gap, \`workaround\` ("asks the barista"). The designer can switch on \`page.lanes\` to show them, plus
+  a feeling line and "Product in N of M moments".
+- Crowds: people in the same pose get automatic small variations. Set \`variant\` (1–3) only if asked.
+- A screen seen from the side (car dashboard, a TV across the room) can use \`"tilt": "left"\` or \`"right"\`.
+- Leave text sizes alone. Designers set \`page.textScale\` and per-element \`layout.scale\` in the editor.
 - If the designer gives you screen designs, reference them by path (\`"screen": "./screens/x.png"\`). The tool
   sketchifies them automatically. Otherwise leave \`screen\` out and a generic teal UI is drawn.
 `;
@@ -96,6 +113,8 @@ export const FORMAT_MD = `# storyboard.json format
       "focus": "maya",                       // optional: who/what the camera frames
       "label": "The app still says 4 min",   // optional caption under the panel
       "caption": "8:14 · In line anyway.",    // optional narration box inside the panel
+      "feeling": -1,                          // journey lane: -2 awful … 2 great
+      "workaround": "asks the barista",       // journey lane: how they route around a gap
       "characters": [{
         "who": "maya", "pose": "holding-phone", "mood": "frustrated",
         "angle": "three-quarter", "facing": "right", "at": "counter",   // at = a scene mark
@@ -136,7 +155,7 @@ uses a time card for the wait, and ends on the consequence for the person.
 }
 
 export const AGENTS_BLOCK = `<!-- storyboard:start -->
-## Storyboards (storyboard-cli)
+## Storyboards (storyboardkit)
 
 For storyboards, customer-journey comics or day-in-the-life panels, use the \`storyboard\` skill
 (\`.agents/skills/storyboard/SKILL.md\`; in Claude Code, the storyboard skill) and this CLI:

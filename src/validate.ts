@@ -3,6 +3,7 @@ import {
   OUTFITS, PANEL_TYPES, POSES, SCENES, SCENE_MARKS, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
 } from "./vocab";
 import { SCHEMA_VERSION } from "./types";
+import { HANDHELD } from "./vocab";
 
 export interface Issue {
   path: string;
@@ -103,9 +104,16 @@ export function validate(input: unknown): Result {
   if (b.page !== undefined) {
     if (!isObj(b.page)) err("$.page", "must be an object.");
     else {
-      known("$.page", b.page, ["columns"]);
+      known("$.page", b.page, ["columns", "textScale", "lanes", "brand"]);
+      if (b.page.lanes !== undefined && typeof b.page.lanes !== "boolean") err("$.page.lanes", "must be true or false.");
+      if (b.page.brand !== undefined) {
+        if (!isObj(b.page.brand)) err("$.page.brand", "must be an object like { \"name\": \"Acme\" }.");
+        else { known("$.page.brand", b.page.brand, ["name", "logo"]); str("$.page.brand.name", b.page.brand.name); str("$.page.brand.logo", b.page.brand.logo); }
+      }
       const c = b.page.columns;
       if (c !== undefined && (typeof c !== "number" || !Number.isInteger(c) || c < 1 || c > 6)) err("$.page.columns", "must be an integer from 1 to 6.");
+      const t = b.page.textScale;
+      if (t !== undefined && (typeof t !== "number" || t < 0.5 || t > 2.5)) err("$.page.textScale", "must be a number from 0.5 to 2.5 (1 = default).");
     }
   }
 
@@ -151,7 +159,10 @@ export function validate(input: unknown): Result {
     if (type !== "scene") return;
 
     sceneCount++;
-    known(p, raw, [...common, "scene", "shot", "focus", "characters", "devices", "bubbles", "caption", "callouts", "gestures"]);
+    known(p, raw, [...common, "scene", "shot", "focus", "characters", "devices", "bubbles", "caption", "callouts", "gestures", "feeling", "workaround"]);
+    if (raw.feeling !== undefined && (typeof raw.feeling !== "number" || !Number.isInteger(raw.feeling) || raw.feeling < -2 || raw.feeling > 2))
+      err(`${p}.feeling`, "must be an integer from -2 (awful) to 2 (great).");
+    str(`${p}.workaround`, raw.workaround);
     if (raw.scene === undefined) err(`${p}.scene`, "is required for scene panels.", `One of: ${ids(SCENES).join(", ")}`);
     oneOf(`${p}.scene`, raw.scene, SCENES, "scene");
     oneOf(`${p}.shot`, raw.shot, SHOTS, "shot");
@@ -176,7 +187,8 @@ export function validate(input: unknown): Result {
     else chars.forEach((c, j) => {
       const cp = `${p}.characters[${j}]`;
       if (!isObj(c)) { err(cp, "must be an object."); return; }
-      known(cp, c, ["who", "id", "pose", "mood", "angle", "facing", "at", "device"]);
+      known(cp, c, ["who", "id", "pose", "mood", "angle", "facing", "at", "device", "variant"]);
+      if (c.variant !== undefined && (typeof c.variant !== "number" || ![1, 2, 3].includes(c.variant))) err(`${cp}.variant`, "must be 1, 2 or 3.");
       if (typeof c.who !== "string") err(`${cp}.who`, "is required: a key from cast.");
       else if (!castIds.includes(c.who)) {
         const s = suggest(c.who, castIds);
@@ -192,10 +204,16 @@ export function validate(input: unknown): Result {
       if (c.device !== undefined) {
         hasAnyDevice = true;
         if (!(isObj(c.device) && c.device.product === false)) hasProduct = true;
-        if (typeof c.device === "string") oneOf(`${cp}.device`, c.device, DEVICES, "device");
+        if (typeof c.device === "string") {
+          oneOf(`${cp}.device`, c.device, DEVICES, "device");
+          if ((ids(DEVICES) as string[]).includes(c.device) && !(HANDHELD as readonly string[]).includes(c.device))
+            err(`${cp}.device`, `A ${c.device} can't be held.`, `Only ${HANDHELD.join(", ")} go in a hand. Put it in the scene: "devices": [{ "type": "${c.device}" }] (optionally "at" a mark), and point gestures "on" it.`);
+        }
         else if (isObj(c.device)) {
           known(`${cp}.device`, c.device, ["type", "screen", "product"]);
           oneOf(`${cp}.device.type`, c.device.type, DEVICES, "device");
+          if (typeof c.device.type === "string" && !(HANDHELD as readonly string[]).includes(c.device.type))
+            err(`${cp}.device`, `A ${c.device.type} can't be held.`, `Only ${HANDHELD.join(", ")} go in a hand. Put it in the scene: "devices": [{ "type": "${c.device.type}" }] (optionally "at" a mark), and point gestures "on" it.`);
           str(`${cp}.device.screen`, c.device.screen);
         } else err(`${cp}.device`, "must be a device name or { type, screen }.");
       }
@@ -206,7 +224,8 @@ export function validate(input: unknown): Result {
     else devs.forEach((d, j) => {
       const dp = `${p}.devices[${j}]`;
       if (!isObj(d)) { err(dp, "must be an object."); return; }
-      known(dp, d, ["id", "type", "at", "screen", "product"]);
+      known(dp, d, ["id", "type", "at", "screen", "product", "tilt"]);
+      oneOf(`${dp}.tilt`, d.tilt, ["left", "right"], "tilt");
       oneOf(`${dp}.type`, d.type, DEVICES, "device");
       if (d.type === undefined) err(`${dp}.type`, "is required.");
       if (d.at !== undefined) checkMark(`${dp}.at`, d.at);

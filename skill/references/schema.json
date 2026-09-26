@@ -38,6 +38,30 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 6
+        },
+        "textScale": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.5,
+          "description": "Multiplies all text sizes (1 = default). Designers usually set this in the editor."
+        },
+        "lanes": {
+          "type": "boolean",
+          "description": "Show journey lanes (feeling, product, workaround) under each panel."
+        },
+        "brand": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Shown on storefronts/signs."
+            },
+            "logo": {
+              "type": "string",
+              "description": "Path to a logo image."
+            }
+          }
         }
       }
     },
@@ -380,9 +404,19 @@
                   "store",
                   "hospital",
                   "school",
+                  "airport",
+                  "restaurant",
+                  "gym",
+                  "clinic",
+                  "parking",
+                  "bus-stop",
+                  "park",
+                  "home-office",
+                  "hotel",
+                  "classroom",
                   "blank"
                 ],
-                "description": "coffee-shop: Counter, menu board, espresso machine, barista. Marks: counter, barista (behind the counter), queue, table, door.\nkitchen: Home kitchen with counter, fridge, window. Marks: counter, fridge, table.\nliving-room: Sofa, lamp, TV on the wall. Marks: sofa, tv, floor.\nbedroom: Bed, nightstand, window at night or morning. Marks: bed, nightstand, door.\noffice: Desk with monitor, chair, plant, window. Marks: desk, chair, window, door.\nmeeting-room: Table, whiteboard, wall screen. Marks: table-left, table-right, whiteboard, screen.\ncar: Car interior from the side: seat, wheel, dashboard display. Marks: driver-seat, passenger-seat, dashboard.\nstreet: Sidewalk, storefronts, lamp post, curb. Marks: sidewalk, curb, storefront, crossing.\ntransit: Bus or train interior: seats, pole, windows. Marks: seat, standing, door.\nstore: Shop checkout: counter, shelves, payment terminal. Marks: checkout, cashier (behind the counter), aisle, entrance.\nhospital: Ward with a patient bed, IV pole and nurses' station. Marks: bed, bedside, corridor, station (behind the counter).\nschool: School entrance: fence, gate, doors, sign. Marks: sidewalk, gate, door.\nblank: Empty panel with a floor line. Marks: left, center, right."
+                "description": "coffee-shop: Counter, menu board, espresso machine, barista. Marks: counter, barista (behind the counter), queue, table, door.\nkitchen: Home kitchen with counter, fridge, window. Marks: counter, fridge, table.\nliving-room: Sofa, lamp, TV on the wall. Marks: sofa, tv, floor.\nbedroom: Bed, nightstand, window at night or morning. Marks: bed, nightstand, door.\noffice: Desk with monitor, chair, plant, window. Marks: desk, chair, window, door.\nmeeting-room: Table, whiteboard, wall screen. Marks: table-left, table-right, whiteboard, screen.\ncar: Car interior from the side: seat, wheel, dashboard display. Marks: driver-seat, passenger-seat, dashboard.\nstreet: Sidewalk, storefronts, lamp post, curb. Marks: sidewalk, curb, storefront, crossing.\ntransit: Bus or train interior: seats, pole, windows. Marks: seat, standing, door.\nstore: Shop checkout: counter, shelves, payment terminal. Marks: checkout, cashier (behind the counter), aisle, entrance.\nhospital: Ward with a patient bed, IV pole and nurses' station. Marks: bed, bedside, corridor, station (behind the counter).\nschool: School entrance: fence, gate, doors, sign. Marks: sidewalk, gate, door.\nairport: Gate seating, departure board, check-in counter, plane in the window. Marks: check-in, agent (behind the counter), gate-seat, window.\nrestaurant: Table for two, pendant lights, waiter. Marks: table-left, table-right, waiter, door.\ngym: Treadmill, weights rack, bench, mirror. Marks: floor, treadmill, bench, mirror.\nclinic: Doctor's waiting room with reception desk. Marks: waiting (seated), reception, receptionist (behind the desk), door.\nparking: Parking garage: parked car, EV charger, pillar. Marks: car-door, charger, walkway.\nbus-stop: Bus shelter with bench, schedule and sign. Marks: bench, shelter, sidewalk, curb.\npark: Trees, a bench and a path. Marks: bench, path, tree.\nhome-office: Desk at home by a window, bookshelf. Marks: desk-chair, bookshelf, door.\nhotel: Front desk with bell, elevator, luggage cart. Marks: desk, clerk (behind the desk), lobby, elevator.\nclassroom: Whiteboard, desks, clock. Marks: desk, back-row, teacher, board.\nblank: Empty panel with a floor line. Marks: left, center, right."
               },
               "shot": {
                 "enum": [
@@ -402,6 +436,16 @@
               "caption": {
                 "type": "string",
                 "description": "Narration box in the top-left corner."
+              },
+              "feeling": {
+                "type": "integer",
+                "minimum": -2,
+                "maximum": 2,
+                "description": "Journey lane: -2 awful … 2 great. Omit to derive from the main character's mood."
+              },
+              "workaround": {
+                "type": "string",
+                "description": "Journey lane: what they do to route around a gap (e.g. 'asks the barista')."
               },
               "characters": {
                 "type": "array",
@@ -471,8 +515,14 @@
                       "type": "string",
                       "description": "A mark in the scene (see `storyboard vocab marks`)."
                     },
+                    "variant": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 3,
+                      "description": "Pose variation 1–3 (auto if omitted)."
+                    },
                     "device": {
-                      "description": "Device in their hands.",
+                      "description": "Device in their hands: phone, tablet, laptop or watch only. Kiosks, car displays, TVs etc. go in the panel's `devices`.",
                       "oneOf": [
                         {
                           "type": "string",
@@ -557,6 +607,13 @@
                     },
                     "at": {
                       "type": "string"
+                    },
+                    "tilt": {
+                      "enum": [
+                        "left",
+                        "right"
+                      ],
+                      "description": "Screen turned away from the viewer."
                     },
                     "screen": {
                       "type": "string",

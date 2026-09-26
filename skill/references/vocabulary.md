@@ -1,6 +1,6 @@
 # Storyboard vocabulary
 
-Generated from the tool. Query live with `npx storyboard-cli vocab <category> [--grep text]`.
+Generated from the tool. Query live with `npx storyboardkit vocab <category> [--grep text]`.
 
 ## scenes
 
@@ -18,6 +18,16 @@ Field: panel `scene`
 - `store`: Shop checkout: counter, shelves, payment terminal. Marks: checkout, cashier (behind the counter), aisle, entrance. Marks: `checkout`, `cashier`, `aisle`, `entrance`.
 - `hospital`: Ward with a patient bed, IV pole and nurses' station. Marks: bed, bedside, corridor, station (behind the counter). Marks: `bed`, `bedside`, `corridor`, `station`.
 - `school`: School entrance: fence, gate, doors, sign. Marks: sidewalk, gate, door. Marks: `sidewalk`, `gate`, `door`.
+- `airport`: Gate seating, departure board, check-in counter, plane in the window. Marks: check-in, agent (behind the counter), gate-seat, window. Marks: `check-in`, `agent`, `gate-seat`, `window`.
+- `restaurant`: Table for two, pendant lights, waiter. Marks: table-left, table-right, waiter, door. Marks: `table-left`, `table-right`, `waiter`, `door`.
+- `gym`: Treadmill, weights rack, bench, mirror. Marks: floor, treadmill, bench, mirror. Marks: `floor`, `treadmill`, `bench`, `mirror`.
+- `clinic`: Doctor's waiting room with reception desk. Marks: waiting (seated), reception, receptionist (behind the desk), door. Marks: `waiting`, `reception`, `receptionist`, `door`.
+- `parking`: Parking garage: parked car, EV charger, pillar. Marks: car-door, charger, walkway. Marks: `car-door`, `charger`, `walkway`.
+- `bus-stop`: Bus shelter with bench, schedule and sign. Marks: bench, shelter, sidewalk, curb. Marks: `bench`, `shelter`, `sidewalk`, `curb`.
+- `park`: Trees, a bench and a path. Marks: bench, path, tree. Marks: `bench`, `path`, `tree`.
+- `home-office`: Desk at home by a window, bookshelf. Marks: desk-chair, bookshelf, door. Marks: `desk-chair`, `bookshelf`, `door`.
+- `hotel`: Front desk with bell, elevator, luggage cart. Marks: desk, clerk (behind the desk), lobby, elevator. Marks: `desk`, `clerk`, `lobby`, `elevator`.
+- `classroom`: Whiteboard, desks, clock. Marks: desk, back-row, teacher, board. Marks: `desk`, `back-row`, `teacher`, `board`.
 - `blank`: Empty panel with a floor line. Marks: left, center, right. Marks: `left`, `center`, `right`.
 
 ## shots

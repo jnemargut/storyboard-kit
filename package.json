@@ -1,9 +1,10 @@
 {
-  "name": "storyboard-cli",
+  "name": "storyboardkit",
   "version": "0.1.0",
   "description": "Low-fi, sketch-style storyboards for service designers. Your coding agent drafts them, you tweak them in a page-first editor, export to PNG/PDF/SVG.",
   "type": "module",
   "bin": {
+    "storyboardkit": "dist/cli.js",
     "storyboard": "dist/cli.js"
   },
   "files": [
@@ -31,6 +32,7 @@
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",
     "pdf-lib": "^1.17.1",
+    "pptxgenjs": "^4.0.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
@@ -44,5 +46,14 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vitest": "^5.0.1"
-  }
+  },
+  "keywords": [
+    "storyboard",
+    "service-design",
+    "ux",
+    "journey-map",
+    "claude-code",
+    "codex",
+    "agent-skill"
+  ]
 }

@@ -1,19 +1,30 @@
-# storyboard-cli
+# storyboardkit
 
 Low-fi, sketch-style storyboards for service designers. You describe a customer's day to your coding agent
 (Claude Code, Codex, Cursor…), it drafts a storyboard, and you tweak it in a page-first editor. When you're
-happy, export PNG, PDF or SVG.
+happy, export images, a slide deck, or a share page people can comment on.
 
 Everything is drawn in a marker-comp style where **the software is the only thing in color (teal)**. A board
-shows how small, how late, and how patchy your product's part in someone's day really is.
+shows how small, how late, and how patchy your product's part in someone's day really is. The header says it
+outright: *"Product in 3 of 8 moments."*
 
 ![The Late Latte: an 8-panel example storyboard](docs/late-latte.png)
 
 ## Quick start
 
+One step, if Claude Code or Codex is installed:
+
 ```bash
-npx storyboard-cli init --example      # AGENTS.md/CLAUDE.md block + agent skill + an example board
-npx storyboard-cli dev late-latte.storyboard.json
+npx storyboardkit draft "Sam, a new parent, tries to pay a parking ticket with the city app at 11pm. It wants an account, so Sam mails a check instead"
+```
+
+That sets up the folder, has your agent draft and validate the board, then opens the editor.
+
+Or step by step:
+
+```bash
+npx storyboardkit init        # AGENTS.md/CLAUDE.md block + agent skill + playground.storyboard.json
+npx storyboardkit dev         # opens the editor on your last board
 ```
 
 Then ask your agent something like:
@@ -21,20 +32,35 @@ Then ask your agent something like:
 > Storyboard Priya, an ER nurse, getting a shift-swap request while dropping her kid at school. The app logs
 > her out, so she calls a coworker instead. Show where our scheduling app helps and where it doesn't.
 
-The agent looks up the vocabulary, writes `priya.storyboard.json`, validates it, and opens the editor.
+## The service-design layer
+
+- **Teal means the product, and nothing else.** Personal calls, texts and other companies' apps are grey.
+- **Journey lanes** (top bar) put a strip under every panel: how the person *feels* (−2…2), whether the product
+  is there, and their *workaround*. A feeling line runs across the bottom of the page.
+- **`storyboard critique <file>`** is a reality check. It flags happy paths: the story starts inside the app,
+  the product is in every moment, there's no workaround, the feeling line is flat, or the story ends on a
+  screen. It prints a revision request to paste into your agent.
 
 ## The editor
 
-- **Click** anything: a panel, person, device, bubble, caption, gesture or callout. A toolbar appears with what
-  you can change (shot, scene, pose, mood, angle, flip, device, bubble type, who's speaking…).
-- **Drag** to move and use the corner handle to resize. Arrow keys nudge (Shift for bigger steps).
-- **Double-click** text to edit it in place.
-- **Drop a screen image** (PNG/JPG from Figma) onto a phone, laptop, TV or anyone holding a device. It's
-  sketchified into the teal product palette and fitted to the screen, top-aligned.
-- **+ Add** opens people, bubbles, captions, callouts, devices, gestures and panels (title / time passes /
-  narration). Click to add to the selected panel, or drag onto any panel. **Cast** edits skin tone, hair,
-  body, age, outfit and accessories (glasses, cane, wheelchair, hijab, headphones…).
-- **Undo/redo** (Cmd+Z / Shift+Cmd+Z), a layout picker (panels across), and **Export** (PNG 2x/3x, PDF, SVG).
+- **Click** anything to get its toolbar. The main controls come first, and the rest are under **More**.
+  **Ask agent** copies a precise pointer ("panel 5, the bubble `bubble-0`…") to paste into your coding agent.
+- **Drag** to move and use the corner handle to resize, including bubbles, captions and cards. Drag an already
+  selected panel's background to pan its camera, and use **Camera −/+** to zoom it. Arrow keys nudge.
+- **Text** A- / A+ sizes all text on the board. **Zoom** (or **Zoom to panel**) helps with detailed work.
+- **Double-click** any text to edit it, including the board title, the persona line and panel labels.
+- **Devices:** phones, tablets, laptops and watches can be held. Click the device itself to move it, switch it
+  between *Our product* and *Personal*, or **Put down** into the scene. Kiosks, car displays and TVs stand in
+  the scene (and can **tilt** away from the viewer), and a phone lying on a table can be handed to someone.
+- **Drop a screen image** (PNG/JPG from Figma) onto a device. It's sketchified into the teal palette and fitted.
+- **+ Add** has people, **poses** (thumbnails: click, or drag onto a person), bubbles, captions, callouts,
+  devices, gestures, and **scene thumbnails** for new panels. **Cast** edits skin tone, hair, body, age, outfit
+  and accessories.
+- **Copy/paste** (Cmd+C / Cmd+V) panels, people, bubbles and devices, including between boards.
+- **Brand** puts your company name or logo on storefronts and signs, in grey.
+- **Undo/redo**, a layout picker, and **Export**: PNG (2x/3x), PDF, SVG, **slides** (PPTX, one panel per slide
+  with speaker notes), and a **share page** (one HTML file with a comment box per panel; reviewers copy their
+  comments back as Markdown).
 
 Your edits save into the same JSON file within a second, as small field-level changes, so git diffs stay
 readable. When the agent edits the file, the editor reloads live and keeps your manual nudges.
@@ -43,14 +69,15 @@ readable. When the agent edits the file, the editor reloads live and keeps your 
 
 | Command | What it does |
 |---|---|
-| `init [dir] [--example]` | Adds the storyboard block to AGENTS.md and CLAUDE.md and installs the skill in `.agents/skills/` and `.claude/skills/` |
-| `vocab [category] [--grep x] [--json]` | Scenes (with marks), shots, poses, moods, angles, devices, bubbles, gestures, cast options |
+| `draft "<what happens>" [--agent claude\|codex] [--file x]` | Your installed agent drafts the board, then the editor opens |
+| `init [dir] [--example]` | AGENTS.md/CLAUDE.md block, the skill (`.agents/skills/`, `.claude/skills/`), and a playground board |
+| `vocab [category] [--grep x] [--json]` | Scenes (with marks), shots, poses, moods, devices, bubbles, gestures, cast options |
 | `validate <file> [--json]` | Errors with fix-it hints ("did you mean `frustrated`?") plus storytelling suggestions |
-| `dev <file> [--port] [--no-open]` | The editor, with live two-way sync to the file |
-| `export <file> [--png] [--pdf] [--svg] [--scale 2] [--out dir]` | Headless export (no browser needed), so agents can attach boards to PRs |
+| `critique <file>` | A service-design reality check, with a revision request for your agent |
+| `dev [file] [--port] [--no-open]` | The editor, with live two-way sync (no file = the last one) |
+| `export <file> [--png] [--pdf] [--svg] [--pptx] [--html] [--scale 2] [--out dir]` | Headless export, no browser needed |
 | `script <file>` | A readable screenplay version in Markdown |
-| `format <file>` | Canonical, diff-friendly formatting |
-| `new <file>` | A starter board |
+| `format <file>` / `new <file>` | Canonical formatting / a starter board |
 
 ## The file
 
@@ -60,10 +87,11 @@ Positions are automatic: characters stand on named marks in a scene (`counter`, 
 bubbles place themselves with tails aimed at the speaker's head. The only coordinates in the file are the
 editor's sparse `layout` overrides.
 
-**What's included:** 11 scenes · 6 shots (wide, medium, close-up, over-the-shoulder, screen, POV) · 11 poses ×
-4 angles · 12 moods · 10 devices · speech, thought, shout and whisper bubbles · captions and callouts · title,
-time-passes and narration cards · 9 gestures (tap, swipe, cursor, notification…) · a cast built from parts:
-4 skin tones, 9 hair styles, 4 builds, 3 ages, 8 outfits and 6 accessories.
+**What's included:** 23 scenes (home, work, commute, coffee shop, store, car, hospital, clinic, school,
+classroom, airport, hotel, restaurant, gym, parking with EV charger, bus stop, park…) · 6 shots (wide, medium,
+close-up, over-the-shoulder, screen, POV) · 11 poses × 4 angles × 3 natural variations · 12 moods · 10 devices ·
+speech, thought, shout and whisper bubbles · captions and callouts · title, time-passes and narration cards ·
+9 gestures · a cast built from parts: 4 skin tones, 9 hair styles, 4 builds, 3 ages, 8 outfits and 7 accessories.
 
 ![Cast and pose gallery](docs/gallery.png)
 
@@ -73,11 +101,12 @@ time-passes and narration cards · 9 gestures (tap, swipe, cursor, notification�
 npm install
 npm run build        # CLI (esbuild) + schema.json + skill/ (generated from src/vocab.ts) + editor (Vite)
 npm test             # unit tests (vitest), incl. a render matrix of every scene × shot and pose × angle × device
-node tests/e2e.mjs   # drives the real editor in Chrome: select, drag, edit, agent-edit reload, upload, undo, export
+npm run e2e          # drives the real editor in Chrome (select, drag, edit, sync, upload, lanes, copy/paste…)
 ```
 
 `src/vocab.ts` is the single source of truth. The JSON Schema, the validator, `vocab`, the skill's reference
-files and the renderer all read it. Don't hand-edit `schema.json` or `skill/`; run `npm run gen`.
+files and the renderer all read it. Don't hand-edit `schema.json` or `skill/`; run `npm run gen`. The docs
+say `npx <package name>`, taken from `package.json`, so renaming the package updates them too.
 
 Architecture: `src/render/` is one pure JSON → SVG renderer (React) shared by the editor and the exporter. The
 editor adds an overlay for selection and handles. Export uses resvg with bundled fonts. The design decisions

@@ -1,4 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { spawn, spawnSync } from "node:child_process";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { VOCAB, SCENE_MARKS, type VocabCategory } from "../vocab";
@@ -6,7 +7,8 @@ import { validate, formatResult } from "../validate";
 import { formatStoryboard } from "../json";
 import { toScript } from "../script";
 import { AGENTS_BLOCK, CLI } from "../skill";
-import { boardToSVG, pngToPDF, svgToPNG } from "../export";
+import { boardToSVG, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";
+import { formatCritique } from "../critique";
 import { pageSize } from "../render";
 import type { Board } from "../types";
 import { dev } from "./dev";
@@ -17,11 +19,15 @@ const HELP = `storyboard: low-fi service-design storyboards your coding agent dr
 
 Usage: ${CLI} <command> [options]
 
-  init [dir]                      Set up a project: AGENTS.md/CLAUDE.md block + agent skill (+ --example)
+  draft "<what happens>" [--file x.storyboard.json] [--agent claude|codex]
+                                  One step: your coding agent drafts the board, then the editor opens
+  init [dir]                      Set up a project: AGENTS.md/CLAUDE.md block + agent skill + a playground board (+ --example)
   vocab [category] [--grep x]     List poses, scenes (+marks), shots, moods, devices… (--json)
   validate <file> [--json]        Check a storyboard; errors include fixes
-  dev <file> [--port 4321]        Open the editor; edits save to the file live (--no-open)
-  export <file> [--png] [--pdf] [--svg] [--scale 2] [--out dir]
+  critique <file>                 Service-design reality check, with a revision request to paste to your agent
+  dev [file] [--port 4321]        Open the editor (no file = the last one); edits save to the file live (--no-open)
+  export <file> [--png] [--pdf] [--svg] [--pptx] [--html] [--scale 2] [--out dir]
+                                  --pptx: a slide per panel with speaker notes · --html: a share page with comment boxes
   script <file>                   Print a readable screenplay version (Markdown)
   format <file>                   Rewrite the file in canonical, diff-friendly formatting
   new <file> [--title "…"]        Create a starter storyboard
@@ -37,7 +43,7 @@ function args(argv: string[]) {
     else if (a.startsWith("--")) {
       const [k, v] = a.slice(2).split("=");
       if (v !== undefined) flags[k] = v;
-      else if (argv[i + 1] && !argv[i + 1].startsWith("--") && ["grep", "port", "scale", "out", "title"].includes(k)) flags[k] = argv[++i];
+      else if (argv[i + 1] && !argv[i + 1].startsWith("--") && ["grep", "port", "scale", "out", "title", "file", "agent"].includes(k)) flags[k] = argv[++i];
       else flags[k] = true;
     } else pos.push(a);
   }
@@ -120,6 +126,11 @@ async function main() {
       console.log(`✓ formatted ${pos[0]}`);
       return;
     }
+    case "critique": {
+      const { board } = load(pos[0]);
+      console.log(formatCritique(board, pos[0]));
+      return;
+    }
     case "script": {
       const { board } = load(pos[0]);
       console.log(toScript(board));
@@ -129,8 +140,8 @@ async function main() {
       const { board, abs } = load(pos[0]);
       const r = validate(board);
       if (!r.ok) { console.error(formatResult(r, pos[0])); console.error("\nFix the errors above before exporting."); process.exit(1); }
-      const want = { png: !!flags.png, pdf: !!flags.pdf, svg: !!flags.svg };
-      if (!want.png && !want.pdf && !want.svg) want.png = true;
+      const want = { png: !!flags.png, pdf: !!flags.pdf, svg: !!flags.svg, pptx: !!flags.pptx, html: !!flags.html };
+      if (!Object.values(want).some(Boolean)) want.png = true;
       const scale = Number(flags.scale ?? 2);
       const outDir = resolve(typeof flags.out === "string" ? flags.out : dirname(abs));
       mkdirSync(outDir, { recursive: true });
@@ -143,12 +154,20 @@ async function main() {
         if (want.pdf) { const { width, height } = pageSize(board); writeFileSync(join(outDir, `${stem}.pdf`), await pngToPDF(png, width, height)); written.push(`${stem}.pdf`); }
       }
       if (want.svg) { writeFileSync(join(outDir, `${stem}.svg`), boardToSVG(board, abs, true)); written.push(`${stem}.svg`); }
+      if (want.pptx) { writeFileSync(join(outDir, `${stem}.pptx`), await toPPTX(board, abs)); written.push(`${stem}.pptx`); }
+      if (want.html) { writeFileSync(join(outDir, `${stem}.html`), toShareHTML(board, abs)); written.push(`${stem}.html`); }
       console.log(`✓ exported ${written.map((w) => join(outDir, w)).join(", ")}`);
       return;
     }
     case "dev": {
-      if (!pos[0]) { console.error("Usage: storyboard dev <file>"); process.exit(2); }
-      await dev(pos[0], { port: Number(flags.port ?? 4321), open: flags.open !== false });
+      const file = pos[0] ?? lastBoard();
+      if (!file) { console.error("Usage: storyboard dev <file>  (no *.storyboard.json found here)"); process.exit(2); }
+      remember(file);
+      await dev(file, { port: Number(flags.port ?? 4321), open: flags.open !== false });
+      return;
+    }
+    case "draft": {
+      await draft(pos.join(" "), flags);
       return;
     }
     case "new": {
@@ -167,6 +186,10 @@ async function main() {
       copyDir(skillSrc, join(dir, ".agents/skills/storyboard"));
       copyDir(skillSrc, join(dir, ".claude/skills/storyboard"));
       const done = ["AGENTS.md, CLAUDE.md (storyboard block)", ".agents/skills/storyboard/ (portable skill)", ".claude/skills/storyboard/ (Claude Code)"];
+      if (!readdirSync(dir).some((f) => f.endsWith(".storyboard.json"))) {
+        writeFileSync(join(dir, "playground.storyboard.json"), formatStoryboard(STARTER("Playground")));
+        done.push("playground.storyboard.json (a board to experiment on)");
+      }
       if (flags.example) {
         mkdirSync(join(dir, "screens"), { recursive: true });
         writeFileSync(join(dir, "late-latte.storyboard.json"), readFileSync(join(PKG_ROOT, "examples/late-latte.storyboard.json")).toString().replace('"../schema.json"', `"${SCHEMA_REF}"`));
@@ -181,6 +204,52 @@ async function main() {
     default:
       console.error(`Unknown command "${cmd}".\n\n${HELP}`); process.exit(2);
   }
+}
+
+/** The board `dev` opens with no argument: the last one used here, else the only one in the folder. */
+function lastBoard(): string | undefined {
+  const mem = join(".storyboard", "last");
+  if (existsSync(mem)) { const f = readFileSync(mem, "utf8").trim(); if (existsSync(f)) return f; }
+  const here = readdirSync(".").filter((f) => f.endsWith(".storyboard.json"));
+  return here.length === 1 ? here[0] : undefined;
+}
+function remember(file: string) {
+  try { mkdirSync(".storyboard", { recursive: true }); writeFileSync(join(".storyboard", "last"), file); } catch { /* read-only folder: fine */ }
+}
+
+const has = (cmd: string) => spawnSync(process.platform === "win32" ? "where" : "which", [cmd], { stdio: "ignore" }).status === 0;
+
+/** One step from an idea to an open editor: hand the prompt to the designer's installed coding agent. */
+async function draft(prompt: string, flags: Record<string, string | boolean>) {
+  if (!prompt.trim()) { console.error('Usage: storyboard draft "Maya orders coffee ahead; it\'s late; she gives up and asks the barista"'); process.exit(2); }
+  const file = typeof flags.file === "string" ? flags.file : `${prompt.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").split("-").slice(0, 4).join("-") || "journey"}.storyboard.json`;
+  const agent = typeof flags.agent === "string" ? flags.agent : ["claude", "codex"].find(has);
+  if (!existsSync(join(".agents", "skills", "storyboard", "SKILL.md"))) {
+    upsertBlock("AGENTS.md", AGENTS_BLOCK); upsertBlock("CLAUDE.md", AGENTS_BLOCK);
+    copyDir(join(PKG_ROOT, "skill"), join(".agents/skills/storyboard")); copyDir(join(PKG_ROOT, "skill"), join(".claude/skills/storyboard"));
+  }
+  const cli = `node "${fileURLToPath(new URL("./cli.js", import.meta.url))}"`;
+  const instruction = [
+    `Draft a service-design storyboard. Read .agents/skills/storyboard/SKILL.md first and follow it.`,
+    `Run the storyboard CLI as: ${cli} <command> (wherever docs say ${CLI}).`,
+    `Write ${file}. Run \`${cli} validate ${file}\` until clean, then \`${cli} critique ${file}\` and fix the findings that make the story truer.`,
+    `Do not run \`dev\`. When done, reply with one line: the file name.`,
+    ``, `The designer's request: ${prompt}`,
+  ].join("\n");
+  if (!agent || !has(agent)) {
+    console.log(`No coding agent CLI found (looked for claude, codex). Paste this into your agent instead:\n\n${instruction}\n\nThen run: ${CLI} dev ${file}`);
+    return;
+  }
+  const args = agent === "codex"
+    ? ["exec", "--full-auto", instruction]
+    : ["-p", instruction, "--permission-mode", "acceptEdits", "--allowedTools", "Bash(node:*),Read,Write,Edit,Glob,Grep"];
+  console.log(`Asking ${agent} to draft ${file}… (this takes a minute or two)`);
+  const code = await new Promise<number>((ok) => spawn(agent, args, { stdio: ["ignore", "inherit", "inherit"] }).on("close", (c) => ok(c ?? 1)));
+  if (!existsSync(file)) { console.error(`\n${agent} finished (exit ${code}) but ${file} wasn't created. Try again with more detail, or run it in your agent directly.`); process.exit(1); }
+  const r = validate(JSON.parse(readFileSync(file, "utf8")));
+  console.log(`\n${formatResult(r, file)}`);
+  remember(file);
+  if (flags.dev !== false) await dev(file, { port: Number(flags.port ?? 4321), open: flags.open !== false });
 }
 
 main().catch((e) => { console.error(`✗ ${(e as Error).message}`); process.exit(1); });
