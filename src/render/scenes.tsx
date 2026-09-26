@@ -26,7 +26,7 @@ export interface SceneDef {
   /** Where characters go, in order, when `at` isn't given. */
   order: string[];
   /** Natural spot per device type when a placed device has no `at`. */
-  spots: Partial<Record<DeviceType, { x: number; y: number; behind?: boolean }>>;
+  spots: Partial<Record<DeviceType, { x: number; y: number; behind?: boolean; scale?: number }>>;
   defaultSpot: { x: number; y: number };
   /** Where the brand name/logo goes (storefronts, signs). */
   sign?: { x: number; y: number; w: number; h: number };

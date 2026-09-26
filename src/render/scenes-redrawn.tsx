@@ -34,51 +34,53 @@ function Car({ x, y }: { x: number; y: number }) {
 export const REDRAWN_SCENES: Record<string, SceneDef> = {
   // ---------------------------------------------------------------- inside a car, seen through the side windows
   car: {
+    // a car seen from the side, out on the road, with the people visible through its windows
     back: () => (
       <g>
-        {/* the world outside the side windows: sky, hills, trees and the road going by */}
-        <path d="M0 40 Q150 22 290 34 L380 118 V168 H0 Z" fill={C.paper} />
-        <path d="M0 132 Q70 112 150 126 Q230 138 300 118 Q350 108 380 118 V168 H0 Z" fill={C.g1} />
-        {[40, 120, 250].map((x) => <g key={x}><L d={`M${x} 142 V124`} sw={1.6} color={C.g5} /><circle cx={x} cy={116} r={11} fill={C.g2} stroke={C.g5} strokeWidth={1.2} /></g>)}
-        <L d="M0 150 H380 M20 160 h26 M90 160 h26 M160 160 h26 M230 160 h26 M300 160 h26" sw={1.4} color={C.g5} />
-        {/* roof and window frame */}
-        <Sh d="M0 0 H400 V14 L292 26 Q150 14 0 30 Z" fill={C.g5} />
-        <L d="M0 40 Q150 22 290 34 L380 118" sw={3} />
-        {/* B-pillar between front and back windows */}
-        <Sh d="M158 28 L178 28 L186 168 L164 168 Z" fill={C.g5} />
-        {/* seat backs with headrests (the people sit in front of these) */}
-        <Sh d="M188 214 L186 124 Q186 112 198 112 L208 112 Q216 112 216 124 L218 214 Z" fill={C.g7} />
-        <Sh d="M190 90 Q190 80 200 80 L208 80 Q214 80 214 90 L214 104 L190 104 Z" fill={C.g7} />
-        <Sh d="M62 214 L60 128 Q60 116 72 116 L82 116 Q90 116 90 128 L92 214 Z" fill={C.g7} />
-        <Sh d="M64 96 Q64 86 74 86 L82 86 Q88 86 88 96 L88 110 L64 110 Z" fill={C.g7} />
-        {/* rear-view mirror */}
-        <L d="M306 30 v10" sw={2} /><Sh d={rect(292, 40, 28, 9)} fill={C.g4} />
+        {/* the world going by: hills, trees, the road */}
+        <path d="M0 150 Q90 118 190 140 Q290 160 400 128 V234 H0 Z" fill={C.g1} />
+        <L d="M0 150 Q90 118 190 140 Q290 160 400 128" sw={1.2} color={C.g5} />
+        {[30, 372].map((x) => <g key={x}><L d={`M${x} 160 V130`} sw={2} color={C.g5} /><circle cx={x} cy={118} r={16} fill={C.g2} stroke={C.g5} strokeWidth={1.3} /></g>)}
+        {/* inside the car: seat backs and headrests seen through the glass */}
+        <path d="M58 150 L78 76 Q84 66 100 66 H300 L352 150 Z" fill={C.g1} />
+        <Sh d="M226 150 V112 Q226 102 236 102 H242 Q250 102 250 112 V150 Z" fill={C.g7} />
+        <Sh d="M228 96 Q228 86 238 86 H242 Q248 86 248 96 V104 H228 Z" fill={C.g7} />
+        <Sh d="M110 150 V114 Q110 104 120 104 H126 Q134 104 134 114 V150 Z" fill={C.g7} />
+        <Sh d="M112 98 Q112 88 122 88 H126 Q132 88 132 98 V106 H112 Z" fill={C.g7} />
       </g>
     ),
     front: () => (
       <g>
-        {/* dashboard: a low sloped shelf under the windshield, not a wall */}
-        <Sh d="M296 150 Q340 132 400 128 V200 L300 200 Z" fill={C.g5} />
-        <L d="M304 162 Q350 146 400 144" sw={1.2} color={C.g7} />
-        {/* steering wheel and column */}
-        <ellipse cx={272} cy={138} rx={7} ry={24} transform="rotate(-22 272 138)" fill="none" stroke={ink} strokeWidth={3.4} />
-        <L d="M278 144 L304 158" sw={4} />
-        {/* doors below the window line: slim panels with handles and armrests, so people read as sitting inside */}
-        <Sh d="M0 168 H300 L304 236 H0 Z" fill={C.g2} />
-        <L d="M0 168 H300" sw={2.4} />
-        <L d="M152 168 V236" sw={1.6} />
-        <Sh d="M18 184 h46 v5 h-46 Z" fill={C.g5} sw={1.4} /><Sh d="M176 184 h46 v5 h-46 Z" fill={C.g5} sw={1.4} />
-        <L d="M110 200 h22 M268 200 h22" sw={2.4} />
+        {/* body below the windows hides everyone from the chest down */}
+        <Sh d="M12 214 Q10 172 30 160 L58 150 H352 Q384 156 392 180 V214 Q392 222 384 222 H12 Z" fill={C.g4} sw={2.4} />
+        {/* roof, pillars and window frames */}
+        <path d="M58 150 L78 76 Q84 66 100 66 H300 L352 150" fill="none" stroke={ink} strokeWidth={2.6} strokeLinejoin="round" />
+        <Sh d="M172 66 H186 L184 150 H170 Z" fill={C.g4} sw={1.8} />
+        <Sh d="M58 150 L78 76 L90 76 L74 150 Z" fill={C.g4} sw={1.6} />
+        {/* steering wheel, seen edge-on in front of the driver, and the dash under the windshield */}
+        <Sh d="M300 150 L318 132 Q330 128 340 136 L352 150 Z" fill={C.g7} sw={1.6} />
+        <ellipse cx={278} cy={128} rx={5} ry={17} transform="rotate(-18 278 128)" fill="none" stroke={ink} strokeWidth={3} />
+        <L d="M281 134 L300 146" sw={3} />
+        {/* doors, handles, mirror, lights */}
+        <L d="M186 152 V216 M300 152 Q304 186 300 216" sw={1.6} />
+        <L d="M144 170 h18 M262 170 h18" sw={2.6} />
+        <Sh d="M340 144 l14 -4 v10 h-12 Z" fill={C.g5} sw={1.5} />
+        <Sh d="M378 176 q10 2 12 12 h-12 Z" fill={C.paper} sw={1.4} />
+        <Sh d="M14 180 h10 v14 h-10 Z" fill={C.g7} sw={1.3} />
+        {/* wheels on the road, and a little speed */}
+        {[92, 314].map((x) => <g key={x}><circle cx={x} cy={220} r={21} fill={C.g8} stroke={ink} strokeWidth={2.4} /><circle cx={x} cy={220} r={8} fill={C.g4} stroke={ink} strokeWidth={1.6} /></g>)}
+        <L d="M0 240 H400" sw={2} />
+        <L d="M-6 190 h-14 M-4 204 h-22" sw={1.6} color={C.g5} />
       </g>
     ),
     marks: {
-      "driver-seat": { x: 222, y: FLOOR_Y, facing: "right", seated: true, behind: true },
-      "passenger-seat": { x: 96, y: FLOOR_Y, facing: "right", seated: true, behind: true, scale: 0.94 },
-      dashboard: { x: 346, y: 130 },
+      "driver-seat": { x: 250, y: 196, facing: "right", seated: true, behind: true, scale: 0.86 },
+      "passenger-seat": { x: 134, y: 196, facing: "right", seated: true, behind: true, scale: 0.84 },
+      dashboard: { x: 322, y: 140 },
     },
     order: ["driver-seat", "passenger-seat"],
-    spots: { "car-display": { x: 348, y: 134 }, phone: { x: 330, y: 116 } },
-    defaultSpot: { x: 348, y: 134 },
+    spots: { "car-display": { x: 318, y: 136, behind: true, scale: 0.24 }, phone: { x: 318, y: 138, behind: true, scale: 0.12 } },
+    defaultSpot: { x: 324, y: 128 },
   },
 
   // ---------------------------------------------------------------- parking garage with an EV charger

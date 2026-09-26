@@ -183,7 +183,8 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     const spot = mark
       ? { x: mark.x, y: mark.surface ?? mark.y, behind: mark.behind }
       : scene.spots[d.type] ?? scene.defaultSpot;
-    const s = PLACED_SCALE[d.type] ?? 0.4;
+    // a scene spot can size the device to fit (a small screen in a car dash)
+    const s = (spot as { scale?: number }).scale ?? PLACED_SCALE[d.type] ?? 0.4;
     const def = DEVICE_DEFS[d.type];
     // sit on the surface: shift up by half height for things on tables
     const onSurface = mark?.surface !== undefined;
