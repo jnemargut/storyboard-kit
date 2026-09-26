@@ -55,7 +55,7 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 
 ![Meet the cast](docs/cast.png)
 
-- **A cast you build from parts.** 4 skin tones, 9 hair styles (including hijab and afro), 4 body types,
+- **A cast you build from parts.** 4 skin tones, 9 hair styles, 4 body types,
   3 ages, 16 outfits (scrubs, hi-vis, chef whites, lab coat, uniform, overalls and friends), 7 hats, plus
   glasses, canes, wheelchairs, backpacks and beards.
 - **23 places.** Home, office, coffee shop, car, bus stop, gym, airport, clinic, school, parking garage, and more.
