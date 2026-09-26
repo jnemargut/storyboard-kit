@@ -25,7 +25,7 @@ export function Hat({ cast, f, hx, hy, r }: { cast: CastMember; f: Figure; hx: n
   // three-quarter views turn the brim a little toward the facing side
   const lean = side ? dir : f.angle === "three-quarter" && !back ? dir * 0.35 : 0;
   // big hair sits the hat a little higher
-  const lift = cast.hair === "afro" ? 0.35 * r : cast.hair === "bun" || cast.hair === "curly" ? 0.12 * r : 0;
+  const lift = cast.hair === "afro" ? 0.35 * r : cast.hair === "curly" ? 0.12 * r : 0;
   const y = hy - lift;
 
   switch (cast.hat) {

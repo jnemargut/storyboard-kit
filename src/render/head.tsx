@@ -87,7 +87,7 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
           <path d={`M${hx - 0.15 * r} ${hy - 0.8 * r} Q${hx - 0.45 * r} ${hy - 0.1 * r} ${hx - 0.4 * r} ${hy + (cast.hair === "long" ? 1.3 : 0.5) * r} M${hx + 0.25 * r} ${hy - 0.75 * r} Q${hx + 0.45 * r} ${hy - 0.05 * r} ${hx + 0.35 * r} ${hy + (cast.hair === "long" ? 1.4 : 0.55) * r}`}
             fill="none" stroke={ink} strokeWidth={1} strokeLinecap="round" opacity={0.4} />
         )}
-        {cast.hair === "bun" && <circle cx={hx} cy={hy - r - 3} r={r * 0.42} {...st} />}
+        {cast.hair === "bun" && !cast.hat && <circle cx={hx} cy={hy - r - 3} r={r * 0.42} {...st} />}
         {cast.hair === "ponytail" && <path d={`M${hx - 0.22 * r} ${hy + 0.35 * r} Q${hx - 0.3 * r} ${hy + 1.2 * r} ${hx} ${hy + 1.45 * r} Q${hx + 0.3 * r} ${hy + 1.2 * r} ${hx + 0.22 * r} ${hy + 0.35 * r} Z`} {...st} />}
       </g>
     );
@@ -104,7 +104,7 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
       <g>
         <path d={cap} {...st} {...(cast.hair === "afro" ? { stroke: "none" } : {})} />
         {ear}
-        {cast.hair === "bun" && <circle cx={hx - d * 0.78 * r} cy={hy - 0.85 * r} r={r * 0.42} {...st} />}
+        {cast.hair === "bun" && !cast.hat && <circle cx={hx - d * 0.78 * r} cy={hy - 0.85 * r} r={r * 0.42} {...st} />}
         {cast.hair === "curly" && [0, 1, 2].map((i) => <circle key={i} cx={hx - d * (0.2 + i * 0.35) * r} cy={hy - (0.95 - i * 0.12) * r} r={r * 0.32} {...st} />)}
       </g>
     );
@@ -133,7 +133,7 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
   return (
     <g>
       <path d={cap} {...st} {...(sideY !== hy - 0.08 * r ? { strokeWidth: 1.3 } : {})} />
-      {cast.hair === "bun" && <circle cx={hx + o * 0.5} cy={hy - r - 3} r={r * 0.42} {...st} />}
+      {cast.hair === "bun" && !cast.hat && <circle cx={hx + o * 0.5} cy={hy - r - 3} r={r * 0.42} {...st} />}
     </g>
   );
 }
@@ -152,12 +152,12 @@ export function headExtent(cast: CastMember, f: Figure): { side: number; top: nu
   switch (cast.hair) {
     case "afro": grow(1.42, 1.62); break;
     case "curly": grow(sideView ? 1.2 : 1.5, 1.25); break;
-    case "bun": grow(1.1, 1.9); break;
+    case "bun": if (!cast.hat) grow(1.1, 1.9); break;
     case "long": grow(1.2, 1.1); break;
     case "hijab": grow(1.25, 1.25); break;
   }
   if ((cast.accessories ?? []).includes("headphones")) grow(1.35, 1.8);
-  const lift = cast.hair === "afro" ? 0.35 : cast.hair === "bun" || cast.hair === "curly" ? 0.12 : 0;
+  const lift = cast.hair === "afro" ? 0.35 : cast.hair === "curly" ? 0.12 : 0;
   switch (cast.hat) {
     case "cap": grow(sideView ? 2 : 1.15, 1.15 + lift); break;
     case "beanie": grow(1.15, 1.6 + lift); break;
@@ -193,7 +193,11 @@ function emanata(mood: Mood, hx: number, hy: number, r: number, side: number, ex
     case "tired":
       return <text x={x} y={y} fontFamily="Permanent Marker" fontSize={r * 0.7} fill={ink}>z<tspan dx={1} dy={-4} fontSize={r * 0.55}>z</tspan></text>;
     case "excited":
-      return <path d={`M${x} ${y - 4} v8 M${x - 4} ${y} h8 M${x + side * 7} ${y + 6} v5 M${x + side * 4.5} ${y + 8.5} h5`} {...line(1.6)} />;
+      {
+        // two little four-point sparkles (curved-in sides, like a twinkle), filled so they read as sparkles not crosses
+        const star = (cx: number, cy: number, k: number) => `M${cx} ${cy - k} Q${cx + k * 0.18} ${cy - k * 0.18} ${cx + k} ${cy} Q${cx + k * 0.18} ${cy + k * 0.18} ${cx} ${cy + k} Q${cx - k * 0.18} ${cy + k * 0.18} ${cx - k} ${cy} Q${cx - k * 0.18} ${cy - k * 0.18} ${cx} ${cy - k} Z`;
+        return <path d={`${star(x + side * 1, y - 1, 6)} ${star(x + side * 9, y + 9, 3.6)}`} fill={C.paper} stroke={ink} strokeWidth={1.4} strokeLinejoin="round" />;
+      }
     case "relieved":
       return <path d={`M${x} ${y + 6} q${side * 4} -2 ${side * 7} 0 M${x + side} ${y + 10} q${side * 4} -2 ${side * 7} 0`} {...line(1.4)} />;
     default:
@@ -339,6 +343,44 @@ function Beard({ f, hx, hy, r, fill }: { f: Figure; hx: number; hy: number; r: n
   );
 }
 
+/**
+ * Over-ear headphones drawn for the view: from the side one cup sits over the ear with the band arching over the
+ * crown; three-quarter shows the near cup and a sliver of the far one; front and back show both cups.
+ */
+function Headphones({ f, hx, hy, r, big }: { f: Figure; hx: number; hy: number; r: number; big: boolean }) {
+  const top = hy - r * (big ? 1.25 : 1.05) - 2;
+  const band = { fill: "none", stroke: ink, strokeWidth: 2.6, strokeLinecap: "round" as const };
+  const cup = (cx: number, cy: number, w: number, h: number, k: string) => <rect key={k} x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx={w / 2.4} fill={C.g7} stroke={ink} strokeWidth={1.5} />;
+  if (f.view === "side") {
+    const d = f.dir, ex = hx - d * 0.18 * r, ey = hy + 0.05 * r;
+    return (
+      <g>
+        {/* seen from the side, the band runs straight up from the cup and sits on the crown */}
+        <path d={`M${ex} ${ey - 0.3 * r} Q${ex - d * 0.05 * r} ${hy - 0.8 * r} ${ex - d * 0.02 * r} ${top + 1.5}`} {...band} strokeWidth={3.2} />
+        {cup(ex, ey, 0.42 * r, 0.62 * r, "near")}
+      </g>
+    );
+  }
+  if (f.angle === "three-quarter" && f.view !== "back") {
+    // turned toward dir: the ear on the back side of the head shows; the far ear hides behind the face
+    const d = f.dir, nx = hx - d * 0.82 * r, fx = hx + d * 0.93 * r;
+    return (
+      <g>
+        <path d={`M${nx} ${hy - 0.25 * r} Q${hx - d * 0.2 * r} ${top - 1} ${fx} ${hy - 0.35 * r}`} {...band} />
+        {cup(fx + d * 1.5, hy, 0.2 * r, 0.5 * r, "far")}
+        {cup(nx, hy + 0.02 * r, 0.36 * r, 0.62 * r, "near")}
+      </g>
+    );
+  }
+  const w = big ? 1.28 * r : r + 1;
+  return (
+    <g>
+      <path d={`M${hx - w} ${hy - 0.2 * r} Q${hx} ${top - 8} ${hx + w} ${hy - 0.2 * r}`} {...band} />
+      {cup(hx - w, hy + 0.05 * r, 0.3 * r, 0.62 * r, "l")}{cup(hx + w, hy + 0.05 * r, 0.3 * r, 0.62 * r, "r")}
+    </g>
+  );
+}
+
 /** Head circle (or a face framed by a hijab), features, facial hair, hair, glasses, headphones, emanata. */
 export function HeadFront({ f, cast, mood, hx, hy, r, skin }: { f: Figure; cast: CastMember; mood: Mood; hx: number; hy: number; r: number; skin: string }) {
   const acc = new Set(cast.accessories ?? []);
@@ -361,7 +403,7 @@ export function HeadFront({ f, cast, mood, hx, hy, r, skin }: { f: Figure; cast:
       {acc.has("glasses") && !back && (side
         ? <g {...line(1.6)}><circle cx={hx + f.dir * 0.48 * r} cy={hy - 0.02 * r} r={0.3 * r} /><path d={`M${hx + f.dir * 0.18 * r} ${hy - 0.1 * r} h${-f.dir * 0.55 * r}`} /></g>
         : <g {...line(1.6)}>{[-1, 1].map((k) => <circle key={k} cx={hx + (f.angle === "three-quarter" ? 0.28 * r * f.dir : 0) + k * (f.angle === "three-quarter" ? 0.3 : 0.37) * r} cy={hy + 0.05 * r} r={0.3 * r} />)}</g>)}
-      {acc.has("headphones") && <g><path d={`M${hx - r - 1} ${hy} Q${hx} ${hy - r - 10} ${hx + r + 1} ${hy}`} fill="none" stroke={ink} strokeWidth={2.4} /><rect x={hx - r - 4} y={hy - 4} width={5} height={9} rx={2} fill={C.g7} stroke={ink} strokeWidth={1.3} /><rect x={hx + r - 1} y={hy - 4} width={5} height={9} rx={2} fill={C.g7} stroke={ink} strokeWidth={1.3} /></g>}
+      {acc.has("headphones") && <Headphones f={f} hx={hx} hy={hy} r={r} big={cast.hair === "afro" || cast.hair === "curly"} />}
       <Hat cast={cast} f={f} hx={hx} hy={hy} r={r} />
       {emanata(mood, hx, hy, r, back ? 1 : d, headExtent(cast, f))}
     </g>

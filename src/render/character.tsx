@@ -144,7 +144,10 @@ export function Character({ f, cast, mood, held, stool, hideArm }: CharacterProp
       {farFirst ? (side ? (nearArmOverHead ? null : armR) : <>{armL}{armR}</>) : null}
       {/* head */}
       <HeadFront f={f} cast={cast} mood={mood} hx={hx} hy={hy} r={r} skin={skin} />
-      {acc.has("cane") && <path d={`M${j.hdL[0]} ${j.hdL[1]} L${j.hdL[0] + 5} 0 M${j.hdL[0] - 3} ${j.hdL[1]} q3 -4 6 0`} stroke={ink} strokeWidth={2.4} fill="none" strokeLinecap="round" />}
+      {acc.has("cane") && !acc.has("wheelchair") && (j.hdL[1] > hipY - 8 && !j.seated
+        ? <path d={`M${j.hdL[0]} ${j.hdL[1]} L${j.hdL[0] + 5} 0 M${j.hdL[0] - 3} ${j.hdL[1]} q3 -4 6 0`} stroke={ink} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+        // hand busy (waving, shrugging, seated): the cane leans against the leg
+        : (() => { const cx = Math.min(j.ftL[0], j.ftR[0]) - 9; return <path d={`M${cx} 0 L${cx + 6} ${hipY + 6} q2 -6 8 -3`} stroke={ink} strokeWidth={2.4} fill="none" strokeLinecap="round" />; })())}
       {!farFirst && <>{armL}</>}
       {held}
       {!farFirst && <>{armR}</>}

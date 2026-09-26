@@ -100,6 +100,14 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
     </g>
   );
   const dw = def ? (def.w * ds) / 2 : 0, dh = def ? (def.h * ds) / 2 : 0;
+  // a laptop that nobody's holding sits on a desk, rather than floating in the air
+  const deskTop = devType === "laptop" ? dcy + 8 * ds : devType === "desktop" ? dcy + 56 * ds : undefined;
+  const desk = deskTop !== undefined && (
+    <g pointerEvents="none">
+      <path d={`M-10 ${deskTop} H${PANEL_W + 10} V${PANEL_H + 10} H-10 Z`} fill={C.g2} stroke={ink} strokeWidth={2.2} strokeLinejoin="round" />
+      <path d={`M-10 ${deskTop + 8} H${PANEL_W + 10}`} stroke={C.g5} strokeWidth={1.2} />
+    </g>
+  );
   if (sp.kind === "ots") {
     const c = sp.char;
     const ov = panel.layout?.[c.id] ?? {};
@@ -115,6 +123,7 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
     const elbow: Pt = [shoulder[0] - 14, shoulder[1] + 62]; // tucked in at the waist, behind the body
     return (
       <g>
+        {desk}
         {handheld && <g data-el={c.id} data-kind="character">{arm(elbow, handP, 15)}</g>}
         <g data-el={c.id} data-kind="character" transform={`translate(${cx} ${cy}) scale(${S})`}>
           <Character f={c.fig} cast={c.cast} mood={c.mood} hideArm={handheld ? (nearLeft ? "left" : "right") : undefined} />
@@ -131,12 +140,13 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
   }
   if (sp.kind === "screen") {
     const handP: Pt = [dcx + dw - 4, dcy + dh * 0.3];
-    return <g>{handheld && arm([PANEL_W + 20, PANEL_H + 20], [handP[0] + 10, handP[1] + 14], 22)}{device}{handheld && hand(handP, 14)}</g>;
+    return <g>{desk}{handheld && arm([PANEL_W + 20, PANEL_H + 20], [handP[0] + 10, handP[1] + 14], 22)}{device}{handheld && hand(handP, 14)}</g>;
   }
   // pov: two hands
   const lh: Pt = [dcx - dw + 2, dcy + dh * 0.35], rh: Pt = [dcx + dw - 2, dcy + dh * 0.35];
   return (
     <g>
+      {desk}
       {handheld && <>{arm([-20, PANEL_H + 20], [lh[0] - 8, lh[1] + 10], 24)}{arm([PANEL_W + 20, PANEL_H + 20], [rh[0] + 8, rh[1] + 10], 24)}</>}
       {device}
       {handheld && <>{hand(lh, 14)}{hand(rh, 14)}</>}

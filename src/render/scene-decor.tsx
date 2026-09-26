@@ -198,7 +198,8 @@ export const SCENE_DECOR: Record<string, () => ReactNode> = {
     <g>
       {/* door, a poster, a clock, a "now serving" display, magazines and a plant */}
       <Sh d={rect(0, 90, 34, 144)} fill={C.g1} /><circle cx={27} cy={166} r={2.2} fill={ink} />
-      <Sh d={rect(112, 28, 44, 56)} fill={C.paper} sw={1.5} /><circle cx={134} cy={46} r={8} fill={C.g2} stroke={ink} strokeWidth={1.2} /><L d="M120 64 h28 M120 72 h20" sw={1.1} />
+      {/* the poster sits right of the clock, clear of the wall TV spot over the waiting chairs */}
+      <Sh d={rect(206, 60, 26, 34)} fill={C.paper} sw={1.4} /><circle cx={219} cy={71} r={5} fill={C.g2} stroke={ink} strokeWidth={1.1} /><L d="M211 83 h16 M211 88 h12" sw={1} />
       <Clock x={196} y={44} r={10} />
       <Sh d={rect(330, 68, 56, 22)} fill={C.g8} /><T x={358} y={84} s={11} fill={C.paper}>NOW 24</T>
       <Sh d={rect(40, 224, 30, 10)} fill={C.g4} sw={1.2} /><L d="M44 224 l4 -8 h16 l2 8" sw={1.2} />

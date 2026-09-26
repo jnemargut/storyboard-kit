@@ -105,6 +105,12 @@ function holdPlacement(fig: Figure, type: DeviceType, pose: string, href?: strin
   }
   if (type === "laptop" || pose === "sitting-laptop") {
     const mx = (j.hdL[0] + j.hdR[0]) / 2, my = (j.hdL[1] + j.hdR[1]) / 2;
+    if (fig.view === "side" && j.seated) {
+      // seen from the side, a seated person's laptop rests on their lap, between hip and knee
+      const lapX = (j.hipR[0] + j.knR[0]) / 2 + 4 * fig.dir, lapY = Math.min(j.hipR[1], j.knR[1]) - 1;
+      const h = DEVICE_DEFS.laptop.h * HELD_SCALE.laptop!;
+      return { type, href, product, cx: lapX, cy: lapY - h * 0.42, scale: HELD_SCALE.laptop!, rot: 0 };
+    }
     return { type, href, product, cx: mx + (fig.view === "side" ? 6 * fig.dir : 0), cy: my + 1, scale: HELD_SCALE.laptop!, rot: 0 };
   }
   const rot = fig.view === "side" ? -18 * fig.dir : fig.view === "back" ? 4 : -8;

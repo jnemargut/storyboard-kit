@@ -121,16 +121,18 @@ export const autoVariant = (key: string) => ([...key].reduce((h, ch) => (h * 31 
 export function figure(pose: Pose, angle: Angle, facing: "left" | "right", cast: CastMember, variant = 0): Figure {
   const wheelchair = cast.accessories?.includes("wheelchair");
   let p: Pose = pose;
-  if (wheelchair && !POSE_DEFS[p].front.seated) p = p === "holding-phone" || p === "phone-to-ear" ? p : "sitting";
+  // walking has nothing to carry over to a seated body; every other pose keeps its arms (below)
+  if (wheelchair && p === "walking") p = "sitting";
   const def = POSE_DEFS[p] ?? POSE_DEFS.standing;
   const side = angle === "side";
   let j: Joints = structuredClone(side ? def.side : def.front);
   if (wheelchair && !j.seated) {
-    // seated arms-only variants of phone poses
+    // seated in the chair, arms from the pose (waving, pointing, shrugging, a phone…), moved to the seated shoulders
     const base = structuredClone(side ? SIT_S : SIT_F);
     const src = side ? def.side : def.front;
-    const lift = 12;
-    j = { ...base, elR: [src.elR[0], src.elR[1] + lift], hdR: [src.hdR[0], src.hdR[1] + lift] };
+    const by = (from: Pt, to: Pt) => (q: Pt): Pt => [q[0] + to[0] - from[0], q[1] + to[1] - from[1]];
+    const l = by(src.shL, base.shL), r = by(src.shR, base.shR);
+    j = { ...base, elL: l(src.elL), hdL: l(src.hdL), elR: r(src.elR), hdR: r(src.hdR) };
   }
   vary(j, p, side, variant);
   const dir: 1 | -1 = facing === "left" ? -1 : 1;
