@@ -55,6 +55,8 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 
 ![Meet the cast](docs/cast.png)
 
+![A few of the scenes](docs/scenes.png)
+
 - **A cast you build from parts.** 4 skin tones, 9 hair styles, 4 body types,
   3 ages, 16 outfits (scrubs, hi-vis, chef whites, lab coat, uniform, overalls and friends), 7 hats, plus
   glasses, canes, wheelchairs, backpacks and beards.
@@ -73,6 +75,8 @@ Or just click around yourself. Your edits and the agent's edits land in the same
   reserved for your product).
 
 ## The editor bits
+
+![Play mode with sharpie markup](docs/play.png)
 
 - Click anything to get its toolbar. Drag to move, pull the corner to resize, grab the round handle to rotate.
 - Double-click any text to edit it.

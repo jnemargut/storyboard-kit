@@ -3,6 +3,7 @@ import type { DeviceType, SceneId } from "../vocab";
 import { C, FLOOR_Y, OFFSET } from "./tokens";
 import { MORE_SCENES } from "./scenes-more";
 import { REDRAWN_SCENES } from "./scenes-redrawn";
+import { SCENE_DECOR, SCENE_UNDER } from "./scene-decor";
 
 export interface Mark {
   x: number;
@@ -316,7 +317,7 @@ function Sign({ r, brand }: { r: { x: number; y: number; w: number; h: number };
 
 export function SceneBack({ id, brand }: { id: SceneId; brand?: Brand }) {
   const s = SCENE_DEFS[id];
-  return <g>{s.back()}{id !== "blank" && id !== "street" && floor}{brand && (brand.name || brand.logoHref) && s.sign && <Sign r={s.sign} brand={brand} />}</g>;
+  return <g>{SCENE_UNDER[id]?.()}{s.back()}{SCENE_DECOR[id]?.()}{id !== "blank" && id !== "street" && floor}{brand && (brand.name || brand.logoHref) && s.sign && <Sign r={s.sign} brand={brand} />}</g>;
 }
 
 export function SceneFront({ id }: { id: SceneId }) {
