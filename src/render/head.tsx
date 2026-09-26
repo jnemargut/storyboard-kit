@@ -27,15 +27,20 @@ export function hairBack(cast: CastMember, f: Figure, hx: number, hy: number, r:
       return <path d={`M${hx - r - 3} ${hy + 2} A${r + 3} ${r + 3} 0 1 1 ${hx + r + 3} ${hy + 2} L${hx + r + 8} ${hy + 1.75 * r} Q${hx} ${hy + 2.05 * r} ${hx - r - 8} ${hy + 1.75 * r} Z`} fill={C.g4} stroke={ink} strokeWidth={1.9} strokeLinejoin="round" />;
     }
     case "afro": {
-      // soft cloud outline: lots of small bumps, so it reads as hair rather than a helmet
-      const cx = hx - (f.view === "side" ? d * 0.3 * r : 0), cy = hy - 0.28 * r, R = r * 1.45, n = 16;
-      let path = "";
-      for (let i = 0; i <= n; i++) {
-        const a0 = (i / n) * Math.PI * 2, am = ((i - 0.5) / n) * Math.PI * 2;
-        const x = cx + Math.cos(a0) * R, y = cy + Math.sin(a0) * R;
-        path += i === 0 ? `M${x.toFixed(1)} ${y.toFixed(1)}` : ` Q${(cx + Math.cos(am) * R * 1.13).toFixed(1)} ${(cy + Math.sin(am) * R * 1.13).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`;
+      // a rounded crown that stops at the ears (not a mane under the chin), with soft scallops only along the top
+      const side = f.view === "side";
+      const cx = hx - (side ? d * 0.28 * r : 0), cy = hy - 0.38 * r;
+      const rx = r * (side ? 1.22 : 1.34), ry = r * 1.18;
+      const a0 = (158 * Math.PI) / 180, a1 = (382 * Math.PI) / 180, n = 11;
+      const pt = (a: number, k = 1) => [cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k].map((v) => v.toFixed(1)).join(" ");
+      let path = `M${pt(a0)}`;
+      for (let i = 1; i <= n; i++) {
+        const a = a0 + ((a1 - a0) * i) / n, am = a0 + ((a1 - a0) * (i - 0.5)) / n;
+        path += ` Q${pt(am, 1.09)} ${pt(a)}`;
       }
-      return <path d={path + " Z"} {...st} />;
+      // tuck back in under the crown; the face covers this part
+      path += ` Q${cx + 0.2 * rx} ${hy + 0.55 * r} ${cx} ${hy + 0.45 * r} Q${cx - 0.2 * rx} ${hy + 0.55 * r} ${pt(a0)} Z`;
+      return <path d={path} {...st} />;
     }
     case "curly": {
       const bumps = f.view === "side" ? [-1, -0.6, -0.15, 0.3] : [-1, -0.5, 0, 0.5, 1];
@@ -91,7 +96,11 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
     ? `Q${hx + o + 0.55 * r} ${hy - 0.25 * r} ${hx + o} ${hy - 0.5 * r} Q${hx + o - 0.35 * r} ${hy - 0.62 * r} ${L} ${hy - 0.08 * r}` // side-swept
     : `Q${hx + o + 0.5 * r} ${hy - 0.62 * r} ${hx + o} ${hy - 0.48 * r} Q${hx + o - 0.5 * r} ${hy - 0.62 * r} ${L} ${hy - 0.08 * r}`;
   const cap = `M${L} ${hy - 0.08 * r} A${R} ${R} 0 0 1 ${Rt} ${hy - 0.08 * r} ${fringe} Z`;
-  if (cast.hair === "afro") return <path d={cap} fill={fill} stroke="none" />; // merges into the cloud behind
+  // the afro's cap is a half-circle over the whole crown, so no forehead band shows; it merges into the cloud behind
+  if (cast.hair === "afro") {
+    const k = r + 1.5; // centred on the face and a touch bigger, so no sliver of forehead shows above it
+    return <path d={`M${hx - k} ${hy} A${k} ${k} 0 0 1 ${hx + k} ${hy} L${Rt} ${hy - 0.08 * r} ${fringe} Z`} fill={fill} stroke="none" />;
+  }
   if (cast.hair === "curly") {
     const bumps = [-0.7, -0.35, 0, 0.35, 0.7];
     return <g><path d={cap} {...st} />{bumps.map((k, i) => <circle key={i} cx={hx + o + k * r} cy={hy - 0.62 * r - (1 - Math.abs(k)) * 0.18 * r} r={r * 0.24} {...st} />)}</g>;

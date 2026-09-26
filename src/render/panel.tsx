@@ -99,15 +99,26 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
     const ov = panel.layout?.[c.id] ?? {};
     const S = g.S * (ov.scale ?? 1);
     const cx = g.charX + (ov.dx ?? 0), cy = g.charY + (ov.dy ?? 0);
-    const shoulder: Pt = [cx + c.fig.j.shL[0] * S, cy + c.fig.j.shL[1] * S];
-    const handP: Pt = [dcx - dw + 8, dcy + dh * 0.35];
+    // the near arm comes up from her own shoulder and the hand grips the phone's lower corner: held at chest height
+    const j = c.fig.j;
+    const nearLeft = j.shL[0] > j.shR[0]; // seen from behind, the shoulder on the phone's side
+    const sh = nearLeft ? j.shL : j.shR;
+    const shoulder: Pt = [cx + sh[0] * S, cy + sh[1] * S + 6];
+    const handP: Pt = [dcx - dw * 0.62, dcy + dh * 0.86];
+    const elbow: Pt = [shoulder[0] + (handP[0] - shoulder[0]) * 0.55 + 10, Math.max(shoulder[1], handP[1]) + 26];
     return (
       <g>
-        {device}
         <g data-el={c.id} data-kind="character" transform={`translate(${cx} ${cy}) scale(${S})`}>
-          <Character f={c.fig} cast={c.cast} mood={c.mood} hideArm={handheld ? "left" : undefined} />
+          <Character f={c.fig} cast={c.cast} mood={c.mood} hideArm={handheld ? (nearLeft ? "left" : "right") : undefined} />
         </g>
-        {handheld && <g data-el={c.id} data-kind="character">{arm(shoulder, handP, 13)}{hand(handP, 9)}</g>}
+        {device}
+        {handheld && (
+          <g data-el={c.id} data-kind="character">
+            {arm(shoulder, elbow, 17)}{arm(elbow, handP, 15)}
+            <ellipse cx={handP[0] + 2} cy={handP[1]} rx={11} ry={13} transform={`rotate(-20 ${handP[0] + 2} ${handP[1]})`} fill={skin} stroke={ink} strokeWidth={2} />
+            <path d={`M${handP[0] + 6} ${handP[1] - 8} q9 -5 12 3`} fill="none" stroke={ink} strokeWidth={2} strokeLinecap="round" />
+          </g>
+        )}
       </g>
     );
   }

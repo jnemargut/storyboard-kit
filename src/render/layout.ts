@@ -326,13 +326,16 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
 /** Fixed geometry for over-the-shoulder / screen / pov compositions (panel space). */
 export function specialGeometry(sp: NonNullable<Special>) {
   if (sp.kind === "ots") {
-    const S = 2.1;
-    const hx = 104, hy = 176;
     const devType = sp.device?.type ?? "phone";
     const def = DEVICE_DEFS[devType];
-    const box = { w: 170, h: 200 };
-    const ds = Math.min(box.w / def.w, box.h / def.h, 1.7);
-    const dcx = 272, dcy = 118;
+    // something held (phone, tablet, watch) sits at chest height beside the head, only a little bigger than it,
+    // so it reads as "in her hands" rather than a billboard; laptops and the like keep the wider framing
+    const held = !!sp.device && ["phone", "tablet", "watch"].includes(devType);
+    const S = held ? 2.6 : 2.1;
+    const hx = held ? 132 : 104, hy = held ? 150 : 176;
+    const box = held ? { w: devType === "tablet" ? 160 : 104, h: devType === "tablet" ? 116 : 122 } : { w: 170, h: 200 };
+    const ds = Math.min(box.w / def.w, box.h / def.h, held ? 1.3 : 1.7);
+    const dcx = held ? (devType === "tablet" ? 262 : 252) : 272, dcy = held ? 122 : 118;
     const screen = def.screen ? { x: dcx + def.screen.x * ds, y: dcy + def.screen.y * ds, w: def.screen.w * ds, h: def.screen.h * ds } : undefined;
     return {
       S, charX: hx - sp.char.fig.j.head[0] * S, charY: hy - sp.char.fig.j.head[1] * S,
