@@ -17,7 +17,7 @@
       "scene": "coffee-shop",                // see: vocab scenes
       "shot": "over-the-shoulder",           // wide | medium | close-up | over-the-shoulder | screen | pov
       "focus": "maya",                       // optional: who/what the camera frames
-      "label": "The app still says 4 min",   // optional caption under the panel
+      "label": "The app still says 4 min",   // the step's name: under the panel and on the journey chart
       "caption": "8:14 · In line anyway.",    // optional narration box inside the panel
       "feeling": -1,                          // journey lane: -2 awful … 2 great
       "workaround": "asks the barista",       // journey lane: how they route around a gap

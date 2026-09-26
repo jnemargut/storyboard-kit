@@ -341,6 +341,23 @@ describe("layers and signs", () => {
   });
 });
 
+describe("step names", () => {
+  it("name the points on the journey chart, and unnamed steps get a nudge", () => {
+    const b: Board = { schemaVersion: 1, title: "Steps", cast: { a: {} }, page: { lanes: true }, panels: [
+      { id: "one", scene: "kitchen", label: "Orders ahead", characters: [{ who: "a" }] },
+      { id: "wait", type: "time", text: "12 minutes later…" },
+      { id: "two", scene: "coffee-shop", characters: [{ who: "a" }] },
+      { id: "three", scene: "street", label: "Gives up", characters: [{ who: "a" }] },
+    ] };
+    const svg = renderBoardSVG(b, { asset });
+    const journey = svg.slice(svg.indexOf("data-journey"));
+    expect(journey).toContain("Orders ahead");
+    expect(journey).toContain("12 minutes later");
+    expect(journey).toContain("Gives up");
+    expect(validate(b).warnings.some((w) => w.message.includes("1 scene panel has no step name"))).toBe(true);
+  });
+});
+
 describe("poses on seats", () => {
   it("a seat mark sits people down by default, but an explicit standing pose stands", () => {
     const b: Board = { schemaVersion: 1, title: "Seats", cast: { a: {} }, panels: [

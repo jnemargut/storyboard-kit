@@ -8,7 +8,7 @@ export const PAGE = { margin: 44, gapX: 28, gapY: 50, header: 96, footer: 56 };
 const ts = (b: Board) => b.page?.textScale ?? 1;
 /** Header and label space grow with the board's text size. */
 export const LANE_H = 50;
-const geo = (b: Board) => ({ header: headerLayout(b).height, gapY: 30 + 22 * ts(b) + (b.page?.lanes ? LANE_H : 0), journey: b.page?.lanes ? 120 : 0 });
+const geo = (b: Board) => ({ header: headerLayout(b).height, gapY: 30 + 22 * ts(b) + (b.page?.lanes ? LANE_H : 0), journey: b.page?.lanes ? 150 : 0 });
 
 const pageWidth = (b: Board) => { const c = columnsFor(b); return PAGE.margin * 2 + c * PANEL_W + (c - 1) * PAGE.gapX; };
 const metaText = (b: Board) => [b.persona && `Persona: ${b.persona}`, b.subtitle].filter(Boolean).join(" · ");
@@ -99,6 +99,7 @@ function Journey({ board, y, width }: { board: Board; y: number; width: number }
   const x0 = PAGE.margin + 70, span = width - PAGE.margin * 2 - 90;
   const cx = (i: number) => x0 + (n === 1 ? span / 2 : (span * i) / (n - 1));
   const fy = (f: number) => y + 40 - f * 13;
+  const gap = n === 1 ? span : span / (n - 1);
   const pts = board.panels.map((p, i) => ({ i, f: feelingOf(p) })).filter((q) => q.f !== undefined) as { i: number; f: number }[];
   return (
     <g data-journey>
@@ -113,10 +114,23 @@ function Journey({ board, y, width }: { board: Board; y: number; width: number }
             ? <rect x={cx(i) - 9} y={y + 78} width={18} height={18} fill={panelHasProduct(p) ? C.teal : "none"} stroke={C.ink} strokeWidth={1.6} strokeDasharray={panelHasProduct(p) ? undefined : "3 2"} />
             : <text x={cx(i)} y={y + 92} textAnchor="middle" fontFamily={FONT.hand} fontSize={13} fill={C.g5}>{p.type === "time" ? "…" : "·"}</text>}
           <text x={cx(i)} y={y + 112} textAnchor="middle" fontFamily={FONT.hand} fontSize={12} fill={C.g5}>{i + 1}</text>
+          {/* the step's name, so the line reads as a journey rather than a squiggle */}
+          {stepName(p) && (() => {
+            const lines = wrap(stepName(p)!, 13, Math.max(60, gap - 10));
+            const shown = lines.length > 2 ? [lines[0], `${lines[1]}…`] : lines;
+            return <text textAnchor="middle" fontFamily={FONT.hand} fontSize={13} fill={C.g8}>{shown.map((l, k) => <tspan key={k} x={cx(i)} y={y + 127 + k * 14}>{l}</tspan>)}</text>;
+          })()}
         </g>
       ))}
     </g>
   );
+}
+
+/** What a step is called on the journey chart: its label, or a time card's own text. */
+export function stepName(p: Panel): string | undefined {
+  if (p.label) return p.label;
+  if (p.type === "time") return p.text;
+  return undefined;
 }
 
 /** "Product in 3 of 7 moments": the service-design headline. */
@@ -198,12 +212,12 @@ export function BoardSVG({ board, opts }: { board: Board; opts: BoardOptions }) 
       <g data-header="meta"><text fontFamily={FONT.hand} fontSize={hd.metaSize} fill={sub ? C.g8 : C.g4}>{sub ? hd.metaLines.map((l, i) => <tspan key={i} x={PAGE.margin} y={hd.metaTop + i * hd.metaSize * 1.2}>{l}</tspan>) : <tspan x={PAGE.margin} y={hd.metaTop}>{opts.editing ? "+ persona / subtitle" : ""}</tspan>}</text></g>
       {board.panels.map((p, i) => {
         const [x, y] = panelOrigin(board, i);
-        const label = wrap(`${i + 1}${p.label ? ` · ${p.label}` : ""}`, 15.5 * k, PANEL_W)[0];
+        const label = wrap(`${i + 1}${p.label ? ` · ${p.label}` : opts.editing ? " · + name this step" : ""}`, 15.5 * k, PANEL_W)[0];
         return (
           <g key={p.id} transform={`translate(${x} ${y})`}>
             <PanelArt board={board} panel={p} opts={opts} />
             {board.page?.lanes && <LaneStrip p={p} k={k} editing={opts.editing} />}
-            {!opts.bare && <g data-label={p.id}><text x={2} y={PANEL_H + 6 + 16 * k + (board.page?.lanes ? LANE_H : 0)} fontFamily={FONT.hand} fontSize={15.5 * k} fill={C.g8}>{label}</text></g>}
+            {!opts.bare && <g data-label={p.id}><text x={2} y={PANEL_H + 6 + 16 * k + (board.page?.lanes ? LANE_H : 0)} fontFamily={FONT.hand} fontSize={15.5 * k} fill={p.label || !opts.editing ? C.g8 : C.g4}>{label}</text></g>}
           </g>
         );
       })}

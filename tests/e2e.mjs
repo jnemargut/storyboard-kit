@@ -182,6 +182,17 @@ try {
   await sleep(400);
   check(read().cast.sam.hair === "bun", "Look… edits the person everywhere");
 
+  // naming a step: clicking an unnamed panel's label goes straight to typing
+  await page.mouse.click(5, 990);
+  const lab = page.locator('[data-label="title"]');
+  await lab.scrollIntoViewIfNeeded();
+  await lab.click();
+  await page.locator("textarea.inline-edit").waitFor();
+  await page.locator("textarea.inline-edit").fill("Meet Maya");
+  await page.keyboard.press("Enter");
+  await sleep(400);
+  check(read().panels[0].label === "Meet Maya", "clicking an unnamed step lets you name it");
+
   await page.mouse.click(5, 990);
 
   // Draw tab: drag a box onto a scene panel

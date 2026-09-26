@@ -75,6 +75,8 @@ The point is to see the product from inside the customer's life, not to illustra
 - **Hold only what a hand holds.** `device` on a character is for phone, tablet, laptop or watch. Kiosks, car
   displays, TVs, terminals and smart speakers go in the panel's `devices` (optionally `"at"` a mark), and
   gestures point `"on"` them by id. A phone lying on a table is also a panel device, with no person needed.
+- **Name every step.** Give each scene panel a short `label` ("Checks the app", "Asks the barista"). It shows
+  under the panel and names the points on the journey chart, which is meaningless without them.
 - **Fill the journey lanes.** For each scene panel set `feeling` (-2 awful … 2 great) and, where people route
   around a gap, `workaround` ("asks the barista"). The designer can switch on `page.lanes` to show them, plus
   a feeling line and "Product in N of M moments".

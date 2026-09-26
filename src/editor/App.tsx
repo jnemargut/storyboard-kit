@@ -204,7 +204,16 @@ export function App() {
       return;
     }
     const ln = t.closest("[data-label]") as SVGElement | null;
-    if (ln) { setSel({ panel: ln.dataset.label!, el: "__label", kind: "label" }); return; }
+    if (ln) {
+      const s: Sel = { panel: ln.dataset.label!, el: "__label", kind: "label" };
+      setSel(s);
+      // an unnamed step goes straight to typing its name
+      if (!board.panels[panelIndex(board, s.panel)]?.label) {
+        const b = measure(s), f = textField(board, s);
+        if (b && f) window.setTimeout(() => setEditing({ sel: s, field: f.field, value: f.value, box: b }), 0);
+      }
+      return;
+    }
     const pn = t.closest("[data-panel]") as SVGElement | null;
     if (!pn) { setSel(null); return; }
     const en = t.closest("[data-el]") as SVGElement | null;

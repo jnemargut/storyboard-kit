@@ -79,7 +79,7 @@ Or just click around yourself. Your edits and the agent's edits land in the same
   (add Shift to go all the way).
 - Delete deletes. Cmd+Z undoes. Arrow keys nudge.
 - **Journey lanes** add a strip under each panel: how the person feels, whether your product is there, and
-  what workaround they used. A feeling line runs across the whole page.
+  what workaround they used. A feeling line runs across the whole page, with every step named so you can read the journey at a glance. Click "+ name this step" under any panel to name it.
 - **Ask agent** copies a precise pointer to whatever you clicked, so you can paste it to your agent and say
   "make this angrier."
 - **Export** to PNG, PDF, SVG, a slide deck (one panel per slide, with speaker notes) or a single HTML page

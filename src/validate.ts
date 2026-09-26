@@ -323,6 +323,9 @@ export function validate(input: unknown): Result {
   // Service-design craft nudges: warnings, never errors.
   if (sceneCount >= 3 && productMoments === sceneCount)
     warn("$.panels", "The product appears in every scene panel.", "Real journeys have gaps. Add a moment before or after the product: the trigger, the wait, the workaround.");
+  const unnamed = (b.panels as unknown[]).filter((q) => isObj(q) && (q.type === undefined || q.type === "scene") && !(typeof q.label === "string" && q.label.trim())).length;
+  if (sceneCount >= 3 && unnamed > 0)
+    warn("$.panels", `${unnamed} scene panel${unnamed > 1 ? "s have" : " has"} no step name.`, "Give each a short `label` (\"Checks the app\"). It names the step under the panel and on the journey chart.");
   if (sceneCount >= 3 && thoughtCount === 0)
     warn("$.panels", "No thought bubbles.", "What the person thinks but doesn't say is often the insight. Add one where they're frustrated or unsure.");
   if (sceneCount >= 4 && shots.size === 1)

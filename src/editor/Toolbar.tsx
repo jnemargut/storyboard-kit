@@ -177,6 +177,8 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
         {panel.type === "time" && <Pick title="Icon" value={panel.icon ?? "clock"} options={ids(TIME_ICONS)} onChange={(v) => set("icon", v)} />}
         {lanes && isScene(panel) && <Pick title="How they feel in this moment (journey lane)" value={panel.feeling === undefined ? "" : String(panel.feeling)} options={["", "-2", "-1", "0", "1", "2"]} labels={FEEL_LABELS} onChange={(v) => set("feeling", v === "" ? undefined : Number(v))} />}
         {lanes && isScene(panel) && <button onClick={() => { const v = window.prompt("Their workaround in this moment (journey lane)", panel.workaround ?? ""); if (v !== null) void set("workaround", v.trim() || undefined); }}>{panel.workaround ? "Edit workaround" : "+ Workaround"}</button>}
+        <button onClick={() => { const v = window.prompt("Name this step (shows under the panel and on the journey chart)", panel.label ?? ""); if (v !== null) void set("label", v.trim() || undefined); }}
+          title="The step's name: under the panel and on the journey chart">{panel.label ? "Rename step" : "Name step"}</button>
         <button onClick={() => zoomToPanel(panel.id)} title="Zoom the editor in on this panel">Zoom to panel</button>
       </>
     );
@@ -186,7 +188,6 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
         {isScene(panel) && <><button onClick={() => zoomCam(1 / 1.15)} title="Camera zoom out (drag the panel background to pan)">Camera −</button><button onClick={() => zoomCam(1.15)} title="Camera zoom in (drag the panel background to pan)">Camera +</button></>}
         {isScene(panel) && (cam.dx || cam.dy || cam.scale) && <button onClick={() => commit(resetLayoutOps(pi, "__camera"), "Camera reset")}>Reset camera</button>}
         {isScene(panel) && !panel.caption && <button onClick={() => set("caption", "Caption")}>+ Caption</button>}
-        <button onClick={() => { const v = window.prompt("Label under the panel", panel.label ?? ""); if (v !== null) void set("label", v.trim() || undefined); }}>Label</button>
         {sep}
         <button onClick={() => move(-1)} disabled={pi === 0} title="Move earlier">Earlier</button>
         <button onClick={() => move(1)} disabled={pi === board.panels.length - 1} title="Move later">Later</button>
