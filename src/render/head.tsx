@@ -43,14 +43,21 @@ export function hairBack(cast: CastMember, f: Figure, hx: number, hy: number, r:
       return <path d={path} {...st} />;
     }
     case "curly": {
-      const bumps = f.view === "side" ? [-1, -0.6, -0.15, 0.3] : [-1, -0.5, 0, 0.5, 1];
-      return <g>{bumps.map((k, i) => <circle key={i} cx={hx + k * r * (f.view === "side" ? -d : 1)} cy={hy - 0.75 * r + Math.abs(k) * 0.35 * r} r={r * 0.46} {...st} />)}</g>;
+      // curls sit on the crown; the outermost stay above the ears so they don't read as earmuffs or buns
+      const bumps = f.view === "side" ? [-1, -0.6, -0.15, 0.3] : [-0.85, -0.42, 0, 0.42, 0.85];
+      const side = f.view === "side";
+      return <g>{bumps.map((k, i) => <circle key={i} cx={hx + k * r * (side ? -d : 1)} cy={hy - (side ? 0.75 : 0.8) * r + Math.abs(k) * (side ? 0.35 : 0.3) * r} r={r * (side ? 0.46 : 0.42)} {...st} />)}</g>;
     }
     case "long":
       if (f.view === "side") return <path d={`M${hx - d * 0.15 * r} ${hy} L${hx - d * 0.35 * r} ${hy + 1.45 * r} L${hx - d * 1.15 * r} ${hy + 1.35 * r} L${hx - d * r} ${hy - 0.1 * r} Z`} {...st} />;
       if (f.view === "back") return <path d={`M${hx - r} ${hy} L${hx - r - 1} ${hy + 1.55 * r} H${hx + r + 1} L${hx + r} ${hy} Z`} {...st} />;
       return <path d={`M${hx - r} ${hy - 0.2 * r} Q${hx - r - 2.5} ${hy + 1.1 * r} ${hx - r + 1} ${hy + 1.45 * r} L${hx + r - 1} ${hy + 1.45 * r} Q${hx + r + 2.5} ${hy + 1.1 * r} ${hx + r} ${hy - 0.2 * r} Z`} {...st} />;
     case "ponytail":
+      if (f.view === "front" && f.angle === "three-quarter") {
+        // turned a little: the tail peeks out behind the head on the far side
+        const k = -f.dir;
+        return <path d={`M${hx + k * 0.7 * r} ${hy - 0.45 * r} Q${hx + k * 1.45 * r} ${hy + 0.1 * r} ${hx + k * 1.1 * r} ${hy + 1.0 * r} Q${hx + k * 1.0 * r} ${hy + 0.2 * r} ${hx + k * 0.6 * r} ${hy - 0.1 * r} Z`} {...st} />;
+      }
       if (f.view !== "side") return null; // from behind it's drawn over the head (hairFront)
       return <path d={`M${hx - d * 0.9 * r} ${hy - 0.35 * r} q${-d * 0.8 * r} ${0.3 * r} ${-d * 0.55 * r} ${1.3 * r}`} fill="none" stroke={ink} strokeWidth={6} strokeLinecap="round" />;
     default:
@@ -60,7 +67,7 @@ export function hairBack(cast: CastMember, f: Figure, hx: number, hy: number, r:
 
 /** Hair drawn ON TOP of the head: a cap that stops at the hairline so the eyes stay clear. */
 function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: number): ReactNode {
-  const fill = cast.hair === "buzz" ? C.g5 : hairColor(cast);
+  const fill = hairColor(cast);
   const st = { fill, stroke: ink, strokeWidth: 1.8, strokeLinejoin: "round" as const };
   const R = cast.hair === "afro" ? r + 2.2 : r + 1.2;
   if (cast.hair === "bald" || cast.hair === "hijab") return null;
@@ -159,7 +166,8 @@ function emanata(mood: Mood, hx: number, hy: number, r: number, side: number, ex
     case "confused":
       return <text x={x} y={y + 2} textAnchor="middle" fontFamily="Permanent Marker" fontSize={r * 1.1} fill={ink}>?</text>;
     case "surprised":
-      return <path d={`M${hx - 0.7 * r} ${hy - r * ext.top - 4} l-3 -6 M${hx} ${hy - r * ext.top - 5} v-7 M${hx + 0.7 * r} ${hy - r * ext.top - 4} l3 -6`} {...s} />;
+      // three little burst strokes beside the head (not above it, where close-ups crop them)
+      return <path d={`M${x - side * 2} ${y - 2} l${side * 4} -6 M${x + side * 1} ${y + 5} h${side * 8} M${x - side * 1} ${y + 12} l${side * 5} 5`} {...s} />;
     case "stressed":
       return <g>{[0, 1].map((i) => <path key={i} d={`M${x + i * 5 * side} ${y + i * 7} q-2.6 5 0 6.6 q2.6 -1.6 0 -6.6z`} fill={C.paper} stroke={ink} strokeWidth={1.4} />)}</g>;
     case "frustrated": // anger mark

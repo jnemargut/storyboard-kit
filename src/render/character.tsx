@@ -96,13 +96,24 @@ export function Character({ f, cast, mood, held, stool, hideArm }: CharacterProp
           <path d={`M${seatX - 11} ${hipY + 9} L${seatX - 14} 0 M${seatX + 11} ${hipY + 9} L${seatX + 14} 0 M${seatX - 12} ${hipY / 2} h24`} stroke={ink} strokeWidth={1.8} fill="none" strokeLinecap="round" />
         </g>
       )}
-      {acc.has("wheelchair") && (
+      {acc.has("wheelchair") && (side ? (
         <g>
-          <circle cx={j.hipL[0] + (side ? -4 * f.dir : 0)} cy={-20} r={20} fill="none" stroke={ink} strokeWidth={2.4} />
-          <circle cx={j.hipL[0] + (side ? -4 * f.dir : 0)} cy={-20} r={3} fill={ink} />
-          <path d={`M${j.hipL[0] - 14} ${j.hipL[1] + 4} h28 M${j.hipL[0] + (side ? -12 * f.dir : 0)} ${j.hipL[1] - 30} v30`} stroke={ink} strokeWidth={2.2} fill="none" strokeLinecap="round" />
+          <circle cx={j.hipL[0] - 4 * f.dir} cy={-20} r={20} fill="none" stroke={ink} strokeWidth={2.4} />
+          <circle cx={j.hipL[0] - 4 * f.dir} cy={-20} r={3} fill={ink} />
+          <path d={`M${j.hipL[0] - 14} ${j.hipL[1] + 4} h28 M${j.hipL[0] - 12 * f.dir} ${j.hipL[1] - 30} v30`} stroke={ink} strokeWidth={2.2} fill="none" strokeLinecap="round" />
         </g>
-      )}
+      ) : (() => {
+        // from the front or behind: a big wheel on each side (seen edge-on), the seat between them, handles at the back
+        const lx = Math.min(j.hipL[0], j.hipR[0]) - 13, rx = Math.max(j.hipL[0], j.hipR[0]) + 13;
+        const tq = f.angle === "three-quarter" ? 7 : 4.5;
+        return (
+          <g>
+            {[lx, rx].map((x) => <ellipse key={x} cx={x} cy={-21} rx={tq} ry={21} fill="none" stroke={ink} strokeWidth={2.4} />)}
+            <path d={`M${lx} ${hipY + 4} H${rx} M${lx + 3} -4 H${rx - 3}`} stroke={ink} strokeWidth={2.2} fill="none" strokeLinecap="round" />
+            {f.view === "back" && <path d={`M${lx + 2} ${hipY + 4} V${hipY - 34} h-5 M${rx - 2} ${hipY + 4} V${hipY - 34} h5`} stroke={ink} strokeWidth={2.2} fill="none" strokeLinecap="round" />}
+          </g>
+        );
+      })())}
       {hairBack(cast, f, hx, hy, r)}
       {farFirst && (side ? armL : null)}
       {legs}

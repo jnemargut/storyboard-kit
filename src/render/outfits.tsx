@@ -105,6 +105,11 @@ export function OutfitDetail({ outfit, f }: { outfit: string; f: Figure; top: st
           {[0.35, 0.65, 0.95].map((t) => dot([cx + 4, lerp(ny + 10, hipY, t)], `b${t}`, 1.4))}
         </g>
       ) : null;
+    case "hoodie":
+      // the hood itself: bunched behind the neck from the back and the side
+      if (back) return <path d={`M${nx - 10} ${ny + 1} Q${nx - 11} ${ny + 16} ${nx} ${ny + 17} Q${nx + 11} ${ny + 16} ${nx + 10} ${ny + 1} Q${nx} ${ny + 6} ${nx - 10} ${ny + 1} Z`} fill={C.g7} stroke={ink} strokeWidth={1.5} strokeLinejoin="round" />;
+      if (side) return <path d={`M${nx - f.dir * 3} ${ny - 1} Q${nx - f.dir * 13} ${ny + 2} ${nx - f.dir * 10} ${ny + 13} Q${nx - f.dir * 4} ${ny + 8} ${nx - f.dir * 3} ${ny - 1} Z`} fill={C.g7} stroke={ink} strokeWidth={1.5} strokeLinejoin="round" />;
+      return null;
     case "athletic":
       return front ? <path d={`M${cx - 6} ${ny + 2} Q${cx} ${ny + 12} ${cx + 6} ${ny + 2}`} {...stroke} /> : null;
     default:
