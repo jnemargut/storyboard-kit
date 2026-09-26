@@ -95,7 +95,14 @@ export function effectiveDevice(c: CharacterInPanel): { type: DeviceType; screen
 function holdPlacement(fig: Figure, type: DeviceType, pose: string, href?: string, product = true): HeldPlacement {
   const j = fig.j;
   const sc = HELD_SCALE[type] ?? 0.2;
-  if (type === "watch") return { type, href, product, cx: j.hdL[0], cy: j.hdL[1] - 4, scale: sc, rot: 0 };
+  if (type === "watch") {
+    // on the wrist, just above the hand, with the strap running along the forearm
+    // side views draw the far (left) arm behind the body, so the watch goes on the near arm there
+    const [hd, el] = fig.view === "side" ? [j.hdR, j.elR] : [j.hdL, j.elL];
+    const fx = el[0] - hd[0], fy = el[1] - hd[1];
+    const rot = (Math.atan2(fy, fx) * 180) / Math.PI - 90;
+    return { type, href, product, cx: hd[0] + fx * 0.3, cy: hd[1] + fy * 0.3, scale: sc, rot };
+  }
   if (type === "laptop" || pose === "sitting-laptop") {
     const mx = (j.hdL[0] + j.hdR[0]) / 2, my = (j.hdL[1] + j.hdR[1]) / 2;
     return { type, href, product, cx: mx + (fig.view === "side" ? 6 * fig.dir : 0), cy: my + 1, scale: HELD_SCALE.laptop!, rot: 0 };
@@ -145,8 +152,8 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     const raw = heldDeviceOf(c);
     const beside = raw && !isHandheld(raw.type) ? raw : undefined;
     let pose = c.pose ?? (held ? "holding-phone" : beside ? "pointing" : "standing");
-    if (mark.seated && ["standing", "holding-phone"].includes(pose)) pose = pose === "holding-phone" ? "sitting-laptop" : "sitting";
-    if (mark.seated && heldDeviceOf(c)?.type === "phone" && pose === "sitting-laptop") pose = "sitting";
+    // a seat mark sits people down only when no pose was chosen; an explicit "standing" stands
+    if (mark.seated && !c.pose) pose = pose === "holding-phone" && heldDeviceOf(c)?.type !== "phone" ? "sitting-laptop" : "sitting";
     if (panel.scene === "car" && markName === "driver-seat" && !c.pose) pose = "driving";
     const angle = c.angle ?? (pose === "walking" || pose === "driving" || mark.seated ? "side" : "three-quarter");
     const facing = c.facing ?? mark.facing ?? "right";
@@ -435,4 +442,21 @@ export function placeBubbles(panel: ScenePanel, anchors: Record<string, Anchor>,
     out.push(box);
   });
   return out;
+}
+
+export interface StackItem { id: string; kind: "device" | "character" | "shape" | "image"; behind: boolean; z: number; index?: number }
+
+/**
+ * Draw order for people, devices and shapes within each scene layer (behind the scene's front props, or in front).
+ * Default: devices, then images, then people, then shapes; the editor's Arrange buttons write `layout[id].z` to change it.
+ */
+export function stackOrder(L: PanelLayout, panel: ScenePanel): StackItem[] {
+  const z = (id: string, def: number) => panel.layout?.[id]?.z ?? def;
+  const items: StackItem[] = [
+    ...L.devices.map((d, i) => ({ id: d.id, kind: "device" as const, behind: d.behind, z: z(d.id, i) })),
+    ...(panel.images ?? []).map((im, i) => { const id = im.id ?? `image-${i}`; return { id, kind: "image" as const, behind: false, z: z(id, 50 + i), index: i }; }),
+    ...L.chars.map((c, i) => ({ id: c.id, kind: "character" as const, behind: c.behind, z: z(c.id, 100 + i) })),
+    ...(panel.shapes ?? []).map((s, i) => { const id = s.id ?? `shape-${i}`; return { id, kind: "shape" as const, behind: false, z: z(id, 200 + i), index: i }; }),
+  ];
+  return items.map((it, i) => ({ it, i })).sort((a, b) => a.it.z - b.it.z || a.i - b.i).map((x) => x.it);
 }

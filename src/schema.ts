@@ -1,6 +1,6 @@
 import {
-  ACCESSORIES, AGES, ANGLES, BODY, BUBBLES, DEVICES, DIRECTIONS, FACING, GESTURES, HAIR, HAIR_SHADE, MOODS,
-  OUTFITS, POSES, SCENES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
+  ACCESSORIES, AGES, ANGLES, BODY, BUBBLES, DEVICES, DIRECTIONS, FACING, GESTURES, HAIR, HAIR_SHADE, HATS, MOODS,
+  OUTFITS, POSES, SCENES, SHAPE_FILLS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
 } from "./vocab";
 
 const oneOf = (list: readonly Entry[]) => ({ enum: ids(list), description: list.map((x) => `${x.id}: ${x.desc}`).join("\n") });
@@ -13,7 +13,7 @@ const layoutOverride = {
     additionalProperties: false,
     properties: {
       dx: { type: "number" }, dy: { type: "number" }, scale: { type: "number", exclusiveMinimum: 0 },
-      rotate: { type: "number" }, hidden: { type: "boolean" },
+      rotate: { type: "number" }, hidden: { type: "boolean" }, z: { type: "number" },
     },
   },
 };
@@ -51,7 +51,7 @@ export function buildSchema() {
           additionalProperties: false,
           properties: {
             name: { type: "string" },
-            skin: oneOf(SKIN), hair: oneOf(HAIR), hairShade: oneOf(HAIR_SHADE), body: oneOf(BODY),
+            skin: oneOf(SKIN), hair: oneOf(HAIR), hairShade: oneOf(HAIR_SHADE), hat: oneOf(HATS), body: oneOf(BODY),
             outfit: oneOf(OUTFITS), age: oneOf(AGES),
             accessories: { type: "array", items: oneOf(ACCESSORIES), uniqueItems: true },
           },
@@ -131,6 +131,30 @@ export function buildSchema() {
                   type: "array",
                   items: { type: "object", required: ["text"], additionalProperties: false, properties: { id: { type: "string" }, text: { type: "string" }, target: { type: "string" } } },
                 },
+                sign: { oneOf: [{ type: "string" }, { const: false }], description: "Name on this panel's storefront or sign, e.g. another store. Overrides page.brand; false = blank sign." },
+                images: {
+                  type: "array",
+                  description: "Any picture placed in the scene. Sketchified in greys unless sketch is false. Panel units, 400 x 260.",
+                  items: {
+                    type: "object", required: ["src"], additionalProperties: false,
+                    properties: {
+                      id: { type: "string" }, src: { type: "string", description: "Path relative to the storyboard file." },
+                      x: { type: "number" }, y: { type: "number" }, w: { type: "number", exclusiveMinimum: 0 }, h: { type: "number", exclusiveMinimum: 0 },
+                      sketch: { type: "boolean", description: "false = show the image as-is. Default true." },
+                    },
+                  },
+                },
+                shapes: {
+                  type: "array",
+                  description: "Simple drawn shapes for anything the vocabulary lacks. Panel coordinates, 400 wide x 260 tall.",
+                  items: {
+                    type: "object", required: ["type", "points"], additionalProperties: false,
+                    properties: {
+                      id: { type: "string" }, type: oneOf(SHAPES), fill: oneOf(SHAPE_FILLS),
+                      points: { type: "array", minItems: 2, items: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2 } },
+                    },
+                  },
+                },
                 gestures: {
                   type: "array",
                   items: {
@@ -139,6 +163,7 @@ export function buildSchema() {
                       id: { type: "string" }, type: oneOf(GESTURES), on: { type: "string" },
                       at: { type: "array", items: { type: "number", minimum: 0, maximum: 1 }, minItems: 2, maxItems: 2 },
                       direction: { enum: [...DIRECTIONS] },
+                      angle: { type: "number", description: "Swipe direction in degrees, 0 = right, 90 = down (overrides direction)." },
                     },
                   },
                 },

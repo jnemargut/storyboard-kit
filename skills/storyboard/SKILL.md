@@ -26,6 +26,9 @@ path. **Below, `sb` is short for that whole command.**
 1. **Look up the vocabulary. Don't guess.** `sb vocab` lists categories; `sb vocab poses`,
    `sb vocab scenes` (with marks), `sb vocab shots`, etc. `sb vocab --grep hospital` searches
    every category. If a place you need doesn't exist, pick the closest scene and say so in `label` or a `caption`.
+   A missing prop (a parcel, a sign, a queue barrier) can be a few `shapes`; the designer can redraw it in the editor.
+   If the designer hands you a picture that isn't a screen (a photo, a product, a found image), put it in the
+   panel's `images`. It's sketchified in greys to match; `"sketch": false` shows it as-is.
    Full list: [references/vocabulary.md](references/vocabulary.md).
 2. **Write the file**: `<name>.storyboard.json`. Shape: [references/format.md](references/format.md).
    Worked example: [references/example.md](references/example.md).
@@ -53,17 +56,22 @@ The point is to see the product from inside the customer's life, not to illustra
 - **Put the unsaid in thought bubbles.** What people think but don't say ("it said 4 minutes…") is gold.
 - **Vary the camera.** `wide` for context and who else is around, `over-the-shoulder` or `screen` when
   the UI matters, `close-up` for emotion. Don't use the same shot for every panel.
+- **Name the places.** `page.brand` puts your product's name on storefronts and signs. When the story moves
+  between businesses (a competitor, the corner shop, the bank), set `"sign"` on those panels to their name,
+  or `"sign": false` for a blank sign.
 - **Let the product be absent sometimes.** Panels without a device are fine. That contrast is the point.
 - **Use time cards** ("12 minutes later…") for gaps, and a title card first.
 - **End on the outcome for the person**, not on a UI state. A callout can name the consequence
   ("Trust lost: she'll skip ordering ahead").
 - 5–9 panels is typical. Keep bubbles under ~12 words.
 - Build a varied, realistic cast (skin, age, body, hair, accessories such as glasses, cane, wheelchair,
-  hijab) that fits the story. Don't default everyone to the same look.
+  hijab) that fits the story. Don't default everyone to the same look. Dress staff for their job: `outfit`
+  (`uniform`, `hi-vis`, `lab-coat`, `chef`, `scrubs`, `apron`, `overalls`…) and `hat` (`sb vocab hats`).
 - **Teal means "our product" and nothing else.** A personal call, a text to a coworker, or someone else's app
   is not the product: give that device `"product": false` (e.g. `"device": { "type": "phone", "product": false }`)
   and it's drawn grey. Phone poses (`holding-phone`, `phone-to-ear`) without a device get a grey phone
   automatically. This is how the board shows where the product helps and where people route around it.
+- Gestures (tap, swipe, click…) are drawn **orange**: what the person does. Teal stays reserved for the product.
 - **Hold only what a hand holds.** `device` on a character is for phone, tablet, laptop or watch. Kiosks, car
   displays, TVs, terminals and smart speakers go in the panel's `devices` (optionally `"at"` a mark), and
   gestures point `"on"` them by id. A phone lying on a table is also a panel device, with no person needed.

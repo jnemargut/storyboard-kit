@@ -139,6 +139,15 @@ export const GESTURES = [
   e("voice", "Sound waves coming from a device, e.g. a smart speaker or car answering."),
 ] as const;
 
+export const SHAPES = [
+  e("rect", "Box. `points`: two opposite corners [[x1,y1],[x2,y2]]."),
+  e("ellipse", "Circle or oval inside the box given by two corners."),
+  e("line", "Straight line between two points."),
+  e("arrow", "Line with an arrowhead at the second point."),
+  e("path", "Freehand line through every point (sketch anything missing)."),
+] as const;
+export const SHAPE_FILLS = [e("none", "Outline only (default for lines)."), e("light", "Light grey."), e("mid", "Mid grey."), e("dark", "Dark grey.")] as const;
+
 export const SKIN = [
   e("tone-1", "Lightest skin tone."),
   e("tone-2", "Light-medium skin tone."),
@@ -176,6 +185,24 @@ export const OUTFITS = [
   e("dress", "Dress."),
   e("scrubs", "Medical scrubs."),
   e("apron", "Work apron (barista, shop staff)."),
+  e("polo", "Collared polo shirt (retail, delivery, tech support, golf)."),
+  e("uniform", "Dark uniform with a badge (police, security, pilot, transit, parking)."),
+  e("hi-vis", "Safety vest with reflective stripes (warehouse, construction, road crew)."),
+  e("lab-coat", "Long white coat (doctor, pharmacist, scientist, vet)."),
+  e("chef", "White double-breasted chef's jacket (cook, kitchen staff)."),
+  e("overalls", "Bib overalls (mechanic, farmer, painter, trades)."),
+  e("coat", "Long winter coat (commuter, outdoors)."),
+  e("athletic", "Tank top and shorts (runner, gym, coach)."),
+] as const;
+
+export const HATS = [
+  e("cap", "Baseball cap (casual, delivery driver, coach)."),
+  e("beanie", "Knit beanie (cold weather, casual)."),
+  e("hard-hat", "Hard hat (construction, warehouse, site visit)."),
+  e("chef-hat", "Tall chef's toque."),
+  e("uniform-cap", "Peaked cap (police, pilot, security, driver)."),
+  e("sun-hat", "Wide-brim sun hat."),
+  e("surgical-cap", "Surgical scrub cap (nurse, surgeon)."),
 ] as const;
 
 export const AGES = [e("child", "Kid, shorter."), e("adult", "Default."), e("older", "Older adult.")] as const;
@@ -203,7 +230,7 @@ export const PANEL_TYPES = [
 export const VOCAB = {
   scenes: SCENES, shots: SHOTS, poses: POSES, moods: MOODS, angles: ANGLES, devices: DEVICES,
   bubbles: BUBBLES, gestures: GESTURES, skin: SKIN, hair: HAIR, "hair-shade": HAIR_SHADE, body: BODY,
-  outfits: OUTFITS, ages: AGES, accessories: ACCESSORIES, "time-icons": TIME_ICONS, "panel-types": PANEL_TYPES,
+  outfits: OUTFITS, hats: HATS, ages: AGES, accessories: ACCESSORIES, "time-icons": TIME_ICONS, "panel-types": PANEL_TYPES, shapes: SHAPES, "shape-fills": SHAPE_FILLS,
 } as const;
 
 export type VocabCategory = keyof typeof VOCAB;
@@ -223,6 +250,9 @@ export type Hair = Ids<typeof HAIR>;
 export type HairShade = Ids<typeof HAIR_SHADE>;
 export type Body = Ids<typeof BODY>;
 export type Outfit = Ids<typeof OUTFITS>;
+export type Hat = Ids<typeof HATS>;
 export type Age = Ids<typeof AGES>;
 export type Accessory = Ids<typeof ACCESSORIES>;
 export type TimeIcon = Ids<typeof TIME_ICONS>;
+export type ShapeType = Ids<typeof SHAPES>;
+export type ShapeFill = Ids<typeof SHAPE_FILLS>;

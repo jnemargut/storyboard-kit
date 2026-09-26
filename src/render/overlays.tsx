@@ -88,11 +88,22 @@ export function CaptionText({ r, lines, size }: { r: Rect; lines: string[]; size
 }
 
 /** Callout: an annotation from the designer (not the character), boxed with a leader line. */
-export function Callout({ r, lines, size, to }: { r: Rect; lines: string[]; size: number; to?: Pt }) {
+export const DIR_ANGLE: Record<string, number> = { right: 0, down: 90, left: 180, up: 270 };
+
+/** Callout box + leader line. The pointer dot is its own element (`pointId`) so it can be dragged anywhere. */
+export function Callout({ r, lines, size, to, pointId }: { r: Rect; lines: string[]; size: number; to?: Pt; pointId?: string }) {
   let lead: ReactNode = null;
   if (to) {
-    const cx = Math.min(Math.max(to[0], r.x), r.x + r.w), cy = to[1] < r.y ? r.y : r.y + r.h;
-    lead = <g><path d={`M${cx} ${cy} L${to[0]} ${to[1]}`} stroke={ink} strokeWidth={1.4} strokeDasharray="3 3" /><circle cx={to[0]} cy={to[1]} r={2.6} fill={ink} /></g>;
+    const inside = to[0] >= r.x && to[0] <= r.x + r.w;
+    const cx = Math.min(Math.max(to[0], r.x), r.x + r.w);
+    const cy = to[1] < r.y ? r.y : to[1] > r.y + r.h ? r.y + r.h : inside ? r.y + r.h : to[1];
+    const ex = inside || to[1] < r.y || to[1] > r.y + r.h ? cx : to[0] < r.x ? r.x : r.x + r.w;
+    lead = (
+      <g>
+        <path d={`M${ex} ${cy} L${to[0]} ${to[1]}`} stroke={ink} strokeWidth={1.4} strokeDasharray="3 3" />
+        <g data-el={pointId} data-kind="point"><circle cx={to[0]} cy={to[1]} r={8} fill="transparent" /><circle cx={to[0]} cy={to[1]} r={3} fill={ink} /></g>
+      </g>
+    );
   }
   return (
     <g>
@@ -107,28 +118,36 @@ export function Callout({ r, lines, size, to }: { r: Rect; lines: string[]; size
 }
 
 /** Gesture marks are software interactions, so they're teal. */
-export function GestureMark({ g, screen, product = true }: { g: Gesture; screen?: Rect; product?: boolean }) {
-  const t = product ? C.teal : C.g8;
+/**
+ * Gesture marks show what the person DOES, so they're orange (never teal: teal is the product), with a white
+ * halo underneath so they stay visible on teal screens and busy scenes.
+ */
+export function GestureMark({ g, screen }: { g: Gesture; screen?: Rect; product?: boolean }) {
+  return <g>{gestureShapes(g, screen, C.paper, 3.2)}{gestureShapes(g, screen, C.action, 0)}</g>;
+}
+
+function gestureShapes(g: Gesture, screen: Rect | undefined, t: string, halo: number) {
   const sr = screen ?? { x: 180, y: 110, w: 40, h: 60 };
   const [ax, ay] = g.at ?? (g.type === "swipe" ? [0.5, 0.5] : g.type === "cursor" || g.type === "click" ? [0.6, 0.45] : [0.5, 0.74]);
   const x = sr.x + sr.w * ax, y = sr.y + sr.h * ay;
   const r = Math.max(4, Math.min(16, sr.w * 0.14));
-  const sw = Math.max(1.6, Math.min(3, r / 4));
+  const sw = Math.max(2, Math.min(3.4, r / 3.6)) + halo;
   const common = { stroke: t, strokeWidth: sw, fill: "none", strokeLinecap: "round" as const };
   switch (g.type) {
     case "tap":
-      return <g><circle cx={x} cy={y} r={r * 0.45} {...common} /><circle cx={x} cy={y} r={r} {...common} opacity={0.6} /><path d={`M${x - r * 1.5} ${y - r * 1.2} l${-r * 0.5} ${-r * 0.5} M${x} ${y - r * 1.5} v${-r * 0.7} M${x + r * 1.5} ${y - r * 1.2} l${r * 0.5} ${-r * 0.5}`} {...common} /></g>;
+      return <g><circle cx={x} cy={y} r={r * 0.45} {...common} /><circle cx={x} cy={y} r={r} {...common} opacity={0.6} /></g>;
     case "double-tap":
       return <g><circle cx={x} cy={y} r={r * 0.45} {...common} /><circle cx={x} cy={y} r={r} {...common} /><circle cx={x} cy={y} r={r * 1.5} {...common} opacity={0.5} /><text x={x + r * 1.7} y={y - r} fontFamily={FONT.hand} fontSize={Math.max(9, r)} fill={t}>×2</text></g>;
     case "long-press":
       return <g><circle cx={x} cy={y} r={r * 0.5} fill={t} opacity={0.35} /><circle cx={x} cy={y} r={r * 1.1} {...common} strokeDasharray={`${r * 0.8} ${r * 0.4}`} /></g>;
     case "swipe": {
-      const dir = g.direction ?? "left";
-      const len = (dir === "left" || dir === "right" ? sr.w : sr.h) * 0.55;
-      const [dx, dy] = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }[dir];
+      // any direction: `angle` in degrees (0 = right, 90 = down), else the named direction
+      const deg = g.angle ?? DIR_ANGLE[g.direction ?? "left"];
+      const dx = Math.cos((deg * Math.PI) / 180), dy = Math.sin((deg * Math.PI) / 180);
+      const len = (Math.abs(dx) * sr.w + Math.abs(dy) * sr.h) * 0.55;
       const x0 = x - (dx * len) / 2, y0 = y - (dy * len) / 2, x1 = x + (dx * len) / 2, y1 = y + (dy * len) / 2;
       const hx = -dx * r * 0.7, hy = -dy * r * 0.7;
-      return <g><circle cx={x0} cy={y0} r={r * 0.4} fill={t} /><path d={`M${x0} ${y0} L${x1} ${y1}`} {...common} /><path d={`M${x1 + hx - dy * r * 0.6} ${y1 + hy - dx * r * 0.6} L${x1} ${y1} L${x1 + hx + dy * r * 0.6} ${y1 + hy + dx * r * 0.6}`} {...common} /></g>;
+      return <g><circle cx={x0} cy={y0} r={r * 0.4} fill={t} /><path d={`M${x0} ${y0} L${x1} ${y1}`} {...common} /><path d={`M${x1 + hx - dy * r * 0.6} ${y1 + hy + dx * r * 0.6} L${x1} ${y1} L${x1 + hx + dy * r * 0.6} ${y1 + hy - dx * r * 0.6}`} {...common} /></g>;
     }
     case "cursor": case "click": {
       const k = Math.max(0.5, r / 9);

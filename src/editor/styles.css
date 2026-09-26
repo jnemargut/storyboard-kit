@@ -45,6 +45,8 @@ button, select, input, textarea { font: inherit; color: inherit; }
 .desk.dropping .desk-inner { outline: 3px dashed var(--color-product); outline-offset: 6px; }
 .sel-box { position: absolute; border: 2.5px solid var(--color-product); pointer-events: none; }
 .sel-box.panel { border-style: dashed; }
+.rot-handle { position: absolute; width: 12px; height: 12px; border-radius: 50%; background: var(--color-paper); border: 2px solid var(--color-product); right: -8px; top: -8px; pointer-events: auto; cursor: grab; }
+.rot-handle::after { content: ""; position: absolute; inset: 2px; border-radius: 50%; background: var(--color-product); }
 .handle { position: absolute; width: 12px; height: 12px; background: var(--color-paper); border: 2px solid var(--color-product); right: -7px; bottom: -7px; pointer-events: auto; cursor: nwse-resize; }
 .ctx { position: absolute; display: flex; gap: 2px; align-items: center; background: var(--color-ink); color: var(--color-paper); padding: 4px 6px; box-shadow: var(--shadow-l2); z-index: 10; white-space: nowrap; font-size: var(--text-xs); }
 .ctx select, .ctx button { background: transparent; color: var(--color-paper); border: 1px solid transparent; padding: 2px 5px; cursor: pointer; font-size: var(--text-xs); }
@@ -56,7 +58,6 @@ button, select, input, textarea { font: inherit; color: inherit; }
 .ctx .kind { color: var(--color-400); padding: 0 4px; }
 .inline-edit { position: absolute; z-index: 15; font-family: "Patrick Hand", cursive; font-size: 16px; line-height: 1.2; padding: 6px 8px; border: 2.5px solid var(--color-product); background: var(--color-paper); resize: none; }
 .toast { position: fixed; left: 50%; top: 64px; transform: translateX(-50%); background: var(--color-ink); color: var(--color-paper); padding: 6px 14px; font-size: var(--text-xs); z-index: 40; box-shadow: var(--shadow-l2); }
-.empty-hint { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); font-family: var(--font-lettering); color: var(--color-600); font-size: var(--text-base); pointer-events: none; }
 
 /* drawer */
 .drawer { background: var(--color-paper); border-top: 2px solid var(--color-ink); }
@@ -71,9 +72,16 @@ button, select, input, textarea { font: inherit; color: inherit; }
 .tile .t-sub { font-size: 11px; color: var(--color-600); }
 .tile svg { display: block; }
 .tile.teal { border-color: var(--color-product); }
+.tile.tool { cursor: pointer; font: inherit; color: inherit; }
+.tile.tool.on { background: var(--color-100); box-shadow: inset 0 0 0 2px var(--color-ink); }
+.drawing, .drawing * { cursor: crosshair !important; }
+.check { display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--color-ink); align-self: center; cursor: pointer; }
+.sep-v { width: 1.5px; align-self: stretch; background: var(--color-300); margin: 0 var(--space-1); }
 .hint { font-family: var(--font-lettering); color: var(--color-600); font-size: var(--text-base); align-self: center; }
-.cast-card { border: 1.5px solid var(--color-ink); background: var(--color-50); padding: 8px; display: grid; grid-template-columns: 70px 1fr; gap: 8px; width: 330px; }
-.cast-card .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
+.cast-card { border: 1.5px solid var(--color-ink); background: var(--color-50); padding: 8px; display: grid; grid-template-columns: 96px 1fr; gap: 8px; width: 360px; align-items: start; }
+.cast-card .fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 8px; min-width: 0; }
+.cast-card .fields > label { min-width: 0; }
+.cast-card .fields select, .cast-card .fields input:not([type="checkbox"]) { width: 100%; box-sizing: border-box; min-width: 0; }
 .cast-card label { font-size: 11px; color: var(--color-600); display: flex; flex-direction: column; }
 .cast-card select, .cast-card input { border: 1px solid var(--color-400); background: var(--color-paper); padding: 1px 3px; font-size: var(--text-xs); }
 .cast-card .acc { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11px; }
@@ -89,6 +97,15 @@ button, select, input, textarea { font: inherit; color: inherit; }
 .ctx-more select:hover, .ctx-more button:hover { border-color: var(--color-500); }
 .ctx-more select option { color: var(--color-ink); background: var(--color-paper); }
 .thumbs { display: flex; flex-wrap: wrap; gap: 10px; }
-.thumb { border: 1.5px solid var(--color-ink); background: var(--color-50); cursor: grab; display: flex; flex-direction: column; align-items: center; padding: 4px; }
+.thumb { border: 1.5px solid var(--color-ink); background: var(--color-50); cursor: grab; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; width: 126px; box-sizing: border-box; }
+.thumb svg { display: block; }
+.sections { display: flex; flex-direction: column; gap: var(--space-3); width: 100%; }
+.sections h3 { margin: 0 0 6px; font-family: var(--font-lettering); font-size: var(--text-base); font-weight: normal; color: var(--color-600); text-transform: uppercase; letter-spacing: 0.06em; }
 .thumb:hover { background: var(--color-100); }
 .thumb span { font-family: var(--font-lettering); font-size: 14px; }
+
+.ctx-look { position: absolute; z-index: 12; background: var(--color-paper); border: 2px solid var(--color-ink); box-shadow: var(--shadow-l3); padding: 8px; }
+.ctx-look .cast-card { border: none; padding: 0; background: none; }
+.look-note { font-size: 11px; color: var(--color-600); margin-top: 6px; display: flex; gap: 8px; align-items: center; }
+.look-note button { font-size: 11px; border: 1.5px solid var(--color-ink); background: var(--color-paper); padding: 1px 8px; cursor: pointer; }
+.ctx button.on { border-color: var(--color-product-tint); color: var(--color-product-tint); }

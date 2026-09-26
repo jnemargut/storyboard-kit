@@ -12,12 +12,15 @@ export const C = {
   tealDark: "#0b7f8a",
   tealTint: "#8fd6dc",
   caption: "#fff6bf",
+  /** Gestures/interactions: what the person does. Orange so it reads on top of teal screens. */
+  action: "#e8590c",
 } as const;
 
 export const SKIN: Record<string, string> = { "tone-1": "#fbfaf7", "tone-2": "#e4e6e8", "tone-3": "#b9bec4", "tone-4": "#8d949a" };
 export const HAIR_FILL: Record<string, string> = { dark: "#3c4147", light: "#e4e6e8", grey: "#b9bec4" };
 export const OUTFIT_FILL: Record<string, string> = {
   jacket: C.g4, tee: C.g2, hoodie: C.g5, sweater: C.g4, suit: C.g7, dress: C.g5, scrubs: C.g2, apron: C.g7,
+  polo: C.g2, uniform: C.g7, "hi-vis": C.g2, "lab-coat": C.paper, chef: C.paper, overalls: C.g1, coat: C.g5, athletic: C.g2,
 };
 
 export const STROKE = { line: 2.1, detail: 1.3, panel: 2.6 };

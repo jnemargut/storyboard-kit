@@ -106,6 +106,18 @@
             ],
             "description": "dark: Dark hair.\nlight: Light hair.\ngrey: Grey or white hair."
           },
+          "hat": {
+            "enum": [
+              "cap",
+              "beanie",
+              "hard-hat",
+              "chef-hat",
+              "uniform-cap",
+              "sun-hat",
+              "surgical-cap"
+            ],
+            "description": "cap: Baseball cap (casual, delivery driver, coach).\nbeanie: Knit beanie (cold weather, casual).\nhard-hat: Hard hat (construction, warehouse, site visit).\nchef-hat: Tall chef's toque.\nuniform-cap: Peaked cap (police, pilot, security, driver).\nsun-hat: Wide-brim sun hat.\nsurgical-cap: Surgical scrub cap (nurse, surgeon)."
+          },
           "body": {
             "enum": [
               "slim",
@@ -124,9 +136,17 @@
               "suit",
               "dress",
               "scrubs",
-              "apron"
+              "apron",
+              "polo",
+              "uniform",
+              "hi-vis",
+              "lab-coat",
+              "chef",
+              "overalls",
+              "coat",
+              "athletic"
             ],
-            "description": "jacket: Casual jacket.\ntee: T-shirt.\nhoodie: Hoodie.\nsweater: Sweater.\nsuit: Blazer and shirt.\ndress: Dress.\nscrubs: Medical scrubs.\napron: Work apron (barista, shop staff)."
+            "description": "jacket: Casual jacket.\ntee: T-shirt.\nhoodie: Hoodie.\nsweater: Sweater.\nsuit: Blazer and shirt.\ndress: Dress.\nscrubs: Medical scrubs.\napron: Work apron (barista, shop staff).\npolo: Collared polo shirt (retail, delivery, tech support, golf).\nuniform: Dark uniform with a badge (police, security, pilot, transit, parking).\nhi-vis: Safety vest with reflective stripes (warehouse, construction, road crew).\nlab-coat: Long white coat (doctor, pharmacist, scientist, vet).\nchef: White double-breasted chef's jacket (cook, kitchen staff).\noveralls: Bib overalls (mechanic, farmer, painter, trades).\ncoat: Long winter coat (commuter, outdoors).\nathletic: Tank top and shorts (runner, gym, coach)."
           },
           "age": {
             "enum": [
@@ -204,6 +224,9 @@
                     },
                     "hidden": {
                       "type": "boolean"
+                    },
+                    "z": {
+                      "type": "number"
                     }
                   }
                 }
@@ -263,6 +286,9 @@
                     },
                     "hidden": {
                       "type": "boolean"
+                    },
+                    "z": {
+                      "type": "number"
                     }
                   }
                 }
@@ -328,6 +354,9 @@
                     },
                     "hidden": {
                       "type": "boolean"
+                    },
+                    "z": {
+                      "type": "number"
                     }
                   }
                 }
@@ -383,6 +412,9 @@
                     },
                     "hidden": {
                       "type": "boolean"
+                    },
+                    "z": {
+                      "type": "number"
                     }
                   }
                 }
@@ -678,6 +710,103 @@
                   }
                 }
               },
+              "sign": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "const": false
+                  }
+                ],
+                "description": "Name on this panel's storefront or sign, e.g. another store. Overrides page.brand; false = blank sign."
+              },
+              "images": {
+                "type": "array",
+                "description": "Any picture placed in the scene. Sketchified in greys unless sketch is false. Panel units, 400 x 260.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "src"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "src": {
+                      "type": "string",
+                      "description": "Path relative to the storyboard file."
+                    },
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    },
+                    "w": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "h": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "sketch": {
+                      "type": "boolean",
+                      "description": "false = show the image as-is. Default true."
+                    }
+                  }
+                }
+              },
+              "shapes": {
+                "type": "array",
+                "description": "Simple drawn shapes for anything the vocabulary lacks. Panel coordinates, 400 wide x 260 tall.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "points"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "rect",
+                        "ellipse",
+                        "line",
+                        "arrow",
+                        "path"
+                      ],
+                      "description": "rect: Box. `points`: two opposite corners [[x1,y1],[x2,y2]].\nellipse: Circle or oval inside the box given by two corners.\nline: Straight line between two points.\narrow: Line with an arrowhead at the second point.\npath: Freehand line through every point (sketch anything missing)."
+                    },
+                    "fill": {
+                      "enum": [
+                        "none",
+                        "light",
+                        "mid",
+                        "dark"
+                      ],
+                      "description": "none: Outline only (default for lines).\nlight: Light grey.\nmid: Mid grey.\ndark: Dark grey."
+                    },
+                    "points": {
+                      "type": "array",
+                      "minItems": 2,
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                      }
+                    }
+                  }
+                }
+              },
               "gestures": {
                 "type": "array",
                 "items": {
@@ -724,6 +853,10 @@
                         "up",
                         "down"
                       ]
+                    },
+                    "angle": {
+                      "type": "number",
+                      "description": "Swipe direction in degrees, 0 = right, 90 = down (overrides direction)."
                     }
                   }
                 }

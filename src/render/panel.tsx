@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
-import type { Board, Panel, ScenePanel, TimePanel } from "../types";
+import type { Board, LayoutOverride, Panel, SceneImage, ScenePanel, TimePanel } from "../types";
 import { isScene } from "../types";
 import { Character } from "./character";
 import { DEVICE_DEFS, Device, type Rect } from "./devices";
-import { ADV_TITLE, captionBox, heldDeviceOf, layoutPanel, placeBubbles, specialGeometry, toPanel, wrap, textWidth, type AssetResolver, type CharPlaced, type DevPlaced, type PanelLayout } from "./layout";
+import { ADV_TITLE, stackOrder, captionBox, heldDeviceOf, layoutPanel, placeBubbles, specialGeometry, toPanel, wrap, textWidth, type AssetResolver, type CharPlaced, type DevPlaced, type PanelLayout } from "./layout";
 import { BubbleShape, BubbleText, Callout, CaptionShape, CaptionText, GestureMark } from "./overlays";
 import { SceneBack, SceneFront } from "./scenes";
+import { ShapeMark, shapeId, shapeTransform } from "./shapes";
 import { C, FONT, PANEL_H, PANEL_W, SKIN, OUTFIT_FILL } from "./tokens";
 import type { Pt } from "./rig";
 
@@ -13,6 +14,8 @@ export interface RenderOptions {
   asset: AssetResolver;
   /** Unprocessed images (brand logo). Falls back to `asset`. */
   raw?: AssetResolver;
+  /** Images placed in a scene, sketchified in greys. Falls back to `raw`, then `asset`. */
+  sketch?: AssetResolver;
   /** Wobble filter on (off while dragging in the editor). */
   wobble?: boolean;
 }
@@ -47,6 +50,22 @@ function DevEl({ d, pid, cam }: { d: DevPlaced; pid: string; cam: { s: number } 
       <Device type={d.type} href={d.href} product={d.product} clipId={clip(pid, d.id)} />
     </g>
   );
+}
+
+/** A placed picture: centre (x, y), fit inside w × h, then the designer's move / scale / rotate. */
+function ImageEl({ id, im, ov, opts, wrap }: { id: string; im: SceneImage; ov: LayoutOverride; opts: RenderOptions; wrap?: string }) {
+  if (ov.hidden) return null;
+  const w = im.w ?? 120, h = im.h ?? 90;
+  const cx = (im.x ?? PANEL_W / 2) + (ov.dx ?? 0), cy = (im.y ?? PANEL_H / 2) + (ov.dy ?? 0);
+  const href = im.sketch === false ? (opts.raw ?? opts.asset)(im.src) : (opts.sketch ?? opts.raw ?? opts.asset)(im.src);
+  const body = (
+    <g data-el={id} data-kind="image" transform={`translate(${cx} ${cy}) rotate(${ov.rotate ?? 0}) scale(${ov.scale ?? 1})`}>
+      {href
+        ? <image href={href} x={-w / 2} y={-h / 2} width={w} height={h} preserveAspectRatio="xMidYMid meet" />
+        : <g><rect x={-w / 2} y={-h / 2} width={w} height={h} fill={C.g1} stroke={ink} strokeWidth={1.6} strokeDasharray="5 4" /><text y={4} textAnchor="middle" fontFamily={FONT.hand} fontSize={12} fill={C.g7}>image not found</text></g>}
+    </g>
+  );
+  return wrap ? <g transform={wrap}>{body}</g> : body;
 }
 
 function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; board: Board; panel: ScenePanel }) {
@@ -111,7 +130,10 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
   const pid = panel.id;
   const ts = board.page?.textScale ?? 1;
   const b = board.page?.brand;
-  const brand = b && (b.name || b.logo) ? { name: b.name, logoHref: b.logo ? (opts.raw ?? opts.asset)(b.logo) : undefined } : undefined;
+  // a panel can name its own store (or blank the sign) instead of the board-wide brand
+  const brand = panel.sign === false ? undefined
+    : typeof panel.sign === "string" && panel.sign ? { name: panel.sign }
+    : b && (b.name || b.logo) ? { name: b.name, logoHref: b.logo ? (opts.raw ?? opts.asset)(b.logo) : undefined } : undefined;
   const L = layoutPanel(board, panel, opts.asset);
   const cam = L.camera;
   const wob = opts.wobble === false ? undefined : "url(#sb-wobble)";
@@ -134,12 +156,16 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
     const lines = wrap(co.text, size, 120 * Math.max(1, size / 14));
     const w = Math.max(...lines.map((l) => textWidth(l, size))) + 12, h = lines.length * size * 1.15 + 9;
     const a = co.target ? L.anchors[co.target] : undefined;
-    const to: Pt | undefined = a ? (a.screen ? [a.screen.x + a.screen.w / 2, a.screen.y + a.screen.h / 2] : [a.box.x + a.box.w / 2, a.box.y + 10]) : undefined;
+    const pov = panel.layout?.[`${id}.point`];
+    let to: Pt | undefined = a ? (a.screen ? [a.screen.x + a.screen.w / 2, a.screen.y + a.screen.h / 2] : [a.box.x + a.box.w / 2, a.box.y + 10]) : undefined;
     const cands: Pt[] = [[PANEL_W - w - 8, 8], [PANEL_W - w - 8, PANEL_H - h - 8], [8, PANEL_H - h - 8], [8, 8], [PANEL_W / 2 - w / 2, PANEL_H - h - 8]];
     const fits = (p: Pt) => !taken.some((t) => p[0] < t.x + t.w + 4 && t.x < p[0] + w + 4 && p[1] < t.y + t.h + 4 && t.y < p[1] + h + 4);
     const p = cands.find(fits) ?? cands[0];
     const ov = panel.layout?.[id] ?? {};
     const r = { x: p[0] + (ov.dx ?? 0), y: p[1] + (ov.dy ?? 0), w, h };
+    // a pointer with no target starts just below the box; the designer's drag offset moves it anywhere
+    if (!to && pov) to = [r.x + r.w / 2, r.y + r.h + 36];
+    if (to && pov) to = [to[0] + (pov.dx ?? 0), to[1] + (pov.dy ?? 0)];
     taken.push(r);
     return { id, r, lines, size, to };
   });
@@ -152,12 +178,15 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
     return { id, g: gs, screen, ov, product };
   });
 
-  const byLayer = (behind: boolean) => (
-    <>
-      {L.devices.filter((d) => d.behind === behind).map((d) => <DevEl key={d.id} d={d} pid={pid} cam={cam} />)}
-      {L.chars.filter((c) => c.behind === behind).map((c) => <CharEl key={c.id} c={c} pid={pid} cam={cam} layout={panel.layout} />)}
-    </>
-  );
+  // shapes live in panel units; inside the camera group they undo its transform so layers can interleave
+  const unCam = `scale(${1 / cam.s}) translate(${-cam.tx} ${-cam.ty})`;
+  const byLayer = (behind: boolean) => stackOrder(L, panel).filter((it) => it.behind === behind).map((it) => {
+    if (it.kind === "device") { const d = L.devices.find((x) => x.id === it.id)!; return <DevEl key={d.id} d={d} pid={pid} cam={cam} />; }
+    if (it.kind === "character") { const c = L.chars.find((x) => x.id === it.id)!; return <CharEl key={c.id} c={c} pid={pid} cam={cam} layout={panel.layout} />; }
+    if (it.kind === "image") return <ImageEl key={it.id} id={it.id} im={panel.images![it.index!]} ov={panel.layout?.[it.id] ?? {}} opts={opts} wrap={unCam} />;
+    const sh = panel.shapes![it.index!], ov = panel.layout?.[it.id] ?? {};
+    return !ov.hidden && sh.points?.length >= 2 && <g key={it.id} transform={unCam}><g data-el={it.id} data-kind="shape" transform={shapeTransform(sh, ov)}><ShapeMark s={sh} /></g></g>;
+  });
 
   return (
     <>
@@ -175,6 +204,11 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
             {byLayer(false)}
           </g>
         )}
+        {L.special && (panel.images ?? []).map((im, i) => { const id = im.id ?? `image-${i}`; return <ImageEl key={id} id={id} im={im} ov={panel.layout?.[id] ?? {}} opts={opts} />; })}
+        {L.special && (panel.shapes ?? []).map((sh, i) => {
+          const id = shapeId(sh, i), ov = panel.layout?.[id] ?? {};
+          return !ov.hidden && sh.points?.length >= 2 && <g key={id} data-el={id} data-kind="shape" transform={shapeTransform(sh, ov)}><ShapeMark s={sh} /></g>;
+        })}
         {cap && !(panel.layout?.caption?.hidden) && <g data-el="caption" data-kind="caption"><CaptionShape r={cap} /></g>}
         {bubbles.map((b) => !(panel.layout?.[b.id]?.hidden) && <g key={b.id} data-el={b.id} data-kind="bubble"><BubbleShape b={b} /></g>)}
       </g>
@@ -183,7 +217,7 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
       ))}
       {cap && !(panel.layout?.caption?.hidden) && <g data-el="caption" data-kind="caption"><CaptionText r={cap} lines={cap.lines} size={cap.size} /></g>}
       {bubbles.map((b) => !(panel.layout?.[b.id]?.hidden) && <g key={b.id} data-el={b.id} data-kind="bubble"><BubbleText b={b} /></g>)}
-      {callouts.map((c) => !(panel.layout?.[c.id]?.hidden) && <g key={c.id} data-el={c.id} data-kind="callout"><Callout r={c.r} lines={c.lines} size={c.size} to={c.to} /></g>)}
+      {callouts.map((c) => !(panel.layout?.[c.id]?.hidden) && <g key={c.id} data-el={c.id} data-kind="callout"><Callout r={c.r} lines={c.lines} size={c.size} to={c.to} pointId={`${c.id}.point`} /></g>)}
     </>
   );
 }
@@ -192,7 +226,7 @@ function TimeIcon({ icon, x, y }: { icon: TimePanel["icon"]; x: number; y: numbe
   const s = { stroke: ink, strokeWidth: 2.6, fill: "none", strokeLinecap: "round" as const };
   switch (icon) {
     case "calendar":
-      return <g><rect x={x - 28} y={y - 26} width={56} height={54} rx={4} fill={C.paper} stroke={ink} strokeWidth={2.6} /><path d={`M${x - 28} ${y - 10} h56 M${x - 14} ${y - 32} v12 M${x + 14} ${y - 32} v12`} {...s} /><text x={x} y={y + 20} textAnchor="middle" fontFamily={FONT.title} fontSize={20} fill={ink}>+1</text></g>;
+      return <g><rect x={x - 28} y={y - 26} width={56} height={54} rx={4} fill={C.paper} stroke={ink} strokeWidth={2.6} /><path d={`M${x - 28} ${y - 10} h56 M${x - 14} ${y - 32} v12 M${x + 14} ${y - 32} v12`} {...s} />{[0, 1, 2].map((c) => [0, 1].map((rr) => <rect key={`${c}${rr}`} x={x - 20 + c * 14} y={y - 4 + rr * 13} width={8} height={8} rx={1} fill={c === 2 && rr === 1 ? ink : "none"} stroke={ink} strokeWidth={1.6} />))}</g>;
     case "sun":
       return <g><circle cx={x} cy={y} r={16} fill={C.g2} stroke={ink} strokeWidth={2.6} />{Array.from({ length: 8 }, (_, i) => { const a = (i * Math.PI) / 4; return <path key={i} d={`M${x + Math.cos(a) * 22} ${y + Math.sin(a) * 22} L${x + Math.cos(a) * 30} ${y + Math.sin(a) * 30}`} {...s} />; })}</g>;
     case "moon":

@@ -114,13 +114,17 @@ try {
   await page.getByRole("button", { name: "Journey lanes" }).click();
   await sleep(400);
   check(read().page?.lanes === true && (await page.locator("[data-journey]").count()) === 1, "Journey lanes toggle shows lanes and the journey summary");
-  await page.locator('[data-lane="asks"]').click();
-  await page.locator('.ctx select[aria-label^="How they feel"]').selectOption("-2");
+  await page.locator('[data-lane="asks"] [data-lane-feel="-2"]').click();
   await sleep(400);
-  check(read().panels[6].feeling === -2, "feeling is editable from the panel toolbar");
+  check(read().panels[6].feeling === -2, "clicking a dot in the lane sets the feeling");
+  await page.locator('[data-lane-workaround="asks"]').click();
+  await page.locator("textarea.inline-edit").fill("asks the barista");
+  await page.keyboard.press("Enter");
+  await sleep(400);
+  check(read().panels[6].workaround === "asks the barista", "clicking the lane's workaround note edits it inline");
 
   // poses tab: select a person, click a pose
-  await page.locator('g[data-panel="commute"] [data-el="maya"]').first().click();
+  { const m = page.locator('g[data-panel="commute"] [data-el="maya"]').first(); const mb = await m.boundingBox(); await page.mouse.click(mb.x + mb.width / 2, mb.y + mb.height * 0.12); }
   await page.getByRole("button", { name: "Poses" }).click();
   await page.locator(".tile", { hasText: "phone-to-ear" }).click();
   await sleep(400);
@@ -150,6 +154,74 @@ try {
   await page.screenshot({ path: `${shots}/e2e-4-zoomed.png` });
   await page.getByRole("button", { name: /^Zoom:/ }).click();
   await page.getByRole("button", { name: "Fit to window" }).click();
+
+  // Delete key removes the selection (and undo brings it back)
+  await page.locator('g[data-panel="walking"] [data-el="bubble-0"]').last().click();
+  await page.keyboard.press("Delete");
+  await sleep(400);
+  check(!(read().panels[2].bubbles ?? []).length, "Delete key removes the selected bubble");
+  await page.keyboard.press("Meta+z");
+  await sleep(500);
+  check((read().panels[2].bubbles ?? []).length === 1, "undo restores it");
+
+  // callout pointer: drag the dot somewhere else
+  const dot = page.locator('g[data-panel="commute"] [data-el="callout-0.point"]');
+  await dot.scrollIntoViewIfNeeded();
+  const db = await dot.boundingBox();
+  await page.mouse.move(db.x + db.width / 2, db.y + db.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(db.x + db.width / 2 - 30, db.y + db.height / 2 + 10, { steps: 5 });
+  await page.mouse.up();
+  await sleep(400);
+  check((read().panels.find((p) => p.id === "commute").layout?.["callout-0.point"]?.dx ?? 0) < 0, "callout pointer dot drags freely");
+
+  // a person's look, right from their toolbar
+  { const m = page.locator('g[data-panel="in-line"] [data-el="sam"]').first(); const mb = await m.boundingBox(); await page.mouse.click(mb.x + mb.width / 2, mb.y + mb.height * 0.12); }
+  await page.getByRole("button", { name: "Look…" }).click();
+  await page.locator(".ctx-look select").nth(1).selectOption("bun");
+  await sleep(400);
+  check(read().cast.sam.hair === "bun", "Look… edits the person everywhere");
+
+  await page.mouse.click(5, 990);
+
+  // Draw tab: drag a box onto a scene panel
+  await page.locator(".tabs button", { hasText: "Draw" }).click();
+  await page.getByRole("button", { name: /^Box/ }).click();
+  const pr = page.locator('g[data-panel="in-line"] > rect[data-el="__panel"]');
+  await pr.scrollIntoViewIfNeeded();
+  const drawBox = await pr.boundingBox();
+  await page.mouse.move(drawBox.x + drawBox.width * 0.05, drawBox.y + drawBox.height * 0.1);
+  await page.mouse.down();
+  await page.mouse.move(drawBox.x + drawBox.width * 0.2, drawBox.y + drawBox.height * 0.3, { steps: 5 });
+  await page.mouse.up();
+  await sleep(500);
+  const shp = read().panels[3].shapes ?? [];
+  check(shp.length === 1 && shp[0].type === "rect" && shp[0].points[1][0] > shp[0].points[0][0], "Draw tab: dragging draws a box into the panel");
+  await page.locator(".drawer-body input[type=file]").setInputFiles("examples/screens/order-status.png");
+  await sleep(1200);
+  const pics = read().panels[3].images ?? [];
+  check(pics.length === 1 && pics[0].src.startsWith("./images/") && pics[0].sketch === undefined, "Picture… adds a sketchified image to the selected panel");
+  check(await page.locator('g[data-panel="in-line"] [data-kind="image"] image').count() === 1, "the picture renders in the editor");
+  await page.getByRole("button", { name: "Close" }).click();
+
+  // arrange, rotate and duplicate the selected person with the keyboard / handle
+  const maya2 = page.locator('g[data-panel="in-line"] [data-el="maya"]').first();
+  const mb = await maya2.boundingBox();
+  await page.mouse.click(mb.x + mb.width / 2, mb.y + mb.height * 0.55);
+  await page.keyboard.press("Meta+Shift+BracketRight");
+  await sleep(400);
+  check((read().panels[3].layout?.maya?.z ?? 0) > 200, "Cmd+Shift+] brings the person in front of the drawn box");
+  const rh = await page.locator(".rot-handle").boundingBox();
+  await page.mouse.move(rh.x + 6, rh.y + 6);
+  await page.mouse.down();
+  await page.mouse.move(rh.x + 6, rh.y + 60, { steps: 6 });
+  await page.mouse.up();
+  await sleep(400);
+  check(Math.abs(read().panels[3].layout?.maya?.rotate ?? 0) > 5, `rotate handle rotates (rotate=${read().panels[3].layout?.maya?.rotate})`);
+  const nChars = read().panels[3].characters.length;
+  await page.keyboard.press("Meta+d");
+  await sleep(400);
+  check(read().panels[3].characters.length === nChars + 1, "Cmd+D duplicates the person");
 
   await page.mouse.click(5, 990);
   await page.screenshot({ path: `${shots}/e2e-3-after.png` });

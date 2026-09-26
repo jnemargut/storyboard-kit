@@ -7,16 +7,17 @@ import { applyOps, formatStoryboard } from "../src/json";
 import { renderBoardSVG } from "../src/render";
 import { SCENE_DEFS } from "../src/render/scenes";
 import { POSE_DEFS } from "../src/render/rig";
-import { SCENE_MARKS, SCENES, POSES, MOODS, SHOTS, DEVICES, ANGLES, ids } from "../src/vocab";
+import { SCENE_MARKS, SCENES, POSES, MOODS, SHOTS, DEVICES, ANGLES, OUTFITS, HATS, ids } from "../src/vocab";
 import { toScript } from "../src/script";
-import { bakeScreen, imageSize, initRenderer } from "../src/export";
+import { bakeScreen, boardToSVG, imageSize, initRenderer, svgToPNG } from "../src/export";
 
 beforeAll(() => initRenderer());
 import { buildSchema } from "../src/schema";
 import { critique } from "../src/critique";
 import { productShare, feelingOf } from "../src/render";
-import { clipFor, pasteOps } from "../src/editor/model";
-import type { Board } from "../src/types";
+import { arrangeOps, clipFor, deleteOps, pasteOps, swapWhoOps } from "../src/editor/model";
+import type { Board, ScenePanel } from "../src/types";
+import { layoutPanel } from "../src/render/layout";
 
 const example: Board = JSON.parse(readFileSync("tests/fixtures/late-latte.storyboard.json", "utf8"));
 const asset = () => undefined;
@@ -194,6 +195,19 @@ describe("art + scene options", () => {
   });
 });
 
+describe("editor: swapping who someone is", () => {
+  it("moves bubbles, gestures, focus and layout nudges to the new person", () => {
+    const b = applyOps(example, [{ path: ["panels", 4, "layout", "maya.screen"], value: { dx: 5 } }]);
+    const next = applyOps(b, swapWhoOps(b, { panel: "checks-app", el: "maya", kind: "character" }, "leo"));
+    const p = next.panels[4] as never as { bubbles: { from: string }[]; gestures: { on: string }[]; layout: Record<string, unknown> };
+    expect(p.bubbles[0].from).toBe("leo");
+    expect(p.gestures[0].on).toBe("leo");
+    expect(p.layout["leo.screen"]).toEqual({ dx: 5 });
+    expect(p.layout["maya.screen"]).toBeUndefined();
+    expect(validate(next).ok).toBe(true);
+  });
+});
+
 describe("clipboard", () => {
   it("copies a person with their cast entry and pastes into another board", () => {
     const clip = clipFor(example, { panel: "in-line", el: "sam", kind: "character" })!;
@@ -271,6 +285,119 @@ describe("renderer", () => {
   it("layout overrides move elements", () => {
     const moved = applyOps(example, [{ path: ["panels", 3, "layout", "sam", "dx"], value: 30 }]);
     expect(renderBoardSVG(moved, { asset })).not.toBe(renderBoardSVG(example, { asset }));
+  });
+});
+
+describe("export robustness", () => {
+  it("renders narrow (1-across) boards with zoomed cameras and big shots without crashing the renderer", () => {
+    const b = applyOps(example, [
+      { path: ["page"], value: { columns: 1, lanes: true } },
+      { path: ["panels", 3, "layout", "__camera"], value: { scale: 2.5, dx: -120 } },
+    ]);
+    const png = svgToPNG(boardToSVG(b, "tests/fixtures/late-latte.storyboard.json"), 1.5);
+    expect(imageSize(png)?.w).toBeGreaterThan(500);
+  });
+});
+
+describe("outfits and hats", () => {
+  it("every outfit × hat renders from every angle without NaN, and validates", () => {
+    const cast: Board["cast"] = {};
+    ids(OUTFITS).forEach((o, i) => { cast[`o${i}`] = { outfit: o as never, hat: ids(HATS)[i % HATS.length] as never, hair: i % 2 ? "afro" : "long" }; });
+    const panels = ids(ANGLES).flatMap((angle) => Object.keys(cast).map((who) => ({ id: `${angle}-${who}`, scene: "blank" as const, characters: [{ who, angle: angle as never }] })));
+    const b: Board = { schemaVersion: 1, title: "Outfits", cast, panels };
+    expect(validate(b).errors).toEqual([]);
+    expect(renderBoardSVG(b, { asset })).not.toContain("NaN");
+    const bad = validate({ ...b, cast: { x: { hat: "helmet" } }, panels: [] }).errors;
+    expect(bad.some((e) => e.path === "$.cast.x.hat")).toBe(true);
+  });
+});
+
+describe("layers and signs", () => {
+  const two: Board = {
+    schemaVersion: 1, title: "Layers", cast: { a: {}, b: {} },
+    panels: [{ id: "p", scene: "blank", characters: [{ who: "a" }, { who: "b" }], devices: [{ type: "watch" }], shapes: [{ type: "rect", points: [[0, 0], [20, 20]] }] }],
+  };
+  const order = (b: Board) => [...renderBoardSVG(b, { asset }).matchAll(/data-el="(a|b|watch|shape-0)"/g)].map((m) => m[1]);
+  it("draws devices, then people, then shapes by default", () => {
+    expect(order(two)).toEqual(["watch", "a", "b", "shape-0"]);
+  });
+  it("arrange writes one z and changes draw order", () => {
+    const sel = { panel: "p", el: "watch", kind: "device" as const };
+    const front = arrangeOps(two, sel, "front")!;
+    expect(front).toHaveLength(1);
+    expect(order(applyOps(two, front) as Board)).toEqual(["a", "b", "shape-0", "watch"]);
+    const fwd = applyOps(two, arrangeOps(two, sel, "forward")!) as Board;
+    expect(order(fwd)).toEqual(["a", "watch", "b", "shape-0"]);
+    expect(arrangeOps(two, sel, "back")).toBeUndefined();
+  });
+  it("a panel's sign overrides the board brand, or blanks it", () => {
+    const b: Board = { schemaVersion: 1, title: "Shops", cast: {}, page: { brand: { name: "Brewly" } },
+      panels: [{ id: "a", scene: "coffee-shop" }, { id: "b", scene: "coffee-shop", sign: "Corner Deli" }, { id: "c", scene: "coffee-shop", sign: false }] };
+    expect(validate(b).errors).toEqual([]);
+    const svg = renderBoardSVG(b, { asset });
+    expect(svg.match(/BREWLY|Brewly/g)?.length).toBe(1);
+    expect(svg).toMatch(/CORNER DELI|Corner Deli/);
+    expect(validate({ ...b, panels: [{ id: "x", scene: "coffee-shop", sign: 3 as never }] }).errors[0].path).toBe("$.panels[0].sign");
+  });
+});
+
+describe("poses on seats", () => {
+  it("a seat mark sits people down by default, but an explicit standing pose stands", () => {
+    const b: Board = { schemaVersion: 1, title: "Seats", cast: { a: {} }, panels: [
+      { id: "auto", scene: "airport", characters: [{ who: "a", at: "gate-seat" }] },
+      { id: "stand", scene: "airport", characters: [{ who: "a", at: "gate-seat", pose: "standing" }] },
+    ] };
+    const pose = (i: number) => layoutPanel(b, b.panels[i] as ScenePanel, asset).chars[0].pose;
+    expect(pose(0)).toBe("sitting");
+    expect(pose(1)).toBe("standing");
+  });
+});
+
+describe("pictures in scenes", () => {
+  it("validates, renders sketchified by default and as-is when sketch is false", () => {
+    const b: Board = { schemaVersion: 1, title: "Pics", cast: {}, panels: [{ id: "p", scene: "blank", images: [{ src: "./a.png", x: 100, y: 80, w: 90, h: 60 }, { src: "./b.png", sketch: false }] }] };
+    expect(validate(b).errors).toEqual([]);
+    const svg = renderBoardSVG(b, { asset: (p) => `teal:${p}`, sketch: (p) => `grey:${p}`, raw: (p) => `raw:${p}` });
+    expect(svg).toContain('data-el="image-0" data-kind="image"');
+    expect(svg).toContain('href="grey:./a.png"');
+    expect(svg).toContain('href="raw:./b.png"');
+    expect(svg).not.toContain("teal:");
+    expect(validate({ ...b, panels: [{ id: "p", scene: "blank", images: [{ src: "./a.png", w: -1, sketch: "yes" as never }] }] }).errors.map((e) => e.path))
+      .toEqual(["$.panels[0].images[0].w", "$.panels[0].images[0].sketch"]);
+  });
+});
+
+describe("shapes (free drawing)", () => {
+  const withShapes = (shapes: unknown[]): Board => {
+    const b = structuredClone(example);
+    (b.panels[1] as unknown as { shapes: unknown[] }).shapes = shapes;
+    return b;
+  };
+  it("validates shapes and suggests fixes", () => {
+    expect(validate(withShapes([{ type: "rect", points: [[10, 10], [60, 50]], fill: "mid" }, { type: "path", points: [[0, 0], [5, 9], [12, 4]] }])).errors).toEqual([]);
+    const bad = validate(withShapes([{ type: "rectangle", points: [[10, 10]] }, { type: "line", points: [[0, 0], [1, 2]], fill: "grey" }])).errors;
+    expect(bad.find((e) => e.path.endsWith("shapes[0].type"))?.hint).toContain('"rect"');
+    expect(bad.some((e) => e.path.endsWith("shapes[0].points"))).toBe(true);
+    expect(bad.some((e) => e.path.endsWith("shapes[1].fill"))).toBe(true);
+  });
+  it("renders selectable shapes and deletes them with their layout", () => {
+    const b = withShapes([{ type: "ellipse", points: [[10, 10], [60, 50]] }, { type: "arrow", points: [[0, 0], [80, 40]] }]);
+    b.panels[1].layout = { ...b.panels[1].layout, "shape-1": { dx: 5, rotate: 30 } };
+    const svg = renderBoardSVG(b, { asset });
+    expect(svg).toContain('data-el="shape-0" data-kind="shape"');
+    expect(svg).toContain('data-el="shape-1" data-kind="shape"');
+    expect(svg).not.toContain("NaN");
+    const d = deleteOps(b, { panel: b.panels[1].id, el: "shape-1", kind: "shape" })!;
+    const after = applyOps(b, d.ops) as Board;
+    expect((after.panels[1] as { shapes?: unknown[] }).shapes).toHaveLength(1);
+    expect(after.panels[1].layout?.["shape-1"]).toBeUndefined();
+  });
+  it("copies and pastes a shape, offset so it's visible", () => {
+    const b = withShapes([{ type: "rect", points: [[10, 10], [60, 50]] }]);
+    const sel = { panel: b.panels[1].id, el: "shape-0", kind: "shape" as const };
+    const r = pasteOps(b, clipFor(b, sel), sel);
+    if (!r || typeof r === "string") throw new Error("paste failed");
+    expect(r.ops[0].value).toEqual({ type: "rect", points: [[22, 22], [72, 62]] });
   });
 });
 

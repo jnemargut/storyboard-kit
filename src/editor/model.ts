@@ -3,13 +3,14 @@ import type { Op } from "../json";
 import type { Board, Bubble, CharacterInPanel, Gesture, LayoutOverride, Panel, ScenePanel, SceneDevice } from "../types";
 import { isScene } from "../types";
 import type { DeviceType } from "../vocab";
+import { layoutPanel, stackOrder } from "../render/layout";
 
-export type Kind = "panel" | "character" | "device" | "bubble" | "caption" | "gesture" | "callout" | "text" | "header" | "label";
+export type Kind = "panel" | "character" | "device" | "bubble" | "caption" | "gesture" | "callout" | "text" | "header" | "label" | "workaround" | "point" | "shape" | "image";
 export interface Sel { panel: string; el: string; kind: Kind }
 
 export const panelIndex = (b: Board, id: string) => b.panels.findIndex((p) => p.id === id);
 
-type ArrKey = "characters" | "devices" | "bubbles" | "gestures" | "callouts";
+type ArrKey = "characters" | "devices" | "bubbles" | "gestures" | "callouts" | "shapes" | "images";
 
 /** Map a rendered element id back to the JSON array + index it came from. */
 export function locate(p: Panel, el: string): { key: ArrKey; index: number } | undefined {
@@ -23,9 +24,9 @@ export function locate(p: Panel, el: string): { key: ArrKey; index: number } | u
     return (d.id ?? (counts[d.type] > 1 ? `${d.type}-${counts[d.type]}` : d.type)) === base;
   });
   if (di >= 0) return { key: "devices", index: di };
-  const m = /^(bubble|gesture|callout)-(\d+)$/.exec(el);
+  const m = /^(bubble|gesture|callout|shape|image)-(\d+)$/.exec(el);
   const byId = (arr: { id?: string }[] | undefined) => (arr ?? []).findIndex((x) => x.id === el);
-  for (const [key, arr] of [["bubbles", p.bubbles], ["gestures", p.gestures], ["callouts", p.callouts]] as const) {
+  for (const [key, arr] of [["bubbles", p.bubbles], ["gestures", p.gestures], ["callouts", p.callouts], ["shapes", p.shapes], ["images", p.images]] as const) {
     const i = byId(arr);
     if (i >= 0) return { key, index: i };
   }
@@ -131,7 +132,7 @@ export function handToOps(b: Board, sel: Sel, charId: string): Op[] {
 export type Clip =
   | { storyboardClip: 1; kind: "panel"; panel: Panel; cast: Board["cast"] }
   | { storyboardClip: 1; kind: "character"; item: ScenePanel["characters"] extends (infer T)[] | undefined ? T : never; cast: Board["cast"] }
-  | { storyboardClip: 1; kind: "bubble" | "device" | "gesture" | "callout"; item: unknown };
+  | { storyboardClip: 1; kind: "bubble" | "device" | "gesture" | "callout" | "shape" | "image"; item: unknown };
 
 /** What gets copied for the current selection (with any cast members it needs). */
 export function clipFor(b: Board, sel: Sel): Clip | undefined {
@@ -149,7 +150,7 @@ export function clipFor(b: Board, sel: Sel): Clip | undefined {
     const c = item as NonNullable<ScenePanel["characters"]>[number];
     return { storyboardClip: 1, kind: "character", item: c, cast: { [c.who]: b.cast[c.who] ?? {} } };
   }
-  const kind = ({ devices: "device", bubbles: "bubble", gestures: "gesture", callouts: "callout" } as const)[loc.key as "devices" | "bubbles" | "gestures" | "callouts"];
+  const kind = ({ devices: "device", bubbles: "bubble", gestures: "gesture", callouts: "callout", shapes: "shape", images: "image" } as const)[loc.key as "devices" | "bubbles" | "gestures" | "callouts" | "shapes" | "images"];
   return kind ? { storyboardClip: 1, kind, item } : undefined;
 }
 
@@ -182,10 +183,99 @@ export function pasteOps(b: Board, raw: unknown, sel: Sel | null): { ops: Op[]; 
     ops.push({ path: ["panels", pi, "characters", (p.characters ?? []).length], value: c });
     return { ops, label: "Person pasted", select: { panel: p.id, el: id, kind: "character" } };
   }
-  const key = ({ device: "devices", bubble: "bubbles", gesture: "gestures", callout: "callouts" } as const)[clip.kind];
+  const key = ({ device: "devices", bubble: "bubbles", gesture: "gestures", callout: "callouts", shape: "shapes", image: "images" } as const)[clip.kind];
   const item = structuredClone(clip.item) as Record<string, unknown>;
   for (const ref of ["from", "on", "target"]) if (typeof item[ref] === "string" && !ids.has(item[ref] as string) && !(p.devices ?? []).some((d) => (d.id ?? d.type) === item[ref])) delete item[ref];
   delete item.id;
+  if (clip.kind === "image") { item.x = ((item.x as number | undefined) ?? 200) + 12; item.y = ((item.y as number | undefined) ?? 130) + 12; }
+  if (clip.kind === "shape" && Array.isArray(item.points)) item.points = (item.points as [number, number][]).map(([x, y]) => [x + 12, y + 12]); // offset so the copy is visible
   ops.push({ path: ["panels", pi, key, ((p as unknown as Record<string, unknown[]>)[key] ?? []).length], value: item });
   return { ops, label: `${clip.kind} pasted` };
+}
+
+/**
+ * Swap who a character is. Their id changes with them, so every reference in the panel (bubbles, gestures,
+ * callouts, focus, and the designer's layout nudges) moves to the new id instead of dangling.
+ */
+export function swapWhoOps(b: Board, sel: Sel, newWho: string): Op[] {
+  const pi = panelIndex(b, sel.panel);
+  const p = b.panels[pi] as ScenePanel;
+  const loc = locate(p, sel.el);
+  if (!loc || loc.key !== "characters") return [];
+  const c = p.characters![loc.index];
+  if (c.id) return [{ path: ["panels", pi, "characters", loc.index, "who"], value: newWho }]; // explicit id: nothing else changes
+  const oldId = c.who;
+  const taken = new Set((p.characters ?? []).map((x) => x.id ?? x.who));
+  const newId = taken.has(newWho) ? `${newWho}-2` : newWho;
+  const ops: Op[] = [{ path: ["panels", pi, "characters", loc.index, "who"], value: newWho }];
+  if (newId !== newWho) ops.push({ path: ["panels", pi, "characters", loc.index, "id"], value: newId });
+  const fix = (key: "bubbles" | "gestures" | "callouts", field: string) =>
+    (p[key] ?? []).forEach((x, i) => { if ((x as unknown as Record<string, unknown>)[field] === oldId) ops.push({ path: ["panels", pi, key, i, field], value: newId }); });
+  fix("bubbles", "from"); fix("gestures", "on"); fix("callouts", "target");
+  if (p.focus === oldId) ops.push({ path: ["panels", pi, "focus"], value: newId });
+  for (const [k, v] of Object.entries(p.layout ?? {})) {
+    const m = /^([^.]+)(\..+)?$/.exec(k);
+    if (m && m[1] === oldId) ops.push({ path: ["panels", pi, "layout", k], delete: true }, { path: ["panels", pi, "layout", `${newId}${m[2] ?? ""}`], value: v });
+  }
+  return ops;
+}
+
+/**
+ * What the Delete key removes for the current selection. A held device goes (not its holder); a callout's
+ * pointer goes (not the callout); the board title stays (it's required). Undefined = nothing to delete.
+ */
+export function deleteOps(b: Board, sel: Sel): { ops: Op[]; keepSelection?: boolean } | undefined {
+  if (sel.kind === "header") return undefined;
+  const pi = panelIndex(b, sel.panel);
+  const p = b.panels[pi];
+  if (!p) return undefined;
+  if (sel.kind === "label") return p.label ? { ops: [{ path: ["panels", pi, "label"], delete: true }] } : undefined;
+  if (sel.kind === "workaround") return isScene(p) && p.workaround ? { ops: [{ path: ["panels", pi, "workaround"], delete: true }] } : undefined;
+  if (sel.kind === "point") {
+    const cid = sel.el.replace(/\.point$/, "");
+    const loc = locate(p, cid);
+    const ops: Op[] = [{ path: ["panels", pi, "layout", sel.el], delete: true }];
+    if (loc?.key === "callouts") ops.push({ path: ["panels", pi, "callouts", loc.index, "target"], delete: true });
+    return { ops };
+  }
+  if (/\.(device|screen)$/.test(sel.el)) {
+    const loc = locate(p, sel.el);
+    if (loc?.key === "characters") return { ops: [{ path: ["panels", pi, "characters", loc.index, "device"], delete: true }, ...resetLayoutOps(pi, sel.el)] };
+    if (loc?.key === "devices") return { ops: removeOps(b, { ...sel, el: sel.el.replace(/\.(device|screen)$/, "") }) };
+    return undefined;
+  }
+  const ops = removeOps(b, sel);
+  return ops.length ? { ops } : undefined;
+}
+
+// ------------------------------------------------------------ arrange (layer order)
+export type Arrange = "front" | "forward" | "backward" | "back";
+export const ARRANGEABLE: Kind[] = ["character", "device", "shape", "image"];
+
+/**
+ * Ops to move the selection up or down the layer order among people, devices and shapes in its panel.
+ * Writes only the moved element's `layout.z`. A held device moves with its holder. Undefined = already there.
+ */
+export function arrangeOps(b: Board, sel: Sel, to: Arrange): Op[] | undefined {
+  const pi = panelIndex(b, sel.panel);
+  const p = b.panels[pi];
+  if (!p || !isScene(p)) return undefined;
+  const id = sel.el.replace(/\.(device|screen)$/, "");
+  const all = stackOrder(layoutPanel(b, p, () => undefined), p);
+  const me = all.find((it) => it.id === id);
+  if (!me) return undefined;
+  const group = all.filter((it) => it.behind === me.behind);
+  const i = group.indexOf(me);
+  const zs = group.map((it) => it.z);
+  let z: number;
+  if (to === "front") { if (i === group.length - 1) return undefined; z = Math.max(...zs) + 1; }
+  else if (to === "back") { if (i === 0) return undefined; z = Math.min(...zs) - 1; }
+  else if (to === "forward") {
+    if (i === group.length - 1) return undefined;
+    z = i + 2 < group.length ? (zs[i + 1] + zs[i + 2]) / 2 : zs[i + 1] + 1;
+  } else {
+    if (i === 0) return undefined;
+    z = i - 2 >= 0 ? (zs[i - 1] + zs[i - 2]) / 2 : zs[i - 1] - 1;
+  }
+  return [{ path: ["panels", pi, "layout", id, "z"], value: Math.round(z * 1000) / 1000 }];
 }

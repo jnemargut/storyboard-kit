@@ -142,7 +142,7 @@ export function figure(pose: Pose, angle: Angle, facing: "left" | "right", cast:
   if (angle === "back") for (const k of keys) j[k] = [-j[k][0], j[k][1]];
   if (cast.age === "older") { j.head = [j.head[0] + 3 * dir, j.head[1] + 2]; j.neck = [j.neck[0] + 2 * dir, j.neck[1] + 1]; }
   const scale = cast.age === "child" ? 0.66 : 1;
-  const headR = cast.age === "child" ? 13.5 : 11.5;
+  const headR = cast.age === "child" ? 14.5 : 12.5;
   return {
     j, headR, dir, angle, scale,
     view: side ? "side" : angle === "back" ? "back" : "front",

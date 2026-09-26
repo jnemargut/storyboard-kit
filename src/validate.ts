@@ -1,6 +1,6 @@
 import {
-  ACCESSORIES, AGES, ANGLES, BODY, BUBBLES, DEVICES, DIRECTIONS, FACING, GESTURES, HAIR, HAIR_SHADE, MOODS,
-  OUTFITS, PANEL_TYPES, POSES, SCENES, SCENE_MARKS, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
+  ACCESSORIES, AGES, ANGLES, BODY, BUBBLES, DEVICES, DIRECTIONS, FACING, GESTURES, HAIR, HAIR_SHADE, HATS, MOODS,
+  OUTFITS, PANEL_TYPES, POSES, SCENES, SCENE_MARKS, SHAPE_FILLS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
 } from "./vocab";
 import { SCHEMA_VERSION } from "./types";
 import { HANDHELD } from "./vocab";
@@ -87,10 +87,11 @@ export function validate(input: unknown): Result {
       castIds.push(id);
       const p = `$.cast.${id}`;
       if (!isObj(m)) { err(p, "must be an object."); continue; }
-      known(p, m, ["name", "skin", "hair", "hairShade", "body", "outfit", "age", "accessories"]);
+      known(p, m, ["name", "skin", "hair", "hairShade", "hat", "body", "outfit", "age", "accessories"]);
       oneOf(`${p}.skin`, m.skin, SKIN, "skin");
       oneOf(`${p}.hair`, m.hair, HAIR, "hair");
       oneOf(`${p}.hairShade`, m.hairShade, HAIR_SHADE, "hair-shade");
+      oneOf(`${p}.hat`, m.hat, HATS, "hat");
       oneOf(`${p}.body`, m.body, BODY, "body");
       oneOf(`${p}.outfit`, m.outfit, OUTFITS, "outfit");
       oneOf(`${p}.age`, m.age, AGES, "age");
@@ -159,7 +160,8 @@ export function validate(input: unknown): Result {
     if (type !== "scene") return;
 
     sceneCount++;
-    known(p, raw, [...common, "scene", "shot", "focus", "characters", "devices", "bubbles", "caption", "callouts", "gestures", "feeling", "workaround"]);
+    known(p, raw, [...common, "scene", "shot", "focus", "characters", "devices", "bubbles", "caption", "callouts", "gestures", "shapes", "images", "sign", "feeling", "workaround"]);
+    if (raw.sign !== undefined && raw.sign !== false && typeof raw.sign !== "string") err(`${p}.sign`, "must be a store name, or false for a blank sign.");
     if (raw.feeling !== undefined && (typeof raw.feeling !== "number" || !Number.isInteger(raw.feeling) || raw.feeling < -2 || raw.feeling > 2))
       err(`${p}.feeling`, "must be an integer from -2 (awful) to 2 (great).");
     str(`${p}.workaround`, raw.workaround);
@@ -257,7 +259,8 @@ export function validate(input: unknown): Result {
     else gestures.forEach((g, j) => {
       const gp = `${p}.gestures[${j}]`;
       if (!isObj(g)) { err(gp, "must be an object."); return; }
-      known(gp, g, ["id", "type", "on", "at", "direction"]);
+      known(gp, g, ["id", "type", "on", "at", "direction", "angle"]);
+      if (g.angle !== undefined && (typeof g.angle !== "number" || !isFinite(g.angle))) err(`${gp}.angle`, "must be a number of degrees (0 = right, 90 = down).");
       oneOf(`${gp}.type`, g.type, GESTURES, "gesture");
       oneOf(`${gp}.direction`, g.direction, DIRECTIONS, "direction");
       if (g.on !== undefined && !localIds.has(g.on as string)) {
@@ -280,6 +283,32 @@ export function validate(input: unknown): Result {
       known(cp, c, ["id", "text", "target"]);
       str(`${cp}.text`, c.text, true);
       if (c.target !== undefined && !localIds.has(c.target as string)) err(`${cp}.target`, `"${String(c.target)}" isn't in this panel.`);
+    });
+
+    const shapes = raw.shapes ?? [];
+    if (!Array.isArray(shapes)) err(`${p}.shapes`, "must be an array.");
+    else shapes.forEach((s, j) => {
+      const sp = `${p}.shapes[${j}]`;
+      if (!isObj(s)) { err(sp, "must be an object."); return; }
+      known(sp, s, ["id", "type", "points", "fill"]);
+      oneOf(`${sp}.type`, s.type, SHAPES, "shape");
+      if (s.type === undefined) err(`${sp}.type`, "is required.", `One of: ${ids(SHAPES).join(", ")}`);
+      oneOf(`${sp}.fill`, s.fill, SHAPE_FILLS, "shape-fill");
+      const pts = s.points;
+      if (!Array.isArray(pts) || pts.length < 2 || pts.some((q) => !Array.isArray(q) || q.length !== 2 || q.some((n) => typeof n !== "number" || !Number.isFinite(n))))
+        err(`${sp}.points`, "must be at least two [x, y] points in panel units (400 wide, 260 tall).", "e.g. [[40, 120], [120, 200]]");
+    });
+
+    const images = raw.images ?? [];
+    if (!Array.isArray(images)) err(`${p}.images`, "must be an array.");
+    else images.forEach((im, j) => {
+      const ip = `${p}.images[${j}]`;
+      if (!isObj(im)) { err(ip, "must be an object."); return; }
+      known(ip, im, ["id", "src", "x", "y", "w", "h", "sketch"]);
+      str(`${ip}.src`, im.src, true);
+      for (const k of ["x", "y", "w", "h"]) if (im[k] !== undefined && (typeof im[k] !== "number" || !Number.isFinite(im[k] as number))) err(`${ip}.${k}`, "must be a number in panel units (400 wide, 260 tall).");
+      for (const k of ["w", "h"]) if (typeof im[k] === "number" && (im[k] as number) <= 0) err(`${ip}.${k}`, "must be greater than 0.");
+      if (im.sketch !== undefined && typeof im.sketch !== "boolean") err(`${ip}.sketch`, "must be true or false.");
     });
 
     if (raw.focus !== undefined && !localIds.has(raw.focus as string)) {

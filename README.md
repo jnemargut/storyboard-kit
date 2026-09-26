@@ -1,105 +1,119 @@
-# storyboardkit
+# Storyboard Kit
 
-An agent skill for low-fi, sketch-style service-design storyboards. You describe a customer's day to your
-coding agent (Claude Code, Codex…) in plain words. The skill has it draft the storyboard, and you tweak it in a
-page-first editor. When you're happy, export images, a slide deck, or a share page people can comment on.
+**Comic strips about your customers, drawn by your coding agent.**
 
-Everything is drawn in a marker-comp style where **the software is the only thing in color (teal)**. A board
-shows how small, how late, and how patchy your product's part in someone's day really is. The header says it
-outright: *"Product in 3 of 8 moments."*
+You tell Claude Code (or Codex) what someone's day looks like. It sketches a storyboard. You poke at it in a
+little editor until it feels true. Then you drop it in your deck and watch everyone realize the app is only in
+3 of the 8 moments that matter.
 
-![The Late Latte: an 8-panel example storyboard](docs/late-latte.png)
+![Storyboard Kit sizzle reel](docs/sizzle.gif)
 
-## Install
+## Why though
 
-The skill is one self-contained folder, [`skills/storyboard/`](skills/storyboard). It needs Node.js 18+ and
-nothing else: no npm install, no native binaries.
+Most product flows start at the app's home screen. Real life doesn't. People are packing lunch, running late,
+asking the barista, texting a friend, screenshotting a code because the app logged them out again.
 
-**Claude Code** (all your projects):
+Storyboard Kit draws all of that in a scrappy marker style where **only your product is in color (teal)**.
+Everything else is grey. So the board shows, pretty bluntly, where your product helps and where people are
+on their own. The header even keeps score: *"Product in 3 of 8 moments."*
+
+![The Late Latte, an example storyboard](docs/late-latte.png)
+
+## Install (about 30 seconds)
+
+You need Node.js 18 or newer. That's it. No `npm install`, no build step, nothing native.
 
 ```bash
-git clone <this repo> storyboardkit
-node storyboardkit/skills/storyboard/scripts/storyboard.mjs install          # → ~/.claude/skills/storyboard
+git clone https://github.com/jnemargut/storyboard-kit.git
+node storyboard-kit/skills/storyboard/scripts/storyboard.mjs install
 ```
 
-- **Codex:** add `--codex` (also copies to `~/.codex/skills/storyboard`).
-- **One project only:** run `install --project` inside it. That installs to `.claude/skills/` and
-  `.agents/skills/`, and adds a pointer to `AGENTS.md` for agents that don't load skills on their own.
-- **By hand:** copy the `skills/storyboard` folder into your agent's skills folder.
+That drops the skill into `~/.claude/skills/storyboard`. Restart Claude Code and you're good.
 
-Restart your agent after installing.
+- **Codex?** Add `--codex` to the install command.
+- **Just one project?** Run `install --project` from inside that project.
+- **Old school?** Copy the `skills/storyboard` folder into your agent's skills folder yourself.
 
 ## Use it
 
-Just ask your agent:
+Just ask, in plain words:
 
 > Storyboard Priya, an ER nurse, getting a shift-swap request while dropping her kid at school. The app logs
-> her out, so she calls a coworker instead. Show where our scheduling app helps and where it doesn't.
+> her out, so she calls a coworker instead.
 
-The agent looks up the vocabulary, writes `priya.storyboard.json`, validates and critiques it, then opens the
-editor. Keep going in plain words: *"make it messier"*, *"run a critique and fix what it finds"*, *"turn on
-journey lanes"*, *"export slides for my crit"*.
+Your agent looks up what it can draw, writes `priya.storyboard.json`, checks it, runs a service-design
+critique on it, and opens the editor in your browser. Then keep talking to it:
 
-## The service-design layer
+- *"make it messier"*
+- *"add a panel where she gives up and calls someone"*
+- *"turn on journey lanes"*
+- *"export slides for my crit"*
 
-- **Teal means the product, and nothing else.** Personal calls, texts and other companies' apps are grey.
-- **Journey lanes** (top bar) put a strip under every panel: how the person *feels* (−2…2), whether the product
-  is there, and their *workaround*. A feeling line runs across the bottom of the page.
-- **Critique** is a reality check. It flags happy paths: the story starts inside the app, the product is in
-  every moment, there's no workaround, the feeling line is flat, or the story ends on a screen.
+Or just click around yourself. Your edits and the agent's edits land in the same file, live.
 
-## The editor
+## What's in the box
 
-- **Click** anything to get its toolbar. The main controls come first, and the rest are under **More**.
-  **Ask agent** copies a precise pointer ("panel 5, the bubble `bubble-0`…") to paste into your agent.
-- **Drag** to move and use the corner handle to resize, including text. Drag an already selected panel's
-  background to pan its camera. **Text** A-/A+ sizes all text, and **Zoom** or **Zoom to panel** helps with detail.
-- **Double-click** any text to edit it, including the title, the persona line and panel labels.
-- **Devices:** phones, tablets, laptops and watches can be held. Click the device itself to move it, switch it
-  between *Our product* and *Personal*, or **Put down** into the scene. Kiosks, car displays and TVs stand in
-  the scene.
-- **Drop a screen image** (PNG/JPG from Figma) onto a device. It's sketchified into teal and fitted.
-- **+ Add:** people, poses, bubbles, captions, callouts, devices, gestures, and scene thumbnails. **Cast**
-  edits skin tone, hair, body, age, outfit and accessories.
-- **Copy/paste** (Cmd+C / Cmd+V) panels, people, bubbles and devices, including between boards.
-- **Brand** puts your company name or logo on shop signs, in grey.
-- **Export:** PNG, PDF, SVG, **slides** (PPTX, one panel per slide with speaker notes), and a **share page**
-  (one HTML file with a comment box per panel).
+![Meet the cast](docs/cast.png)
 
-Your edits save into the same JSON file within a second, and the agent's edits reload live without losing yours.
+- **A cast you build from parts.** 4 skin tones, 9 hair styles (including hijab and afro), 4 body types,
+  3 ages, 16 outfits (scrubs, hi-vis, chef whites, lab coat, uniform, overalls and friends), 7 hats, plus
+  glasses, canes, wheelchairs, backpacks and beards.
+- **23 places.** Home, office, coffee shop, car, bus stop, gym, airport, clinic, school, parking garage, and more.
+  Each one can wear your brand on its signs, or another store's name, or nothing at all.
+- **11 poses from 4 angles**, 12 very readable moods (with sweat drops and little question marks), and crowds
+  that don't all look like clones.
+- **Camera shots** from wide to close-up, plus over-the-shoulder, straight-at-the-screen and POV.
+- **10 devices.** Phones, tablets, laptops and watches can be held. Kiosks, TVs, car screens and smart speakers
+  live in the scene.
+- **Bubbles, captions, callouts** and title, "12 minutes later" and narration cards.
+- **Taps, swipes, clicks and buzzes** in orange so they pop.
+- **Your own screens.** Drop a Figma export on a phone and it turns into a teal sketch that fits the device.
+- **Any picture at all.** Drag in a photo you found and it gets sketchified in greys to match (or not, your call).
+- **A pen and some shapes** for anything we forgot to draw.
 
-## The engine (for agents, or for running it yourself)
+## The editor bits
 
-`sb` = `node <skill folder>/scripts/storyboard.mjs`
+- Click anything to get its toolbar. Drag to move, pull the corner to resize, grab the round handle to rotate.
+- Double-click any text to edit it.
+- Cmd+C, Cmd+V and Cmd+D copy, paste and duplicate. Cmd+] and Cmd+[ move things up and down the layers
+  (add Shift to go all the way).
+- Delete deletes. Cmd+Z undoes. Arrow keys nudge.
+- **Journey lanes** add a strip under each panel: how the person feels, whether your product is there, and
+  what workaround they used. A feeling line runs across the whole page.
+- **Ask agent** copies a precise pointer to whatever you clicked, so you can paste it to your agent and say
+  "make this angrier."
+- **Export** to PNG, PDF, SVG, a slide deck (one panel per slide, with speaker notes) or a single HTML page
+  people can leave comments on.
 
-| Command | What it does |
-|---|---|
-| `sb vocab [category] [--grep x]` | Scenes (with marks), shots, poses, moods, devices, bubbles, gestures, cast options |
-| `sb validate <file>` | Errors with fix-it hints ("did you mean `frustrated`?") plus storytelling suggestions |
-| `sb critique <file>` | The service-design reality check, with a revision request for the agent |
-| `sb dev [file]` | The editor, with live two-way sync (no file = the last one) |
-| `sb export <file> [--png] [--pdf] [--svg] [--pptx] [--html] [--scale 2]` | Headless export |
-| `sb draft "<what happens>"` | Hand a brief to your installed Claude Code / Codex CLI, then open the editor |
-| `sb init [--example]` · `sb script <file>` · `sb format <file>` · `sb install` | Starter boards, a screenplay view, canonical formatting, installing |
+## Under the hood
 
-**What's included:** 23 scenes · 6 shots (wide, medium, close-up, over-the-shoulder, screen, POV) · 11 poses ×
-4 angles × 3 variations · 12 moods · 10 devices · 4 bubble types · captions and callouts · title, time-passes and
-narration cards · 9 gestures · a cast built from parts: 4 skin tones, 9 hair styles, 4 builds, 3 ages,
-8 outfits and 7 accessories.
+Everything runs through one bundled script. Agents use it, and so can you:
 
-![Cast and pose gallery](docs/gallery.png)
+```bash
+sb() { node ~/.claude/skills/storyboard/scripts/storyboard.mjs "$@"; }
 
-## Developing
+sb vocab scenes          # what can I draw?
+sb validate my.storyboard.json
+sb critique my.storyboard.json
+sb dev my.storyboard.json
+sb export my.storyboard.json --png --pptx
+```
+
+## Hacking on it
 
 ```bash
 npm install
-npm run build        # → skills/storyboard/ (bundled engine, WebAssembly renderer, editor, generated docs)
-npm test             # unit tests, incl. a render matrix of every scene × shot and pose × angle × device
-npm run e2e          # drives the real editor in Chrome from the built skill
+npm run build     # rebuilds skills/storyboard/
+npm test          # unit tests, including a render check of every scene, pose, angle, outfit and hat
+npm run e2e       # clicks around the real editor in Chrome
 ```
 
-`src/vocab.ts` is the single source of truth: the schema, the validator, `vocab`, the skill's reference files
-and the renderer all read it. `skills/storyboard/` is generated, so edit `src/` and rebuild. It's committed so
-the repo can be installed straight from a clone. The design decisions are in [.decisions/](.decisions/index.html).
+`src/vocab.ts` is the single source of truth for everything the tool can draw. The schema, the validator, the
+docs and the renderer all read from it. `skills/storyboard/` is generated from `src/`, and it's checked in so
+you can install straight from a clone.
 
-MIT licensed. Fonts: Permanent Marker (Apache 2.0), Patrick Hand, Work Sans, IBM Plex Mono (SIL OFL).
+## License
+
+MIT. Fonts are Permanent Marker (Apache 2.0) plus Patrick Hand, Work Sans and IBM Plex Mono (SIL OFL).
+
+Go draw some messy customer days.

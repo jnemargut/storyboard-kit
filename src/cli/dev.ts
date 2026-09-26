@@ -91,7 +91,7 @@ export async function dev(file: string, o: DevOptions) {
       if (url.pathname.startsWith("/baked/")) {
         const p = safePath(url.pathname.slice("/baked/".length));
         if (!p || !existsSync(p)) { res.writeHead(404); return res.end(); }
-        const png = bakeScreen(p, cache, Number(url.searchParams.get("r") ?? 1));
+        const png = bakeScreen(p, cache, Number(url.searchParams.get("r") ?? 1), url.searchParams.get("mode") === "grey" ? "grey" : "teal");
         res.writeHead(200, { "content-type": "image/png", "cache-control": "no-cache" });
         return res.end(png);
       }
@@ -104,7 +104,7 @@ export async function dev(file: string, o: DevOptions) {
       if (url.pathname === "/api/upload" && req.method === "POST") {
         const raw = (url.searchParams.get("name") ?? "screen.png").toLowerCase().replace(/[^a-z0-9._-]+/g, "-");
         const ext = [".png", ".jpg", ".jpeg", ".webp"].includes(extname(raw)) ? "" : ".png";
-        const dir = join(base, "screens");
+        const dir = join(base, url.searchParams.get("dir") === "images" ? "images" : "screens");
         mkdirSync(dir, { recursive: true });
         let name = raw + ext, i = 2;
         while (existsSync(join(dir, name))) name = `${basename(raw, extname(raw))}-${i++}${extname(raw) || ext}`;

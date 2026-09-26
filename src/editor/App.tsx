@@ -1,19 +1,24 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { applyOps, type Op } from "../json";
-import { BoardSVG, pageSize } from "../render/board";
-import type { Board, LayoutOverride, ScenePanel } from "../types";
+import { BoardSVG, pageSize, panelOrigin } from "../render/board";
+import type { Board, LayoutOverride, ScenePanel, Shape } from "../types";
+import type { ShapeType } from "../vocab";
 import { isScene } from "../types";
 import type { Result } from "../validate";
 import { api, assetUrl } from "./api";
 import { Drawer, applyAdd, type AddPayload } from "./Drawer";
-import { heldScreenOps, layoutOps, locate, panelIndex, pasteOps, clipFor, type Kind, type Sel } from "./model";
+import { arrangeOps, deleteOps, heldScreenOps, layoutOps, locate, panelIndex, pasteOps, clipFor, ARRANGEABLE, type Arrange, type Clip, type Kind, type Sel } from "./model";
 import { Toolbar } from "./Toolbar";
 
 interface Box { x: number; y: number; w: number; h: number }
-type Drag = { mode: "move" | "resize"; sx: number; sy: number; ov: LayoutOverride; size: number; moved: boolean; sel: Sel };
+type Drag =
+  | { mode: "move" | "resize"; sx: number; sy: number; ov: LayoutOverride; size: number; moved: boolean; sel: Sel }
+  | { mode: "draw"; pi: number; pid: string; shape: Shape; index: number; moved: boolean }
+  | { mode: "rotate"; cx: number; cy: number; a0: number; ov: LayoutOverride; moved: boolean; sel: Sel };
 
-const TEXT_KINDS: Kind[] = ["bubble", "caption", "text", "callout", "header", "label"];
-const SCALABLE: Kind[] = ["character", "device", "bubble", "caption", "callout", "text"];
+const TEXT_KINDS: Kind[] = ["bubble", "caption", "text", "callout", "header", "label", "workaround"];
+const ROTATABLE: Kind[] = ["character", "device", "shape", "image"];
+const SCALABLE: Kind[] = ["character", "device", "bubble", "caption", "callout", "text", "shape", "image"];
 
 export function App() {
   const [board, setBoard] = useState<Board | null>(null);
@@ -30,6 +35,13 @@ export function App() {
   const [dropping, setDropping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [zoom, setZoom] = useState<"fit" | number>("fit");
+  /** Active drawing tool from the drawer's Draw tab; null = normal select/move. */
+  const [tool, setTool] = useState<ShapeType | null>(null);
+  // picking a drawing tool drops the selection, so its toolbar can't sit on top of where you draw
+  useEffect(() => { if (tool) { setSel(null); (document.activeElement as HTMLElement | null)?.blur?.(); } }, [tool]);
+  /** Whether newly added pictures get the grey marker sketch (remembered per browser). */
+  const [sketchNew, setSketchNewState] = useState(() => { try { return localStorage.getItem("sb-sketch-new") !== "0"; } catch { return true; } });
+  const setSketchNew = (v: boolean) => { setSketchNewState(v); try { localStorage.setItem("sb-sketch-new", v ? "1" : "0"); } catch { /* per-browser nicety only */ } };
   const svgWrap = useRef<HTMLDivElement>(null);
   const drag = useRef<Drag | null>(null);
   const boardRef = useRef<Board | null>(null);
@@ -91,14 +103,14 @@ export function App() {
 
   const shown = useMemo(() => (board && draft ? applyOps(board, draft) : board), [board, draft]);
   const size = shown ? pageSize(shown) : { width: 1, height: 1 };
-  const opts = useMemo(() => ({ asset: assetUrl(bust), raw: (p: string) => `/files/${p.replace(/^\.\//, "")}?v=${bust}`, wobble: !draft, editing: true }), [bust, draft]);
+  const opts = useMemo(() => ({ asset: assetUrl(bust), raw: (p: string) => `/files/${p.replace(/^\.\//, "")}?v=${bust}`, sketch: (p: string) => `${assetUrl(bust)(p)}&mode=grey`, wobble: !draft, editing: true }), [bust, draft]);
 
   // ------------------------------------------------------------ selection geometry
   const measure = useCallback((s: Sel | null): Box | null => {
     const wrap = svgWrap.current;
     if (!s || !wrap) return null;
-    if (s.kind === "header" || s.kind === "label") {
-      const node = wrap.querySelector(s.kind === "header" ? `[data-header="${s.el}"]` : `[data-label="${CSS.escape(s.panel)}"]`);
+    if (s.kind === "header" || s.kind === "label" || s.kind === "workaround") {
+      const node = wrap.querySelector(s.kind === "header" ? `[data-header="${s.el}"]` : s.kind === "label" ? `[data-label="${CSS.escape(s.panel)}"]` : `[data-lane-workaround="${CSS.escape(s.panel)}"]`);
       if (!node) return null;
       const r = node.getBoundingClientRect(), base = wrap.getBoundingClientRect();
       return { x: r.left - base.left, y: r.top - base.top, w: Math.max(r.width, 120), h: Math.max(r.height, 16) };
@@ -134,9 +146,33 @@ export function App() {
   const ovOf = (b: Board, s: Sel): LayoutOverride => b.panels[panelIndex(b, s.panel)]?.layout?.[s.el] ?? {};
 
   // ------------------------------------------------------------ pointer: select / move / resize
+  /** Pointer → coordinates inside panel `pi` (400 × 260 units). */
+  const panelPoint = (e: { clientX: number; clientY: number }, b: Board, pi: number): [number, number] => {
+    const r = svgWrap.current!.getBoundingClientRect(), s = k();
+    const [ox, oy] = panelOrigin(b, pi);
+    return [Math.round((e.clientX - r.left) / s - ox), Math.round((e.clientY - r.top) / s - oy)];
+  };
   const onPointerDown = (e: React.PointerEvent) => {
     if (!board || editing) return;
     const t = e.target as Element;
+    if (tool) {
+      const pn = t.closest("[data-panel]") as SVGElement | null;
+      const pi = pn ? panelIndex(board, pn.dataset.panel!) : -1;
+      const p = board.panels[pi];
+      if (!p || !isScene(p)) { flash("Draw on a scene panel."); return; }
+      const pt = panelPoint(e, board, pi);
+      drag.current = { mode: "draw", pi, pid: p.id, shape: { type: tool, points: [pt, pt] }, index: (p.shapes ?? []).length, moved: false };
+      setSel(null);
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      return;
+    }
+    if ((t as HTMLElement).classList?.contains("rot-handle") && sel && box) {
+      const r = svgWrap.current!.getBoundingClientRect();
+      const cx = r.left + box.x + box.w / 2, cy = r.top + box.y + box.h / 2;
+      drag.current = { mode: "rotate", cx, cy, a0: Math.atan2(e.clientY - cy, e.clientX - cx), ov: ovOf(board, sel), moved: false, sel };
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      return;
+    }
     if ((t as HTMLElement).classList?.contains("handle") && sel) {
       drag.current = { mode: "resize", sx: e.clientX, sy: e.clientY, ov: ovOf(board, sel), size: (box?.w ?? 50) + (box?.h ?? 50), moved: false, sel };
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -145,7 +181,28 @@ export function App() {
     const hn = t.closest("[data-header]") as SVGElement | null;
     if (hn) { if (hn.dataset.header !== "stats") setSel({ panel: "__board", el: hn.dataset.header!, kind: "header" }); return; }
     const lane = t.closest("[data-lane]") as SVGElement | null;
-    if (lane) { setSel({ panel: lane.dataset.lane!, el: "__panel", kind: "panel" }); return; }
+    if (lane) {
+      const pid = lane.dataset.lane!, pi = panelIndex(board, pid);
+      const feel = t.closest("[data-lane-feel]") as SVGElement | null;
+      if (feel) {
+        const v = Number(feel.dataset.laneFeel);
+        const cur = (board.panels[pi] as ScenePanel).feeling;
+        void commit(cur === v ? [{ path: ["panels", pi, "feeling"], delete: true }] : [{ path: ["panels", pi, "feeling"], value: v }], `Feels ${["awful", "bad", "okay", "good", "great"][v + 2]}`);
+        setSel({ panel: pid, el: "__panel", kind: "panel" });
+        return;
+      }
+      if (t.closest("[data-lane-workaround]")) {
+        const s: Sel = { panel: pid, el: "__workaround", kind: "workaround" };
+        const b = measure(s), f = textField(board, s);
+        setSel(s);
+        // open after the browser finishes its own mousedown focus handling, or the new textarea blurs at once
+        if (b && f) window.setTimeout(() => setEditing({ sel: s, field: f.field, value: f.value, box: b }), 0);
+        return;
+      }
+      if (t.closest("[data-lane-product]")) flash("Teal = a device showing the product in this panel. Mark a device as Personal to turn it off.");
+      setSel({ panel: pid, el: "__panel", kind: "panel" });
+      return;
+    }
     const ln = t.closest("[data-label]") as SVGElement | null;
     if (ln) { setSel({ panel: ln.dataset.label!, el: "__label", kind: "label" }); return; }
     const pn = t.closest("[data-panel]") as SVGElement | null;
@@ -169,6 +226,24 @@ export function App() {
   const onPointerMove = (e: React.PointerEvent) => {
     const d = drag.current;
     if (!d || !board) return;
+    if (d.mode === "draw") {
+      const pt = panelPoint(e, board, d.pi);
+      const pts = d.shape.points;
+      if (d.shape.type === "path") { const last = pts[pts.length - 1]; if (Math.hypot(pt[0] - last[0], pt[1] - last[1]) >= 3) pts.push(pt); }
+      else pts[1] = pt;
+      d.moved = true;
+      setDraft([{ path: ["panels", d.pi, "shapes", d.index], value: { ...d.shape, points: [...pts] } }]);
+      return;
+    }
+    if (d.mode === "rotate") {
+      const a = Math.atan2(e.clientY - d.cy, e.clientX - d.cx);
+      let deg = (d.ov.rotate ?? 0) + ((a - d.a0) * 180) / Math.PI;
+      deg = e.shiftKey ? Math.round(deg / 15) * 15 : Math.round(deg);
+      deg = ((deg % 360) + 540) % 360 - 180; // keep it in -180..180
+      d.moved = true;
+      setDraft(layoutOps(panelIndex(board, d.sel.panel), d.sel.el, { rotate: deg }));
+      return;
+    }
     const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
     if (!d.moved && Math.hypot(dx, dy) < 3) return;
     d.moved = true;
@@ -184,6 +259,19 @@ export function App() {
   const onPointerUp = () => {
     const d = drag.current;
     drag.current = null;
+    if (d?.mode === "draw") {
+      setDraft(null);
+      const [a, b] = d.shape.points;
+      const tiny = d.shape.type === "path" ? d.shape.points.length < 3 : Math.hypot(b[0] - a[0], b[1] - a[1]) < 6;
+      if (tiny) return;
+      const closed = d.shape.type === "rect" || d.shape.type === "ellipse";
+      const shape: Shape = { type: d.shape.type, points: d.shape.points, ...(closed ? { fill: "light" as const } : {}) };
+      const id = `shape-${d.index}`;
+      void commit([{ path: ["panels", d.pi, "shapes", d.index], value: shape }], "Shape added").then(() => {
+        if (d.shape.type !== "path") { setTool(null); setSel({ panel: d.pid, el: id, kind: "shape" }); }
+      });
+      return;
+    }
     if (d?.moved && draft) { const ops = draft; setDraft(null); void commit(ops); }
     else setDraft(null);
   };
@@ -193,6 +281,7 @@ export function App() {
     if (s.kind === "header") return s.el === "title" ? { field: "title", value: b.title } : { field: "persona", value: b.persona ?? "" };
     const p = b.panels[panelIndex(b, s.panel)];
     if (s.kind === "label") return p ? { field: "label", value: p.label ?? "" } : null;
+    if (s.kind === "workaround") return p && isScene(p) ? { field: "workaround", value: p.workaround ?? "" } : null;
     if (!p) return null;
     if (s.kind === "caption" && isScene(p)) return { field: "caption", value: p.caption ?? "" };
     if (s.kind === "text") {
@@ -220,7 +309,7 @@ export function App() {
       return void commit([value.trim() ? { path: [field], value: value.trim() } : { path: [field], delete: true }]);
     }
     const pi = panelIndex(board, s.panel);
-    if (s.kind === "label") return void commit([value.trim() ? { path: ["panels", pi, "label"], value: value.trim() } : { path: ["panels", pi, "label"], delete: true }]);
+    if (s.kind === "label" || s.kind === "workaround") return void commit([value.trim() ? { path: ["panels", pi, field], value: value.trim() } : { path: ["panels", pi, field], delete: true }]);
     const p = board.panels[pi];
     const loc = locate(p, s.el);
     const path = loc ? ["panels", pi, loc.key, loc.index, field] : ["panels", pi, field];
@@ -228,12 +317,50 @@ export function App() {
   };
 
   // ------------------------------------------------------------ copy / paste (system clipboard, works across boards)
+  /** Last thing copied in this tab, so the Paste button works even when the browser won't let a page read the clipboard. */
+  const lastClip = useRef<Clip | null>(null);
+  const pasteClip = (clip: unknown) => {
+    if (!board) return false;
+    const res = pasteOps(board, clip, sel);
+    if (!res) return false;
+    if (typeof res === "string") { flash(res); return true; }
+    void commit(res.ops, res.label).then(() => res.select && setSel(res.select));
+    return true;
+  };
+  const actions = {
+    copy: async () => {
+      if (!board || !sel) return;
+      const clip = clipFor(board, sel);
+      if (!clip) return flash("This can't be copied.");
+      lastClip.current = clip;
+      try { await navigator.clipboard.writeText(JSON.stringify(clip)); } catch { /* the in-tab copy still works */ }
+      flash(`Copied ${clip.kind}. Cmd+V pastes into the selected panel.`);
+    },
+    paste: async () => {
+      let clip: unknown = lastClip.current;
+      try { clip = JSON.parse(await navigator.clipboard.readText()); } catch { /* fall back to the in-tab copy */ }
+      if (!pasteClip(clip) && !(clip !== lastClip.current && pasteClip(lastClip.current))) flash("Nothing to paste. Copy something first.");
+    },
+    duplicate: () => {
+      if (!board || !sel) return;
+      const clip = clipFor(board, sel);
+      if (!clip) return flash("This can't be duplicated.");
+      pasteClip(clip);
+    },
+    arrange: (to: Arrange) => {
+      if (!board || !sel) return;
+      const ops = arrangeOps(board, sel, to);
+      if (!ops) return flash(to === "front" || to === "forward" ? "Already in front." : "Already at the back.");
+      void commit(ops, { front: "Brought to front", forward: "Brought forward", backward: "Sent backward", back: "Sent to back" }[to]);
+    },
+  };
   useEffect(() => {
     const typing = () => ["INPUT", "TEXTAREA", "SELECT"].includes((document.activeElement as HTMLElement)?.tagName);
     const onCopy = (e: ClipboardEvent) => {
       if (typing() || !board || !sel) return;
       const clip = clipFor(board, sel);
       if (!clip) return;
+      lastClip.current = clip;
       e.clipboardData?.setData("text/plain", JSON.stringify(clip));
       e.preventDefault();
       flash(`Copied ${clip.kind}. Paste it into any panel or board.`);
@@ -242,11 +369,7 @@ export function App() {
       if (typing() || !board) return;
       let clip: unknown;
       try { clip = JSON.parse(e.clipboardData?.getData("text/plain") ?? ""); } catch { return; }
-      const res = pasteOps(board, clip, sel);
-      if (!res) return;
-      e.preventDefault();
-      if (typeof res === "string") return flash(res);
-      void commit(res.ops, res.label).then(() => res.select && setSel(res.select));
+      if (pasteClip(clip)) e.preventDefault();
     };
     document.addEventListener("copy", onCopy);
     document.addEventListener("paste", onPaste);
@@ -260,8 +383,23 @@ export function App() {
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
       const mod = e.metaKey || e.ctrlKey;
       if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
-      if (e.key === "Escape") { setSel(null); return; }
+      if (e.key === "Escape") { setSel(null); setTool(null); return; }
       if (!sel || !board) return;
+      if (mod && e.key.toLowerCase() === "d") { e.preventDefault(); actions.duplicate(); return; }
+      if (mod && (e.code === "BracketRight" || e.code === "BracketLeft") && ARRANGEABLE.includes(sel.kind)) {
+        e.preventDefault();
+        const up = e.code === "BracketRight";
+        actions.arrange(e.shiftKey ? (up ? "front" : "back") : up ? "forward" : "backward");
+        return;
+      }
+      if (e.key === "Delete" || e.key === "Backspace") {
+        const d = deleteOps(board, sel);
+        if (!d) return;
+        e.preventDefault();
+        void commit(d.ops, "Deleted. Cmd+Z to undo");
+        if (!d.keepSelection) setSel(null);
+        return;
+      }
       if (e.key === "Enter" && TEXT_KINDS.includes(sel.kind)) { e.preventDefault(); startEdit(sel); return; }
       const step = e.shiftKey ? 10 : 2;
       const arrows: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
@@ -289,6 +427,23 @@ export function App() {
     setBust((b) => b + 1);
     await commit(ops, "Screen added (sketchified in teal)");
   };
+  /** Put any picture into a scene panel, fitted to a sensible size at `at` (panel units) or the middle. */
+  const addImage = async (f: File, panelId?: string, at?: [number, number]) => {
+    if (!board) return;
+    const pid = panelId ?? (sel && isScene(board.panels[panelIndex(board, sel.panel)]) ? sel.panel : [...board.panels].reverse().find(isScene)?.id);
+    const pi = pid ? panelIndex(board, pid) : -1;
+    const p = board.panels[pi];
+    if (!p || !isScene(p)) return flash("Add a scene panel first, then drop the picture onto it.");
+    let nat = { w: 4, h: 3 };
+    try { const bmp = await createImageBitmap(f); nat = { w: bmp.width, h: bmp.height }; bmp.close(); } catch { /* keep 4:3 */ }
+    const k = Math.min(150 / nat.w, 110 / nat.h);
+    const { path } = await api.upload(f, "images");
+    const index = (p.images ?? []).length;
+    const item = { src: path, x: Math.round(at?.[0] ?? 200), y: Math.round(at?.[1] ?? 130), w: Math.round(nat.w * k), h: Math.round(nat.h * k), ...(sketchNew ? {} : { sketch: false }) };
+    setBust((b) => b + 1);
+    await commit([{ path: ["panels", pi, "images", index], value: item }], sketchNew ? "Picture added, sketchified. Toggle it in the toolbar." : "Picture added as-is");
+    setSel({ panel: p.id, el: `image-${index}`, kind: "image" });
+  };
   const onDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setDropping(false);
@@ -302,7 +457,14 @@ export function App() {
       let target: Sel = { panel: pn.dataset.panel!, el: "__panel", kind: "panel" };
       if (dn) { const [kind, id] = dn.dataset.drop!.split(":"); target = { panel: pn.dataset.panel!, el: id, kind: kind === "char" ? "character" : "device" }; }
       else { const en = hit?.closest("[data-el]") as SVGElement | null; if (en && en.dataset.kind === "character") target = { panel: pn.dataset.panel!, el: en.dataset.el!, kind: "character" }; }
-      try { await uploadTo(img, target); } catch (err) { flash(`Upload failed: ${(err as Error).message}`); }
+      try {
+        // onto a device or someone holding one: it's their screen. Anywhere else: a picture in the scene.
+        const pi = panelIndex(board, target.panel);
+        if (target.kind === "panel" || !heldScreenOps(board, target, "x").length) {
+          if (!isScene(board.panels[pi])) return flash("Drop pictures onto a scene panel.");
+          await addImage(img, target.panel, panelPoint(e, board, pi));
+        } else await uploadTo(img, target);
+      } catch (err) { flash(`Upload failed: ${(err as Error).message}`); }
       return;
     }
     const raw = e.dataTransfer.getData("application/x-storyboard");
@@ -344,18 +506,19 @@ export function App() {
       <div className={`desk${dropping ? " dropping" : ""}`}
         onDragOver={(e) => { e.preventDefault(); setDropping(true); }} onDragLeave={() => setDropping(false)} onDrop={onDrop}>
         <div className="desk-inner" style={{ width: deskW, maxWidth: zoom === "fit" ? "100%" : undefined }}>
-          <div ref={svgWrap} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
+          <div ref={svgWrap} className={tool ? "drawing" : undefined} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}
             onDoubleClick={() => sel && TEXT_KINDS.includes(sel.kind) && startEdit(sel)} style={{ position: "relative" }}>
             <BoardSVG board={shown} opts={opts} />
             {box && sel && (
               <div className={`sel-box${sel.kind === "panel" ? " panel" : ""}`} style={{ left: box.x - 3, top: box.y - 3, width: box.w + 6, height: box.h + 6 }}>
                 {SCALABLE.includes(sel.kind) && <div className="handle" title="Drag to resize" />}
+                {ROTATABLE.includes(sel.kind) && <div className="rot-handle" title="Drag to rotate (hold Shift to snap to 15°)" />}
               </div>
             )}
           </div>
           {box && sel && !draft && !editing && (
             <Toolbar key={`${sel.panel}/${sel.el}`} board={board} file={file} flash={flash} zoomToPanel={zoomToPanel} sel={sel} box={box} commit={commit} setSel={setSel} startEdit={(field?: string) => startEdit(sel, field)}
-              upload={(f) => uploadTo(f, sel).catch((err) => flash(`Upload failed: ${(err as Error).message}`))} />
+              upload={(f) => uploadTo(f, sel).catch((err) => flash(`Upload failed: ${(err as Error).message}`))} actions={actions} />
           )}
           {editing && (
             <textarea className="inline-edit" autoFocus value={editing.value}
@@ -365,9 +528,9 @@ export function App() {
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); finishEdit(true); } if (e.key === "Escape") finishEdit(false); }} />
           )}
         </div>
-        {!sel && <div className="empty-hint">Click anything to edit · drag to move · drop a screen image onto a phone</div>}
       </div>
-      <Drawer board={board} sel={sel} commit={commit} setSel={setSel} flash={flash} />
+      <Drawer board={board} sel={sel} commit={commit} setSel={setSel} flash={flash} tool={tool} setTool={setTool}
+        addImage={(f) => addImage(f).catch((err) => flash(`Upload failed: ${(err as Error).message}`))} sketchNew={sketchNew} setSketchNew={setSketchNew} />
       {toast && <div className="toast">{toast}</div>}
     </div>
   );

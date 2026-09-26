@@ -20,29 +20,6 @@ const table = (x0: number, x1: number, top: number) => (
 );
 
 export const MORE_SCENES: Record<string, SceneDef> = {
-  airport: {
-    back: () => (
-      <g>
-        <Sh d={rect(12, 30, 170, 84)} fill={C.paper} />
-        <path d="M60 78 l50 -10 l30 -18 l8 3 l-20 20 l34 -4 l6 -8 l6 1 l-4 12 l-60 12 Z" fill={C.g4} stroke={ink} strokeWidth={1.6} />
-        <Sh d={rect(210, 26, 120, 56)} fill={C.g8} />
-        {[38, 50, 62, 74].map((y) => <L key={y} d={`M220 ${y} h60 M290 ${y} h30`} sw={1.6} color={C.paper} />)}
-        <Sh d="M30 234 V200 H150 V234" fill={C.g5} /><Sh d="M30 200 V176 Q30 168 38 168 H142 Q150 168 150 176 V200 Z" fill={C.g4} />
-        <L d="M70 168 V200 M110 168 V200" sw={1.4} />
-      </g>
-    ),
-    front: () => <g><Sh d={rect(282, 172, 118, 62)} fill={C.g2} /><L d="M282 186 H400" sw={1.2} /></g>,
-    marks: {
-      "gate-seat": { x: 92, y: FLOOR_Y, facing: "right", seated: true, behind: true },
-      "check-in": { x: 250, y: FLOOR_Y, facing: "right" },
-      window: { x: 186, y: FLOOR_Y, facing: "left" },
-      agent: { x: 346, y: FLOOR_Y, facing: "left", behind: true, surface: 172 },
-    },
-    order: ["check-in", "agent", "gate-seat", "window"],
-    spots: { kiosk: { x: 206, y: 164 }, tv: { x: 270, y: 54 }, phone: { x: 310, y: 166 }, "payment-terminal": { x: 300, y: 161 } },
-    defaultSpot: { x: 206, y: 164 },
-    sign: { x: 214, y: 4, w: 112, h: 18 },
-  },
   restaurant: {
     back: () => (
       <g>
@@ -64,27 +41,6 @@ export const MORE_SCENES: Record<string, SceneDef> = {
     defaultSpot: { x: 170, y: 175 },
     sign: { x: 150, y: 110, w: 100, h: 16 },
   },
-  gym: {
-    back: () => (
-      <g>
-        <Sh d={rect(20, 30, 180, 150)} fill={C.g1} /><L d="M40 50 l40 110 M110 40 l50 120" sw={1} color={C.g5} />
-        <L d="M260 234 V120 M244 120 h32 M252 150 h16 M252 180 h16 M252 210 h16" sw={2.4} />
-        {[150, 180, 210].map((y) => <g key={y}><circle cx={250} cy={y} r={6} fill={C.g7} stroke={ink} strokeWidth={1.4} /><circle cx={270} cy={y} r={6} fill={C.g7} stroke={ink} strokeWidth={1.4} /></g>)}
-        <Sh d="M300 234 L318 196 H392 L396 234" fill={C.g5} /><L d="M318 196 L330 150 M330 150 h24" sw={3} />
-      </g>
-    ),
-    front: () => <g><Sh d={rect(96, 206, 110, 10)} fill={C.g4} /><L d="M110 216 V234 M192 216 V234" sw={2.4} /></g>,
-    marks: {
-      treadmill: { x: 352, y: 214, facing: "left" },
-      bench: { x: 150, y: FLOOR_Y, facing: "right", seated: true, behind: true },
-      floor: { x: 60, y: FLOOR_Y, facing: "right" },
-      mirror: { x: 216, y: FLOOR_Y, facing: "left" },
-    },
-    order: ["floor", "treadmill", "bench", "mirror"],
-    spots: { tv: { x: 110, y: 70 }, kiosk: { x: 228, y: 164 }, phone: { x: 190, y: 202 } },
-    defaultSpot: { x: 110, y: 70 },
-    sign: { x: 24, y: 6, w: 172, h: 20 },
-  },
   clinic: {
     back: () => (
       <g>
@@ -105,27 +61,6 @@ export const MORE_SCENES: Record<string, SceneDef> = {
     spots: { kiosk: { x: 196, y: 164 }, tablet: { x: 260, y: 158 }, tv: { x: 130, y: 90 }, "payment-terminal": { x: 262, y: 159 } },
     defaultSpot: { x: 196, y: 164 },
     sign: { x: 238, y: 42, w: 146, h: 17 },
-  },
-  parking: {
-    back: () => (
-      <g>
-        <L d="M0 40 H400" sw={2.4} /><Sh d={rect(170, 40, 22, 194)} fill={C.g2} />
-        <Sh d="M20 234 V196 Q24 170 56 166 L84 142 Q96 134 120 134 H176 Q196 134 206 150 L218 168 Q246 172 250 196 V234 Z" fill={C.g4} />
-        <Sh d="M92 146 H138 V168 H80 Z" fill={C.paper} /><Sh d="M146 146 H190 L206 168 H146 Z" fill={C.paper} />
-        <circle cx={70} cy={232} r={18} fill={C.g8} stroke={ink} strokeWidth={2.2} /><circle cx={206} cy={232} r={18} fill={C.g8} stroke={ink} strokeWidth={2.2} />
-        <Sh d={rect(330, 110, 40, 124)} fill={C.g2} /><L d="M338 124 h24 v28 h-24 Z M350 170 q24 10 8 40" sw={2} />
-        <L d="M270 250 L284 234 M390 250 L376 234" sw={2} />
-      </g>
-    ),
-    marks: {
-      "car-door": { x: 262, y: FLOOR_Y, facing: "left" },
-      charger: { x: 306, y: FLOOR_Y, facing: "right" },
-      walkway: { x: 130, y: FLOOR_Y + 8, facing: "right", scale: 1 },
-    },
-    order: ["car-door", "charger", "walkway"],
-    spots: { kiosk: { x: 284, y: 164 }, "payment-terminal": { x: 350, y: 138 } },
-    defaultSpot: { x: 350, y: 138 },
-    sign: { x: 20, y: 48, w: 140, h: 18 },
   },
   "bus-stop": {
     back: () => (

@@ -30,6 +30,9 @@
       "bubbles": [{ "type": "thought", "from": "maya", "text": "It said 4 minutes…" }],
       "gestures": [{ "type": "tap", "on": "maya", "at": [0.5, 0.8] }], // on = character (their device) or device id
       "callouts": [{ "text": "Status never updates", "target": "maya" }],
+      "sign": "Corner Deli",                // optional: this panel's store name; false = blank sign (default: page.brand)
+      "images": [{ "src": "./images/receipt.jpg", "x": 300, "y": 120, "w": 90 }], // any picture; grey sketch unless "sketch": false
+      "shapes": [{ "type": "rect", "points": [[300, 150], [360, 200]], "fill": "light" }], // props the library lacks
       "notes": "From interview P4",          // not drawn
       "layout": { "maya": { "dx": -12 } }    // written by the editor. Leave it alone.
     },
@@ -41,4 +44,6 @@
 
 Rules: every `who` must be in `cast`; `from`, `on`, `target` and `focus` refer to a character id (`who`, or
 `id` if you gave one) or a device `id` (defaults to its type) **in the same panel**. Scene panels need `scene`.
-Positions are automatic; don't add coordinates.
+Positions are automatic; don't add coordinates. The exceptions are `shapes` (box, oval, line, arrow, freehand
+`path`) and `images` (centre `x`, `y`, box `w`, `h`), which use panel units: 400 wide, 260 tall, origin
+top-left, floor at about y 234.

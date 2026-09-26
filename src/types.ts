@@ -1,6 +1,6 @@
 import type {
-  Accessory, Age, Angle, Body, BubbleType, DeviceType, GestureType, Hair, HairShade, Mood, Outfit, Pose,
-  SceneId, Shot, Skin, TimeIcon,
+  Accessory, Age, Angle, Body, BubbleType, DeviceType, GestureType, Hair, HairShade, Hat, Mood, Outfit, Pose,
+  SceneId, ShapeFill, ShapeType, Shot, Skin, TimeIcon,
 } from "./vocab";
 
 export const SCHEMA_VERSION = 1;
@@ -12,6 +12,7 @@ export interface CastMember {
   hairShade?: HairShade;
   body?: Body;
   outfit?: Outfit;
+  hat?: Hat;
   age?: Age;
   accessories?: Accessory[];
 }
@@ -23,6 +24,8 @@ export interface LayoutOverride {
   scale?: number;
   rotate?: number;
   hidden?: boolean;
+  /** Layer order among people, devices and shapes (higher = in front). Set by the editor's Arrange buttons. */
+  z?: number;
 }
 
 export interface HeldDevice {
@@ -70,12 +73,37 @@ export interface Gesture {
   /** Point on the screen, 0–1 from the top-left. */
   at?: [number, number];
   direction?: "left" | "right" | "up" | "down";
+  /** Swipe direction in degrees (0 = right, 90 = down). Overrides `direction`. */
+  angle?: number;
 }
 
 export interface Callout {
   id?: string;
   text: string;
   target?: string;
+}
+
+/** A simple drawn shape, for anything the vocabulary doesn't have. Panel coordinates: 400 wide × 260 tall. */
+export interface Shape {
+  id?: string;
+  type: ShapeType;
+  points: [number, number][];
+  fill?: ShapeFill;
+}
+
+/** Any picture placed in a scene (a found photo, a product shot, a prop). Sketchified in greys unless `sketch: false`. */
+export interface SceneImage {
+  id?: string;
+  /** Path relative to the storyboard file. */
+  src: string;
+  /** Centre, in panel units (400 × 260). Default: the middle of the panel. */
+  x?: number;
+  y?: number;
+  /** Box the image fits inside, in panel units. Default 120 × 90. */
+  w?: number;
+  h?: number;
+  /** false = show the image as-is. Default true (grey marker sketch). */
+  sketch?: boolean;
 }
 
 interface PanelBase {
@@ -96,8 +124,12 @@ export interface ScenePanel extends PanelBase {
   caption?: string;
   callouts?: Callout[];
   gestures?: Gesture[];
+  shapes?: Shape[];
+  images?: SceneImage[];
   /** Journey lane: how the person feels here, -2 (awful) … 2 (great). Defaults from the main character's mood. */
   feeling?: number;
+  /** Name on this panel's storefront/sign. Overrides the board brand; false = a blank sign (someone else's shop). */
+  sign?: string | false;
   /** Journey lane: what they do to get around a gap ("asks the barista", "screenshots the code"). */
   workaround?: string;
 }

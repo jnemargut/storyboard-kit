@@ -31,6 +31,9 @@ path. **Below, \`sb\` is short for that whole command.**
 1. **Look up the vocabulary. Don't guess.** \`${CLI} vocab\` lists categories; \`${CLI} vocab poses\`,
    \`${CLI} vocab scenes\` (with marks), \`${CLI} vocab shots\`, etc. \`${CLI} vocab --grep hospital\` searches
    every category. If a place you need doesn't exist, pick the closest scene and say so in \`label\` or a \`caption\`.
+   A missing prop (a parcel, a sign, a queue barrier) can be a few \`shapes\`; the designer can redraw it in the editor.
+   If the designer hands you a picture that isn't a screen (a photo, a product, a found image), put it in the
+   panel's \`images\`. It's sketchified in greys to match; \`"sketch": false\` shows it as-is.
    Full list: [references/vocabulary.md](references/vocabulary.md).
 2. **Write the file**: \`<name>.storyboard.json\`. Shape: [references/format.md](references/format.md).
    Worked example: [references/example.md](references/example.md).
@@ -58,17 +61,22 @@ The point is to see the product from inside the customer's life, not to illustra
 - **Put the unsaid in thought bubbles.** What people think but don't say ("it said 4 minutes…") is gold.
 - **Vary the camera.** \`wide\` for context and who else is around, \`over-the-shoulder\` or \`screen\` when
   the UI matters, \`close-up\` for emotion. Don't use the same shot for every panel.
+- **Name the places.** \`page.brand\` puts your product's name on storefronts and signs. When the story moves
+  between businesses (a competitor, the corner shop, the bank), set \`"sign"\` on those panels to their name,
+  or \`"sign": false\` for a blank sign.
 - **Let the product be absent sometimes.** Panels without a device are fine. That contrast is the point.
 - **Use time cards** ("12 minutes later…") for gaps, and a title card first.
 - **End on the outcome for the person**, not on a UI state. A callout can name the consequence
   ("Trust lost: she'll skip ordering ahead").
 - 5–9 panels is typical. Keep bubbles under ~12 words.
 - Build a varied, realistic cast (skin, age, body, hair, accessories such as glasses, cane, wheelchair,
-  hijab) that fits the story. Don't default everyone to the same look.
+  hijab) that fits the story. Don't default everyone to the same look. Dress staff for their job: \`outfit\`
+  (\`uniform\`, \`hi-vis\`, \`lab-coat\`, \`chef\`, \`scrubs\`, \`apron\`, \`overalls\`…) and \`hat\` (\`sb vocab hats\`).
 - **Teal means "our product" and nothing else.** A personal call, a text to a coworker, or someone else's app
   is not the product: give that device \`"product": false\` (e.g. \`"device": { "type": "phone", "product": false }\`)
   and it's drawn grey. Phone poses (\`holding-phone\`, \`phone-to-ear\`) without a device get a grey phone
   automatically. This is how the board shows where the product helps and where people route around it.
+- Gestures (tap, swipe, click…) are drawn **orange**: what the person does. Teal stays reserved for the product.
 - **Hold only what a hand holds.** \`device\` on a character is for phone, tablet, laptop or watch. Kiosks, car
   displays, TVs, terminals and smart speakers go in the panel's \`devices\` (optionally \`"at"\` a mark), and
   gestures point \`"on"\` them by id. A phone lying on a table is also a panel device, with no person needed.
@@ -89,8 +97,8 @@ function table(list: readonly Entry[], marks = false): string {
 const FIELD: Record<string, string> = {
   scenes: "panel `scene`", shots: "panel `shot`", poses: "character `pose`", moods: "character `mood`", angles: "character `angle`",
   devices: "`device` / `devices[].type`", bubbles: "`bubbles[].type`", gestures: "`gestures[].type`", skin: "cast `skin`", hair: "cast `hair`",
-  "hair-shade": "cast `hairShade`", body: "cast `body`", outfits: "cast `outfit`", ages: "cast `age`", accessories: "cast `accessories` (array)",
-  "time-icons": "time panel `icon`", "panel-types": "panel `type`",
+  "hair-shade": "cast `hairShade`", body: "cast `body`", outfits: "cast `outfit`", hats: "cast `hat`", ages: "cast `age`", accessories: "cast `accessories` (array)",
+  "time-icons": "time panel `icon`", "panel-types": "panel `type`", shapes: "`shapes[].type`", "shape-fills": "`shapes[].fill`",
 };
 
 export function vocabularyMd(): string {
@@ -133,6 +141,9 @@ export const FORMAT_MD = `# storyboard.json format
       "bubbles": [{ "type": "thought", "from": "maya", "text": "It said 4 minutes…" }],
       "gestures": [{ "type": "tap", "on": "maya", "at": [0.5, 0.8] }], // on = character (their device) or device id
       "callouts": [{ "text": "Status never updates", "target": "maya" }],
+      "sign": "Corner Deli",                // optional: this panel's store name; false = blank sign (default: page.brand)
+      "images": [{ "src": "./images/receipt.jpg", "x": 300, "y": 120, "w": 90 }], // any picture; grey sketch unless "sketch": false
+      "shapes": [{ "type": "rect", "points": [[300, 150], [360, 200]], "fill": "light" }], // props the library lacks
       "notes": "From interview P4",          // not drawn
       "layout": { "maya": { "dx": -12 } }    // written by the editor. Leave it alone.
     },
@@ -144,7 +155,9 @@ export const FORMAT_MD = `# storyboard.json format
 
 Rules: every \`who\` must be in \`cast\`; \`from\`, \`on\`, \`target\` and \`focus\` refer to a character id (\`who\`, or
 \`id\` if you gave one) or a device \`id\` (defaults to its type) **in the same panel**. Scene panels need \`scene\`.
-Positions are automatic; don't add coordinates.
+Positions are automatic; don't add coordinates. The exceptions are \`shapes\` (box, oval, line, arrow, freehand
+\`path\`) and \`images\` (centre \`x\`, \`y\`, box \`w\`, \`h\`), which use panel units: 400 wide, 260 tall, origin
+top-left, floor at about y 234.
 `;
 
 export function exampleMd(exampleJson: string): string {

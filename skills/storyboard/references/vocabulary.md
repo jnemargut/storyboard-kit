@@ -173,6 +173,26 @@ Field: cast `outfit`
 - `dress`: Dress.
 - `scrubs`: Medical scrubs.
 - `apron`: Work apron (barista, shop staff).
+- `polo`: Collared polo shirt (retail, delivery, tech support, golf).
+- `uniform`: Dark uniform with a badge (police, security, pilot, transit, parking).
+- `hi-vis`: Safety vest with reflective stripes (warehouse, construction, road crew).
+- `lab-coat`: Long white coat (doctor, pharmacist, scientist, vet).
+- `chef`: White double-breasted chef's jacket (cook, kitchen staff).
+- `overalls`: Bib overalls (mechanic, farmer, painter, trades).
+- `coat`: Long winter coat (commuter, outdoors).
+- `athletic`: Tank top and shorts (runner, gym, coach).
+
+## hats
+
+Field: cast `hat`
+
+- `cap`: Baseball cap (casual, delivery driver, coach).
+- `beanie`: Knit beanie (cold weather, casual).
+- `hard-hat`: Hard hat (construction, warehouse, site visit).
+- `chef-hat`: Tall chef's toque.
+- `uniform-cap`: Peaked cap (police, pilot, security, driver).
+- `sun-hat`: Wide-brim sun hat.
+- `surgical-cap`: Surgical scrub cap (nurse, surgeon).
 
 ## ages
 
@@ -211,3 +231,22 @@ Field: panel `type`
 - `title`: Title card: story title and subtitle.
 - `time`: Time passes card: '12 minutes later…'.
 - `text`: Narration card: a short line of text on its own.
+
+## shapes
+
+Field: `shapes[].type`
+
+- `rect`: Box. `points`: two opposite corners [[x1,y1],[x2,y2]].
+- `ellipse`: Circle or oval inside the box given by two corners.
+- `line`: Straight line between two points.
+- `arrow`: Line with an arrowhead at the second point.
+- `path`: Freehand line through every point (sketch anything missing).
+
+## shape-fills
+
+Field: `shapes[].fill`
+
+- `none`: Outline only (default for lines).
+- `light`: Light grey.
+- `mid`: Mid grey.
+- `dark`: Dark grey.

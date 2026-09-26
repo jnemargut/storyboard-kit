@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { DeviceType, SceneId } from "../vocab";
 import { C, FLOOR_Y, OFFSET } from "./tokens";
 import { MORE_SCENES } from "./scenes-more";
+import { REDRAWN_SCENES } from "./scenes-redrawn";
 
 export interface Mark {
   x: number;
@@ -188,32 +189,6 @@ const BASE_SCENES: Record<string, SceneDef> = {
     spots: { tv: { x: 300, y: 80 }, laptop: { x: 200, y: 176 }, phone: { x: 230, y: 175 }, "smart-speaker": { x: 214, y: 166 } },
     defaultSpot: { x: 300, y: 80 },
   },
-  car: {
-    back: () => (
-      <g>
-        <L d="M0 36 Q200 10 330 40 L400 110" sw={2.4} />
-        <Sh d="M60 50 Q180 28 300 50 L340 104 H70 Z" fill={C.g1} />
-        <Sh d="M268 118 Q330 104 400 116 V180 H280 Z" fill={C.g5} />
-        <Sh d="M186 234 V196 H252 V234" fill={C.g4} />
-        <Sh d="M180 206 V116 Q180 104 192 104 H200 Q210 104 210 116 V206 Z" fill={C.g4} />
-        <Sh d="M80 206 V122 Q80 110 92 110 H100 Q110 110 110 122 V206 Z" fill={C.g4} />
-      </g>
-    ),
-    front: () => (
-      <g>
-        <ellipse cx={262} cy={150} rx={6} ry={21} transform="rotate(-20 262 150)" fill="none" stroke={ink} strokeWidth={3} />
-        <L d="M266 164 L282 176" sw={3} />
-      </g>
-    ),
-    marks: {
-      "driver-seat": { x: 214, y: FLOOR_Y, facing: "right", seated: true, behind: true },
-      "passenger-seat": { x: 114, y: FLOOR_Y, facing: "right", seated: true, behind: true, scale: 0.94 },
-      dashboard: { x: 340, y: 130 },
-    },
-    order: ["driver-seat", "passenger-seat"],
-    spots: { "car-display": { x: 340, y: 132 }, phone: { x: 318, y: 112 } },
-    defaultSpot: { x: 340, y: 132 },
-  },
   street: {
     back: () => (
       <g>
@@ -309,28 +284,6 @@ const BASE_SCENES: Record<string, SceneDef> = {
     spots: { desktop: { x: 350, y: 110, behind: true }, tablet: { x: 300, y: 150 }, phone: { x: 290, y: 158 } },
     defaultSpot: { x: 350, y: 110 },
   },
-  school: {
-    back: () => (
-      <g>
-        <Sh d={rect(186, 40, 214, 194)} fill={C.g1} />
-        <Sh d={rect(236, 52, 128, 30)} fill={C.paper} />
-        <text x={300} y={74} textAnchor="middle" fontFamily="Permanent Marker" fontSize={18} fill={C.ink}>SCHOOL</text>
-        {[200, 380].map((x) => <Sh key={x} d={rect(x - 12, 100, 24, 38)} fill={C.paper} />)}
-        <Sh d={rect(270, 132, 60, 102)} fill={C.g5} /><L d="M300 132 V234" sw={1.6} />
-        {Array.from({ length: 16 }, (_, i) => <L key={i} d={`M${6 + i * 10} 234 V${i % 2 ? 176 : 172}`} sw={1.8} />)}
-        <L d="M0 186 H164 M0 214 H164" sw={2} />
-        <L d="M164 234 V160 M186 234 V160" sw={3} />
-      </g>
-    ),
-    marks: {
-      sidewalk: { x: 96, y: FLOOR_Y, facing: "right" },
-      gate: { x: 176, y: FLOOR_Y, facing: "right" },
-      door: { x: 300, y: FLOOR_Y, facing: "left" },
-    },
-    order: ["gate", "sidewalk", "door"],
-    spots: { kiosk: { x: 230, y: 164 } },
-    defaultSpot: { x: 230, y: 164 },
-  },
   blank: {
     back: () => floor,
     marks: {
@@ -344,7 +297,7 @@ const BASE_SCENES: Record<string, SceneDef> = {
   },
 };
 
-export const SCENE_DEFS = { ...BASE_SCENES, ...MORE_SCENES } as Record<SceneId, SceneDef>;
+export const SCENE_DEFS = { ...BASE_SCENES, ...MORE_SCENES, ...REDRAWN_SCENES } as Record<SceneId, SceneDef>;
 
 export interface Brand { name?: string; logoHref?: string }
 

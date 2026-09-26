@@ -37,19 +37,27 @@ export function imageSize(buf: Buffer): { w: number; h: number } | undefined {
  * The teal duotone "sketchify" pass from decision 7: grayscale → 4 teal tones → faint ink edges → slight wobble.
  * Runs once per screen and is cached, so the editor and export always show the same pixels.
  */
-export function duotoneSVG(dataUri: string, w: number, h: number, roughness = 1): string {
+export type BakeMode = "teal" | "grey";
+/** Tone tables: teal for the product's screens; greys (ink → paper) for any other image, matching the marker style. */
+const TONES: Record<BakeMode, [string, string, string]> = {
+  teal: ["0.11 0.05 0.56 0.98", "0.11 0.60 0.84 0.98", "0.12 0.65 0.86 0.97"],
+  grey: ["0.11 0.45 0.76 0.98", "0.11 0.48 0.78 0.98", "0.12 0.51 0.80 0.97"],
+};
+
+export function duotoneSVG(dataUri: string, w: number, h: number, roughness = 1, mode: BakeMode = "teal"): string {
   const k = w / 180;
+  const [tr, tg, tb] = TONES[mode];
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
 <filter id="d" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
 <feColorMatrix type="saturate" values="0" result="g"/>
-<feComponentTransfer in="g" result="post"><feFuncR type="discrete" tableValues="0.11 0.05 0.56 0.98"/><feFuncG type="discrete" tableValues="0.11 0.60 0.84 0.98"/><feFuncB type="discrete" tableValues="0.12 0.65 0.86 0.97"/></feComponentTransfer>
+<feComponentTransfer in="g" result="post"><feFuncR type="discrete" tableValues="${tr}"/><feFuncG type="discrete" tableValues="${tg}"/><feFuncB type="discrete" tableValues="${tb}"/></feComponentTransfer>
 <feConvolveMatrix in="g" order="3" kernelMatrix="-1 -1 -1 -1 8 -1 -1 -1 -1" preserveAlpha="true" result="e"/>
 <feColorMatrix in="e" type="matrix" values="0 0 0 0 0.11  0 0 0 0 0.11  0 0 0 0 0.12  0.3 0.3 0.3 0 0" result="lines"/>
 <feMerge result="m"><feMergeNode in="post"/><feMergeNode in="lines"/></feMerge>
 <feTurbulence type="fractalNoise" baseFrequency="${(0.04 / k).toFixed(4)}" numOctaves="2" seed="7" result="n"/>
 <feDisplacementMap in="m" in2="n" scale="${(1.1 * k * roughness).toFixed(2)}"/>
 </filter>
-<rect width="100%" height="100%" fill="#fbfaf7"/>
+${mode === "teal" ? `<rect width="100%" height="100%" fill="#fbfaf7"/>` : ""}
 <image href="${dataUri}" width="${w}" height="${h}" filter="url(#d)"/>
 </svg>`;
 }
@@ -57,9 +65,9 @@ export function duotoneSVG(dataUri: string, w: number, h: number, roughness = 1)
 const MAX_BAKE_W = 720;
 
 /** Bake (or fetch from cache) the teal duotone version of a screen image. Returns PNG bytes. */
-export function bakeScreen(absPath: string, cacheDir: string, roughness = 1): Buffer {
+export function bakeScreen(absPath: string, cacheDir: string, roughness = 1, mode: BakeMode = "teal"): Buffer {
   const st = statSync(absPath);
-  const key = createHash("sha1").update(`${absPath}:${st.mtimeMs}:${st.size}:${roughness}:v1`).digest("hex").slice(0, 12);
+  const key = createHash("sha1").update(`${absPath}:${st.mtimeMs}:${st.size}:${roughness}:${mode === "teal" ? "v1" : `${mode}-v1`}`).digest("hex").slice(0, 12);
   const out = join(cacheDir, `${basename(absPath, extname(absPath))}-${key}.png`);
   if (existsSync(out)) return readFileSync(out);
   const buf = readFileSync(absPath);
@@ -67,7 +75,7 @@ export function bakeScreen(absPath: string, cacheDir: string, roughness = 1): Bu
   const scale = Math.min(1, MAX_BAKE_W / size.w);
   const w = Math.round(size.w * scale), h = Math.round(size.h * scale);
   const mime = MIME[extname(absPath).toLowerCase()] ?? "image/png";
-  const svg = duotoneSVG(`data:${mime};base64,${buf.toString("base64")}`, w, h, roughness);
+  const svg = duotoneSVG(`data:${mime};base64,${buf.toString("base64")}`, w, h, roughness, mode);
   const png = renderPNG(svg);
   mkdirSync(cacheDir, { recursive: true });
   writeFileSync(out, png);
@@ -77,7 +85,7 @@ export function bakeScreen(absPath: string, cacheDir: string, roughness = 1): Bu
 export const cacheDirFor = (boardFile: string) => join(dirname(resolve(boardFile)), ".storyboard-cache");
 
 /** Asset resolver for export: every screen becomes an inline, baked PNG data URI. */
-export function exportAssetResolver(boardFile: string) {
+export function exportAssetResolver(boardFile: string, mode: BakeMode = "teal") {
   const base = dirname(resolve(boardFile));
   const cache = cacheDirFor(boardFile);
   const memo = new Map<string, string | undefined>();
@@ -86,7 +94,7 @@ export function exportAssetResolver(boardFile: string) {
     const abs = resolve(base, p);
     let uri: string | undefined;
     if (existsSync(abs)) {
-      try { uri = `data:image/png;base64,${bakeScreen(abs, cache).toString("base64")}`; } catch { uri = undefined; }
+      try { uri = `data:image/png;base64,${bakeScreen(abs, cache, 1, mode).toString("base64")}`; } catch { uri = undefined; }
     }
     memo.set(p, uri);
     return uri;
@@ -110,7 +118,7 @@ export function rawAssetResolver(boardFile: string) {
 }
 
 export function boardToSVG(board: Board, boardFile: string, embedFonts = false): string {
-  return renderBoardSVG(board, { asset: exportAssetResolver(boardFile), raw: rawAssetResolver(boardFile), fontCss: embedFonts ? fontFaceCss(true) : undefined });
+  return renderBoardSVG(board, { asset: exportAssetResolver(boardFile), sketch: exportAssetResolver(boardFile, "grey"), raw: rawAssetResolver(boardFile), fontCss: embedFonts ? fontFaceCss(true) : undefined });
 }
 
 /**
