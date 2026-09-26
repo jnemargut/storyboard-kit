@@ -65,6 +65,7 @@ const MiniFace = ({ x, y, happy }: { x: number; y: number; happy: boolean }) => 
 function LaneStrip({ p, k, editing }: { p: Panel; k: number; editing?: boolean }) {
   if (!isScene(p)) return null;
   const f = feelingOf(p);
+  const product = panelHasProduct(p);
   const size = 12.5 * Math.min(k, 1.4);
   const dotX = (i: number) => 32 + i * 17;
   return (
@@ -79,10 +80,17 @@ function LaneStrip({ p, k, editing }: { p: Panel; k: number; editing?: boolean }
       ))}
       <MiniFace x={dotX(4) + 16} y={19} happy />
       <text x={dotX(4) + 28} y={24} fontFamily={FONT.hand} fontSize={size} fill={C.g8}>{f === undefined ? "" : FEEL_WORD[f]}</text>
+      {/* teal = the product shows up in this step (the legend's colour), marked only where it does */}
+      {product && (
+        <g data-lane-product={p.id}>
+          <rect x={172} y={12} width={14} height={14} fill={C.teal} stroke={C.ink} strokeWidth={1.5} />
+          <text x={190} y={24} fontFamily={FONT.hand} fontSize={size} fill={C.g8}>product</text>
+        </g>
+      )}
       {(p.workaround || editing) && (
         <g data-lane-workaround={p.id} style={editing ? { cursor: "text" } : undefined}>
-          <rect x={186} y={5} width={208} height={28} fill={p.workaround ? C.caption : "transparent"} stroke={p.workaround ? C.ink : C.g5} strokeWidth={1.3} strokeDasharray={p.workaround ? undefined : "4 3"} transform="rotate(-1 290 19)" />
-          <text x={192} y={23} fontFamily={FONT.hand} fontSize={Math.min(size, 12)} fill={p.workaround ? C.ink : C.g5}>{p.workaround ? `${wrap(p.workaround, 12, 196)[0]}${wrap(p.workaround, 12, 196).length > 1 ? "…" : ""}` : "+ workaround: how they get around a gap"}</text>
+          <rect x={242} y={5} width={152} height={28} fill={p.workaround ? C.caption : "transparent"} stroke={p.workaround ? C.ink : C.g5} strokeWidth={1.3} strokeDasharray={p.workaround ? undefined : "4 3"} transform="rotate(-1 318 19)" />
+          <text x={248} y={23} fontFamily={FONT.hand} fontSize={Math.min(size, 12)} fill={p.workaround ? C.ink : C.g5}>{p.workaround ? `${wrap(p.workaround, 12, 140)[0]}${wrap(p.workaround, 12, 140).length > 1 ? "…" : ""}` : "+ workaround"}</text>
         </g>
       )}
     </g>
@@ -102,7 +110,12 @@ function Journey({ board, y, width }: { board: Board; y: number; width: number }
       <text x={PAGE.margin} y={y + 44} fontFamily={FONT.hand} fontSize={15} fill={C.g8}>feeling</text>
       <line x1={x0 - 10} y1={fy(0)} x2={x0 + span + 10} y2={fy(0)} stroke={C.g4} strokeDasharray="4 4" />
       {pts.length > 1 && <polyline points={pts.map((q) => `${cx(q.i)},${fy(q.f)}`).join(" ")} fill="none" stroke={C.ink} strokeWidth={2.4} strokeLinejoin="round" filter="url(#sb-wobble-page)" />}
-      {pts.map((q) => <circle key={q.i} cx={cx(q.i)} cy={fy(q.f)} r={4.5} fill={C.ink} />)}
+      {pts.map((q) => {
+        const prod = panelHasProduct(board.panels[q.i]);
+        return <circle key={q.i} cx={cx(q.i)} cy={fy(q.f)} r={prod ? 6.5 : 4.5} fill={prod ? C.teal : C.ink} stroke={C.ink} strokeWidth={prod ? 1.8 : 0} />;
+      })}
+      {/* steps with the product but no feeling set still get their teal mark, on the baseline */}
+      {board.panels.map((q, i) => isScene(q) && feelingOf(q) === undefined && panelHasProduct(q) ? <circle key={`p${i}`} cx={cx(i)} cy={fy(0)} r={5.5} fill={C.teal} stroke={C.ink} strokeWidth={1.6} /> : null)}
       {board.panels.map((p, i) => (
         <g key={p.id}>
           {!isScene(p) && <text x={cx(i)} y={y + 74} textAnchor="middle" fontFamily={FONT.hand} fontSize={13} fill={C.g5}>{p.type === "time" ? "…" : "·"}</text>}

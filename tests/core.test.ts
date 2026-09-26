@@ -145,7 +145,8 @@ describe("text size", () => {
 describe("service-design layer", () => {
   it("never draws a product score on the board or exports", () => {
     const svg = renderBoardSVG({ ...example, page: { ...example.page, lanes: true } }, { asset });
-    expect(svg).not.toMatch(/moments|no product|data-lane-product/);
+    expect(svg).not.toMatch(/moments|no product/); // marks where the product is, never a count
+    expect(svg.match(/data-lane-product=/g)?.length).toBe(5); // one teal tag per step that has the product
     expect(productShare(example)).toEqual({ withProduct: 5, moments: 6 }); // still used by critique's "is it a feature tour?" check
   });
   it("journey lanes render per panel plus a journey summary", () => {

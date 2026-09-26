@@ -6,7 +6,7 @@ You tell Claude Code (or Codex) what someone's day looks like. It sketches a sto
 little editor until it feels true. Then you drop it in your deck and the room starts talking about the person's
 whole day, not just the screens.
 
-![Storyboard Kit sizzle reel](docs/sizzle-6bdeb97.gif)
+![Storyboard Kit sizzle reel](docs/sizzle-fa195fd.gif)
 
 ## Why though
 
@@ -17,7 +17,7 @@ Storyboard Kit draws all of that in a scrappy marker style where **only your pro
 Everything else is grey, so your product sits inside the rest of someone's life instead of at the center of it.
 You see what comes before it, what happens around it, and where people quietly work around it.
 
-![The Late Latte, an example storyboard](docs/late-latte-a7a0f70.png)
+![The Late Latte, an example storyboard](docs/late-latte-a2538b0.png)
 
 ## Install (about 30 seconds)
 
@@ -89,12 +89,13 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 
 **Journey lanes**
 
-A strip under each panel: how the person feels, and the workaround they used when something didn't work.
+A strip under each panel: how the person feels, a teal tag where your product shows up, and the workaround
+they used when something didn't work.
 A feeling line with every step named runs across the bottom of the page.
 
 **Play mode**
 
-![Play mode with sharpie markup](docs/play-c75a265.png)
+![Play mode with sharpie markup](docs/play-3ff47dd.png)
 
 Hit **▶ Play** (or P) to present the board one step at a time, with a big pointer the room can follow.
 

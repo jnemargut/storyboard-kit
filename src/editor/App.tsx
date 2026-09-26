@@ -621,8 +621,8 @@ function TopBar(props: {
       <TextSize board={props.board} commit={props.commit} />
       <button className="btn" onClick={props.undo} disabled={!props.canUndo} title="Undo (Cmd+Z)">Undo</button>
       <button className="btn" onClick={props.redo} disabled={!props.canRedo} title="Redo (Shift+Cmd+Z)">Redo</button>
-      <button className={`btn${lanes ? " on" : ""}`} onClick={() => props.commit(lanes ? [{ path: ["page", "lanes"], delete: true }] : [{ path: ["page", "lanes"], value: true }], lanes ? "Journey lanes hidden" : "Journey lanes on: how they feel and how they work around gaps")}
-        title="Show service-design lanes under each panel: how they feel, and how they work around gaps">Journey lanes</button>
+      <button className={`btn${lanes ? " on" : ""}`} onClick={() => props.commit(lanes ? [{ path: ["page", "lanes"], delete: true }] : [{ path: ["page", "lanes"], value: true }], lanes ? "Journey lanes hidden" : "Journey lanes on: how they feel, where the product shows up, and their workarounds")}
+        title="Show service-design lanes under each panel: how they feel, where the product shows up, and how they work around gaps">Journey lanes</button>
       <div className="menu">
         <button className="btn" onClick={() => toggle("brand")} title="Your company's name/logo on storefronts and signs">Brand</button>
         {menu === "brand" && (
