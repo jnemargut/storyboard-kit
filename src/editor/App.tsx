@@ -436,7 +436,7 @@ export function App() {
     if (!p || !isScene(p)) return flash("Add a scene panel first, then drop the picture onto it.");
     let nat = { w: 4, h: 3 };
     try { const bmp = await createImageBitmap(f); nat = { w: bmp.width, h: bmp.height }; bmp.close(); } catch { /* keep 4:3 */ }
-    const k = Math.min(150 / nat.w, 110 / nat.h);
+    const k = Math.min(120 / nat.w, 88 / nat.h);
     const { path } = await api.upload(f, "images");
     const index = (p.images ?? []).length;
     const item = { src: path, x: Math.round(at?.[0] ?? 200), y: Math.round(at?.[1] ?? 130), w: Math.round(nat.w * k), h: Math.round(nat.h * k), ...(sketchNew ? {} : { sketch: false }) };
