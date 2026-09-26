@@ -127,7 +127,8 @@ interface PanelBase {
 
 export interface ScenePanel extends PanelBase {
   type?: "scene";
-  scene: SceneId;
+  /** A built-in scene, or the id of one of the board's own `scenes`. */
+  scene: SceneId | (string & {});
   shot?: Shot;
   focus?: string;
   characters?: CharacterInPanel[];
@@ -178,8 +179,35 @@ export interface Board {
    */
   page?: { columns?: number; textScale?: number; lanes?: boolean; brand?: { name?: string; logo?: string } };
   cast: Record<string, CastMember>;
+  /** Places the board draws for itself, when none of the built-in scenes fit. Keyed by scene id. */
+  scenes?: Record<string, CustomScene>;
   panels: Panel[];
   notes?: string;
+}
+
+/** Where a person stands in a custom scene. Panel units: 400 wide, 260 tall, floor at y 234. */
+export interface CustomMark {
+  x: number;
+  y?: number;
+  facing?: "left" | "right";
+  seated?: boolean;
+  /** Stand behind the scene's `front` shapes (behind a counter, a desk). */
+  behind?: boolean;
+  scale?: number;
+}
+
+/**
+ * A scene an agent (or designer) draws from simple shapes, optionally on top of a built-in scene.
+ * `shapes` go behind people, `front` shapes in front of them (a counter people stand behind).
+ */
+export interface CustomScene {
+  name?: string;
+  base?: SceneId;
+  shapes?: Shape[];
+  front?: Shape[];
+  marks?: Record<string, CustomMark>;
+  /** Where a storefront name goes. */
+  sign?: { x: number; y: number; w: number; h: number };
 }
 
 export const isScene = (p: Panel): p is ScenePanel => p.type === undefined || p.type === "scene";

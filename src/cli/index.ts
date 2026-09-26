@@ -11,7 +11,24 @@ import { agentsBlock } from "../skill";
 import { boardToSVG, initRenderer, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";
 import { formatCritique } from "../critique";
 import { pageSize } from "../render";
-import type { Board } from "../types";
+import { resolveScene } from "../render/scenes";
+import type { Board, CustomScene } from "../types";
+
+/** A small starter scene an agent then redraws: a back wall line, a window, a counter, two marks. */
+function starterScene(id: string, base?: string): CustomScene {
+  return {
+    name: id.replace(/-/g, " "),
+    ...(base ? { base: base as CustomScene["base"] } : {}),
+    shapes: base ? [] : [
+      { type: "line", points: [[0, 150], [400, 150]], color: "grey" },
+      { type: "rect", points: [[40, 40], [130, 110]], fill: "light" },
+      { type: "text", points: [[200, 40]], text: id.toUpperCase() },
+    ],
+    front: base ? [] : [{ type: "rect", points: [[240, 176], [400, 234]], fill: "light" }],
+    // on a base scene, keep its marks (driver-seat, counter…) until you add your own
+    ...(base ? {} : { marks: { front: { x: 150, facing: "right" }, behind: { x: 320, facing: "left", behind: true } } }),
+  };
+}
 import { dev } from "./dev";
 
 /** This script lives in <skill>/scripts/storyboard.mjs, so the skill folder is one level up. */
@@ -31,6 +48,8 @@ Usage: ${RUN} <command> [options]
   vocab [category] [--grep x]     List poses, scenes (+marks), shots, moods, devices… (--json)
   validate <file> [--json]        Check a storyboard; errors include fixes
   critique <file>                 Service-design reality check, with a revision request to paste to your agent
+  scene new <id> <file> [--base x] Add a scene of your own to the board (for places the library doesn't have)
+  scene <file> [id]               Preview the board's own scenes with a grid and marks, as <file>.scenes.png
   dev [file] [--port 4321]        Open the editor (no file = the last one); edits save to the file live (--no-open)
   export <file> [--png] [--pdf] [--svg] [--pptx] [--html] [--scale 2] [--out dir]
                                   --pptx: a slide per panel with speaker notes · --html: a share page with comment boxes
@@ -49,7 +68,7 @@ function args(argv: string[]) {
     else if (a.startsWith("--")) {
       const [k, v] = a.slice(2).split("=");
       if (v !== undefined) flags[k] = v;
-      else if (argv[i + 1] && !argv[i + 1].startsWith("--") && ["grep", "port", "scale", "out", "title", "file", "agent"].includes(k)) flags[k] = argv[++i];
+      else if (argv[i + 1] && !argv[i + 1].startsWith("--") && ["grep", "port", "scale", "out", "title", "file", "agent", "base"].includes(k)) flags[k] = argv[++i];
       else flags[k] = true;
     } else pos.push(a);
   }
@@ -97,7 +116,7 @@ const STARTER = (title: string): Board => ({
 async function main() {
   const [cmd, ...rest] = process.argv.slice(2);
   const { pos, flags } = args(rest);
-  if (cmd === "export" || cmd === "dev" || cmd === "draft") await initRenderer();
+  if (cmd === "export" || cmd === "dev" || cmd === "draft" || cmd === "scene") await initRenderer();
   switch (cmd) {
     case "vocab": {
       const cat = pos[0] as VocabCategory | "marks" | undefined;
@@ -163,6 +182,42 @@ async function main() {
       if (want.pptx) { writeFileSync(join(outDir, `${stem}.pptx`), await toPPTX(board, abs)); written.push(`${stem}.pptx`); }
       if (want.html) { writeFileSync(join(outDir, `${stem}.html`), toShareHTML(board, abs)); written.push(`${stem}.html`); }
       console.log(`✓ exported ${written.map((w) => join(outDir, w)).join(", ")}`);
+      return;
+    }
+    case "scene": {
+      // sb scene new <id> <file> [--base kitchen]   → add a starter scene to the board
+      // sb scene <file> [id]                         → preview the board's own scenes with a grid and marks
+      if (pos[0] === "new") {
+        const [, id, file] = pos;
+        if (!id || !file) { console.error(`Usage: ${RUN} scene new <id> <file.storyboard.json> [--base <built-in scene>]`); process.exit(2); }
+        // no board yet: start one, so this can be the very first command
+        if (!existsSync(file)) { writeFileSync(file, formatStoryboard(STARTER("Untitled journey"))); console.log(`✓ created ${file} (a starter board)`); }
+        const { board, abs } = load(file);
+        board.scenes = { ...(board.scenes ?? {}), [id]: starterScene(id, typeof flags.base === "string" ? flags.base : undefined) };
+        writeFileSync(abs, formatStoryboard(board));
+        console.log(`✓ added scene "${id}" to ${file}. Draw it in "scenes.${id}", then check it with: ${RUN} scene ${file} ${id}`);
+        return;
+      }
+      const { board, abs } = load(pos[0]);
+      const r = validate(board);
+      if (!r.ok) { console.error(formatResult(r, pos[0])); console.error("\nFix the errors above, then preview again."); process.exit(1); }
+      const want = pos[1] ? [pos[1]] : Object.keys(board.scenes ?? {});
+      if (!want.length) { console.error(`${pos[0]} has no "scenes" of its own yet. Start one with: ${RUN} scene new <id> ${pos[0]}`); process.exit(1); }
+      const missing = want.filter((id) => !board.scenes?.[id]);
+      if (missing.length) { console.error(`No scene "${missing[0]}" in this board. Its scenes: ${Object.keys(board.scenes ?? {}).join(", ")}`); process.exit(1); }
+      // each scene twice: wide with a sample person at every mark, and the same people in a medium shot (how it crops)
+      const sample = { skin: "tone-2" as const, hair: "short" as const, outfit: "jacket" as const };
+      const people = (id: string) => Object.keys(resolveScene(board, id).marks).slice(0, 4).map((m, k) => ({ who: "sample", id: `p${k}`, at: m }));
+      const preview: Board = { ...board, title: `Scene preview: ${want.join(", ")}`, subtitle: undefined, persona: undefined, page: { columns: 2 },
+        cast: { ...board.cast, sample },
+        panels: want.flatMap((id) => [
+          { id: `scene-${id}`, scene: id, label: `${id} · wide · dots are marks`, characters: people(id) },
+          { id: `scene-${id}-medium`, scene: id, shot: "medium" as const, label: `${id} · medium shot crop`, characters: people(id) },
+        ]) };
+      const out = join(dirname(abs), `${basename(abs).replace(/\.storyboard\.json$|\.json$/, "")}.scenes.png`);
+      writeFileSync(out, svgToPNG(boardToSVG(preview, abs, false, { guides: true }), 2));
+      console.log(`✓ preview: ${out}\n  Look at it: are props on the floor (y 234), people standing at sensible marks, nothing overlapping?`);
+      for (const id of want) console.log(`  ${id}: marks ${Object.entries(resolveScene(board, id).marks).map(([k, m]) => `${k}@x${m.x}`).join(", ")}${board.scenes![id].marks ? "" : ` (from ${board.scenes![id].base ?? "blank"})`}`);
       return;
     }
     case "dev": {

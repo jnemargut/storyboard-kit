@@ -314,6 +314,20 @@ try {
   await page.mouse.click(5, 990);
   await page.screenshot({ path: `${shots}/e2e-3-after.png` });
 
+  // turn a panel's drawings into a reusable scene
+  await page.mouse.click(5, 990);
+  const ip = page.locator('g[data-panel="in-line"] > rect[data-el="__panel"]');
+  await ip.scrollIntoViewIfNeeded();
+  const ib = await ip.boundingBox();
+  await page.mouse.click(ib.x + 4, ib.y + ib.height - 4);
+  await page.getByRole("button", { name: "More" }).first().click();
+  page.once("dialog", (d) => d.accept("Busy counter"));
+  await page.getByRole("button", { name: "Save as scene…" }).click();
+  await sleep(500);
+  const bs = read();
+  check(bs.scenes?.["busy-counter"]?.shapes?.length > 0 && bs.panels[3].scene === "busy-counter" && !bs.panels[3].shapes, "Save as scene turns a panel's drawings into a reusable scene");
+  check((await page.locator('g[data-panel="in-line"] [data-kind="character"]').count()) > 0, "the panel still renders with its people on the new scene");
+
   const res = await page.request.get(`${url}api/export?format=png&scale=1`);
   check(res.ok() && (await res.body()).length > 10000, "export endpoint returns a PNG");
   const bad = await page.request.patch(`${url}api/board`, { data: { ops: [] } });

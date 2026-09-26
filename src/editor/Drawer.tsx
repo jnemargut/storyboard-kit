@@ -151,10 +151,10 @@ export function CastEditor({ id, m, commit }: { id: string; m: CastMember; commi
   );
 }
 
-function SceneThumb({ id }: { id: SceneId }) {
+function SceneThumb({ id, board }: { id: string; board?: Board }) {
   return (
     <svg width={116} height={75} viewBox="0 0 400 260" style={{ background: "#fbfaf7" }}>
-      <SceneBack id={id} /><SceneFront id={id} />
+      <SceneBack id={id} board={board} /><SceneFront id={id} board={board} />
       <rect x={1} y={1} width={398} height={258} fill="none" stroke="#1c1c1e" strokeWidth={4} />
     </svg>
   );
@@ -280,6 +280,16 @@ export function Drawer({ board, sel, commit, setSel, flash, tool, setTool, addIm
                   ))}
                 </div>
               </section>
+              {Object.keys(board.scenes ?? {}).length > 0 && (
+                <section>
+                  <h3>This board's scenes</h3>
+                  <div className="thumbs">
+                    {Object.entries(board.scenes!).map(([sc, def]) => (
+                      <PanelTile key={sc} payload={{ kind: "panel", panel: "scene", scene: sc }} onAdd={add} name={def.name ?? sc}><SceneThumb id={sc} board={board} /></PanelTile>
+                    ))}
+                  </div>
+                </section>
+              )}
               <section>
                 <h3>Special panels</h3>
                 <div className="thumbs">

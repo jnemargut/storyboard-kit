@@ -117,8 +117,8 @@ export function rawAssetResolver(boardFile: string) {
   };
 }
 
-export function boardToSVG(board: Board, boardFile: string, embedFonts = false): string {
-  return renderBoardSVG(board, { asset: exportAssetResolver(boardFile), sketch: exportAssetResolver(boardFile, "grey"), raw: rawAssetResolver(boardFile), fontCss: embedFonts ? fontFaceCss(true) : undefined });
+export function boardToSVG(board: Board, boardFile: string, embedFonts = false, extra: { guides?: boolean } = {}): string {
+  return renderBoardSVG(board, { ...extra, asset: exportAssetResolver(boardFile), sketch: exportAssetResolver(boardFile, "grey"), raw: rawAssetResolver(boardFile), fontCss: embedFonts ? fontFaceCss(true) : undefined });
 }
 
 /**

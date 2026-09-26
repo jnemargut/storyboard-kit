@@ -5,9 +5,9 @@ import { Character } from "./character";
 import { DEVICE_DEFS, Device, type Rect } from "./devices";
 import { ADV_TITLE, stackOrder, captionBox, heldDeviceOf, layoutPanel, placeBubbles, specialGeometry, toPanel, wrap, textWidth, type AssetResolver, type CharPlaced, type DevPlaced, type PanelLayout } from "./layout";
 import { BubbleShape, BubbleText, Callout, CaptionShape, CaptionText, GestureMark } from "./overlays";
-import { SceneBack, SceneFront } from "./scenes";
+import { SceneBack, SceneFront, resolveScene } from "./scenes";
 import { ShapeMark, shapeId, shapeTransform, smooth } from "./shapes";
-import { C, FONT, MARKER, PANEL_H, PANEL_W, SKIN, OUTFIT_FILL } from "./tokens";
+import { C, FLOOR_Y, FONT, MARKER, PANEL_H, PANEL_W, SKIN, OUTFIT_FILL } from "./tokens";
 import type { Pt } from "./rig";
 
 export interface RenderOptions {
@@ -18,6 +18,8 @@ export interface RenderOptions {
   sketch?: AssetResolver;
   /** Crit markup strokes can be clicked (the play-mode eraser). */
   markupHit?: boolean;
+  /** Scene-authoring guides: a 50-unit grid and every mark, labelled (the `scene` preview command). */
+  guides?: boolean;
   /** Draw crit markup. Only play mode does; the editor and exports leave it out. */
   showMarkup?: boolean;
   /** Wobble filter on (off while dragging in the editor). */
@@ -142,6 +144,25 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
   );
 }
 
+/** Grid and marks over a scene, so whoever drew it can check where things landed. */
+function Guides({ board, scene }: { board: Board; scene: string }) {
+  const def = resolveScene(board, scene);
+  const blue = MARKER.blue;
+  return (
+    <g data-guides pointerEvents="none">
+      {Array.from({ length: 7 }, (_, k) => (k + 1) * 50).map((x) => <g key={`x${x}`}><path d={`M${x} 0 V${PANEL_H}`} stroke={blue} strokeOpacity={0.25} strokeWidth={0.8} /><text x={x + 2} y={9} fontSize={8} fill={blue}>{x}</text></g>)}
+      {[50, 100, 150, 200].map((y) => <g key={`y${y}`}><path d={`M0 ${y} H${PANEL_W}`} stroke={blue} strokeOpacity={0.25} strokeWidth={0.8} /><text x={2} y={y - 2} fontSize={8} fill={blue}>{y}</text></g>)}
+      <path d={`M0 ${FLOOR_Y} H${PANEL_W}`} stroke={blue} strokeOpacity={0.6} strokeDasharray="4 3" /><text x={2} y={FLOOR_Y - 3} fontSize={8} fill={blue}>floor {FLOOR_Y}</text>
+      {Object.entries(def.marks).map(([name, m]) => (
+        <g key={name}>
+          <circle cx={m.x} cy={m.y} r={4} fill={blue} />
+          <text x={m.x} y={Math.min(PANEL_H - 4, m.y + 16)} textAnchor="middle" fontSize={10} fontWeight="bold" fill={blue} stroke={C.paper} strokeWidth={3} paintOrder="stroke">{name}{m.facing ? ` (faces ${m.facing})` : ""}{m.seated ? " (sits)" : ""}</text>
+        </g>
+      ))}
+    </g>
+  );
+}
+
 function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePanel; opts: RenderOptions }) {
   const pid = panel.id;
   const ts = board.page?.textScale ?? 1;
@@ -209,17 +230,18 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
       <g filter={wob}>
         {L.special ? (
           <>
-            <g opacity={0.35} transform={`translate(${cam.tx} ${cam.ty}) scale(${cam.s})`}><SceneBack id={panel.scene} brand={brand} /><SceneFront id={panel.scene} /></g>
+            <g opacity={0.35} transform={`translate(${cam.tx} ${cam.ty}) scale(${cam.s})`}><SceneBack id={panel.scene} brand={brand} board={board} /><SceneFront id={panel.scene} board={board} /></g>
             <SpecialArt L={L} pid={pid} board={board} panel={panel} />
           </>
         ) : (
           <g transform={`translate(${cam.tx} ${cam.ty}) scale(${cam.s})`}>
-            <SceneBack id={panel.scene} brand={brand} />
+            <SceneBack id={panel.scene} brand={brand} board={board} />
             {byLayer(true)}
-            <SceneFront id={panel.scene} />
+            <SceneFront id={panel.scene} board={board} />
             {byLayer(false)}
           </g>
         )}
+        {opts.guides && (panel.shot ?? "wide") === "wide" && !panel.layout?.__camera && <Guides board={board} scene={panel.scene} />}
         {L.special && (panel.images ?? []).map((im, i) => { const id = im.id ?? `image-${i}`; return <ImageEl key={id} id={id} im={im} ov={panel.layout?.[id] ?? {}} opts={opts} />; })}
         {L.special && (panel.shapes ?? []).map((sh, i) => {
           const id = shapeId(sh, i), ov = panel.layout?.[id] ?? {};

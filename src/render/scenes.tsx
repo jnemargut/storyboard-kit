@@ -4,6 +4,8 @@ import { C, FLOOR_Y, OFFSET } from "./tokens";
 import { MORE_SCENES } from "./scenes-more";
 import { REDRAWN_SCENES } from "./scenes-redrawn";
 import { SCENE_DECOR, SCENE_UNDER } from "./scene-decor";
+import { ShapeMark } from "./shapes";
+import type { Board, CustomScene, Shape } from "../types";
 
 export interface Mark {
   x: number;
@@ -315,12 +317,47 @@ function Sign({ r, brand }: { r: { x: number; y: number; w: number; h: number };
   );
 }
 
-export function SceneBack({ id, brand }: { id: SceneId; brand?: Brand }) {
-  const s = SCENE_DEFS[id];
+/** The board's own scene with this id, if it has one. */
+const customOf = (board: Board | undefined, id: string): CustomScene | undefined => (SCENE_DEFS[id as SceneId] ? undefined : board?.scenes?.[id]);
+
+/**
+ * Marks, spots and sign for any scene id: built-in, or one of the board's own scenes (which inherit
+ * from their `base`). Unknown ids fall back to the blank scene.
+ */
+export function resolveScene(board: Board | undefined, id: string): SceneDef {
+  const builtIn = SCENE_DEFS[id as SceneId];
+  if (builtIn) return builtIn;
+  const c = board?.scenes?.[id];
+  const base = SCENE_DEFS[(c?.base ?? "blank") as SceneId] ?? SCENE_DEFS.blank;
+  if (!c) return SCENE_DEFS.blank;
+  const marks: Record<string, Mark> = c.marks && Object.keys(c.marks).length
+    ? Object.fromEntries(Object.entries(c.marks).map(([k, m]) => [k, { x: m.x, y: m.y ?? FLOOR_Y, facing: m.facing, seated: m.seated, behind: m.behind, scale: m.scale }]))
+    : base.marks;
+  return { ...base, marks, order: c.marks && Object.keys(c.marks).length ? Object.keys(c.marks) : base.order, sign: c.sign ?? base.sign };
+}
+
+const CustomShapes = ({ shapes }: { shapes?: Shape[] }) => <>{(shapes ?? []).map((s, i) => s.points?.length ? <ShapeMark key={i} s={s} /> : null)}</>;
+
+export function SceneBack({ id, brand, board }: { id: SceneId | string; brand?: Brand; board?: Board }) {
+  const c = customOf(board, id);
+  if (c) {
+    const sign = c.sign;
+    return (
+      <g>
+        {c.base ? <SceneBack id={c.base} brand={sign ? undefined : brand} /> : <L d={`M0 ${FLOOR_Y} H400`} sw={2.1} />}
+        <CustomShapes shapes={c.shapes} />
+        {brand && (brand.name || brand.logoHref) && sign && <Sign r={sign} brand={brand} />}
+      </g>
+    );
+  }
+  if (!SCENE_DEFS[id as SceneId]) return null;
+  const s = SCENE_DEFS[id as SceneId];
   return <g>{SCENE_UNDER[id]?.()}{s.back()}{SCENE_DECOR[id]?.()}{id !== "blank" && id !== "street" && floor}{brand && (brand.name || brand.logoHref) && s.sign && <Sign r={s.sign} brand={brand} />}</g>;
 }
 
-export function SceneFront({ id }: { id: SceneId }) {
-  const f = SCENE_DEFS[id].front;
+export function SceneFront({ id, board }: { id: SceneId | string; board?: Board }) {
+  const c = customOf(board, id);
+  if (c) return <g>{c.base && <SceneFront id={c.base} />}<CustomShapes shapes={c.front} /></g>;
+  const f = SCENE_DEFS[id as SceneId]?.front;
   return f ? <g>{f()}</g> : null;
 }

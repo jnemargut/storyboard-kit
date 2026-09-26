@@ -6,7 +6,7 @@
   "title": "The Late Latte",
   "persona": "Maya, busy commuter",          // optional; shows under the title
   "subtitle": "Journey: mobile order-ahead",  // optional
-  "page": { "columns": 4 },                   // optional; auto by panel count
+  "page": { "columns": 4, "brand": { "name": "Brewly" } }, // optional; brand = your product's name on shop signs
   "cast": {                                   // everyone who appears, keyed by id
     "maya": { "skin": "tone-2", "hair": "bun", "hairShade": "dark", "outfit": "jacket", "accessories": ["bag"] }
   },

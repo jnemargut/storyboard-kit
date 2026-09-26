@@ -2,7 +2,7 @@ import type { Board, Bubble, CastMember, CharacterInPanel, LayoutOverride, Scene
 import { HANDHELD, type DeviceType, type Mood, type Pose } from "../vocab";
 import { autoVariant, figure, type Figure, type Pt } from "./rig";
 import { DEVICE_DEFS, type Rect } from "./devices";
-import { SCENE_DEFS } from "./scenes";
+import { resolveScene } from "./scenes";
 import { FLOOR_Y, PANEL_H, PANEL_W } from "./tokens";
 
 export interface Camera { s: number; tx: number; ty: number }
@@ -130,7 +130,7 @@ const clampCam = (c: Camera): Camera => ({
 });
 
 export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolver): PanelLayout {
-  const scene = SCENE_DEFS[panel.scene] ?? SCENE_DEFS.blank;
+  const scene = resolveScene(board, panel.scene);
   const used = new Set<string>();
   const chars: CharPlaced[] = [];
   const devices: DevPlaced[] = [];

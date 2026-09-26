@@ -181,8 +181,15 @@ function emanata(mood: Mood, hx: number, hy: number, r: number, side: number, ex
       return <path d={`M${x - side * 2} ${y - 2} l${side * 4} -6 M${x + side * 1} ${y + 5} h${side * 8} M${x - side * 1} ${y + 12} l${side * 5} 5`} {...s} />;
     case "stressed":
       return <g>{[0, 1].map((i) => <path key={i} d={`M${x + i * 5 * side} ${y + i * 7} q-2.6 5 0 6.6 q2.6 -1.6 0 -6.6z`} fill={C.paper} stroke={ink} strokeWidth={1.4} />)}</g>;
-    case "frustrated": // anger mark
-      return <path d={`M${x - 4} ${y - 2} q3 1 4 4 M${x + 4} ${y - 2} q-3 1 -4 4 M${x - 4} ${y + 6} q3 -1 4 -4 M${x + 4} ${y + 6} q-3 -1 -4 -4`} {...s} />;
+    case "frustrated": {
+      // fuming: wavy steam rising off the head
+      const wave = (px: number, py: number, h: number) => `M${px} ${py} q${-3} ${-h / 4} 0 ${-h / 2} q${3} ${-h / 4} 0 ${-h / 2}`;
+      return (
+        <g>
+          <path d={`${wave(x - side * 1, y + 4, 14)} ${wave(x + side * 6, y, 12)} ${wave(x + side * 13, y + 5, 10)}`} {...line(1.7)} />
+        </g>
+      );
+    }
     case "tired":
       return <text x={x} y={y} fontFamily="Permanent Marker" fontSize={r * 0.7} fill={ink}>z<tspan dx={1} dy={-4} fontSize={r * 0.55}>z</tspan></text>;
     case "excited":
@@ -228,7 +235,8 @@ function frontFace(f: Figure, mood: Mood, hx: number, hy: number, r: number): Re
       break;
     case "frustrated":
       brows = `M${cx - sp - 3.5} ${by - 2} l7 4 M${cx + sp + 3.5} ${by - 2} l-7 4`;
-      mouth = <path d={`M${cx - mw} ${my + 3} q${mw} ${-0.5 * r} ${mw * 2} 0`} {...s} />;
+      // gritted teeth: a clenched bar with the teeth marked
+      mouth = <g><rect x={cx - mw * 0.95} y={my - 1} width={mw * 1.9} height={4.6} rx={1.5} fill={C.paper} stroke={ink} strokeWidth={1.8} /><path d={`M${cx - mw * 0.95} ${my + 1.3} h${mw * 1.9} M${cx - mw * 0.32} ${my - 1} v4.6 M${cx + mw * 0.32} ${my - 1} v4.6`} {...line(1)} /></g>;
       break;
     case "stressed":
       brows = `M${cx - sp - 3} ${by + 2} l6 -3 M${cx + sp + 3} ${by + 2} l-6 -3`;
@@ -289,7 +297,7 @@ function sideFace(f: Figure, mood: Mood, hx: number, hy: number, r: number): Rea
     excited: <path d={`M${mx - d * w} ${my - 1.5} q${d * w * 0.6} ${w * 1.4} ${d * w * 1.2} -1 z`} fill={C.g8} stroke={ink} strokeWidth={1.8} />,
     relieved: <path d={`M${mx - d * w} ${my} q${d * w * 0.6} ${w * 0.6} ${d * w * 1.1} 0`} {...s} />,
     sad: <path d={`M${mx - d * w} ${my + 2} q${d * w * 0.6} ${-w} ${d * w * 1.2} 1`} {...s} />,
-    frustrated: <path d={`M${mx - d * w} ${my + 2} q${d * w * 0.6} ${-w} ${d * w * 1.2} 1`} {...s} />,
+    frustrated: <g><rect x={Math.min(mx - d * w, mx + d * w * 0.3)} y={my - 1} width={w * 1.3} height={4} rx={1.2} fill={C.paper} stroke={ink} strokeWidth={1.6} /><path d={`M${mx - d * w * 0.35} ${my - 1} v4`} {...line(1)} /></g>,
     stressed: <path d={`M${mx - d * w} ${my + 1} q${d * w * 0.3} -2.5 ${d * w * 0.6} 0 q${d * w * 0.3} 2.5 ${d * w * 0.6} 0`} {...s} />,
     surprised: <ellipse cx={mx} cy={my + 1} rx={2.2} ry={3} fill={C.g8} stroke={ink} strokeWidth={1.7} />,
     confused: <path d={`M${mx - d * w} ${my} q${d * w * 0.3} -2.5 ${d * w * 0.6} 0 q${d * w * 0.3} 2.5 ${d * w * 0.6} 0`} {...s} />,

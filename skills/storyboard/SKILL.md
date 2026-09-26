@@ -25,14 +25,18 @@ path. **Below, `sb` is short for that whole command.**
 
 1. **Look up the vocabulary. Don't guess.** `sb vocab` lists categories; `sb vocab poses`,
    `sb vocab scenes` (with marks), `sb vocab shots`, etc. `sb vocab --grep hospital` searches
-   every category. If a place you need doesn't exist, pick the closest scene and say so in `label` or a `caption`.
+   every category. **If a place you need doesn't exist, draw it**: add it to the board's `scenes` from simple
+   shapes (or on top of the closest built-in scene) and preview it with `sb scene <file>`, which renders the
+   scene with a coordinate grid and its marks so you can look at it and fix it. Recipe:
+   [references/custom-scenes.md](references/custom-scenes.md). Only fall back to the closest built-in scene when
+   the place doesn't matter to the story.
    A missing prop (a parcel, a sign, a queue barrier) can be a few `shapes`; the designer can redraw it in the editor.
    A `"text"` shape writes free words anywhere on a panel (a sign's wording, "9 people ahead"):
    `{ "type": "text", "points": [[200, 40]], "text": "9 people ahead" }`.
    If the designer hands you a picture that isn't a screen (a photo, a product, a found image), put it in the
    panel's `images`. It's sketchified in greys to match; `"sketch": false` shows it as-is.
    Full list: [references/vocabulary.md](references/vocabulary.md).
-2. **Write the file**: `<name>.storyboard.json`. Shape: [references/format.md](references/format.md).
+2. **Write the file**: `<name>.storyboard.json` (`sb new <file>` makes a starter). Shape: [references/format.md](references/format.md).
    Worked example: [references/example.md](references/example.md).
 3. **Validate and fix** until clean: `sb validate <file>`. Errors say exactly what to change
    ("did you mean …"). Warnings are storytelling nudges; take them seriously.

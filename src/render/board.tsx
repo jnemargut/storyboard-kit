@@ -221,7 +221,7 @@ export function BoardSVG({ board, opts }: { board: Board; opts: BoardOptions }) 
           </g>
         );
       })}
-      {share.moments > 0 && (
+      {share.moments > 0 && !opts.guides && (
         <g data-header="stats">
           <text x={hd.beside ? width - PAGE.margin : PAGE.margin} y={hd.statsTop} textAnchor={hd.beside ? "end" : "start"} fontFamily={FONT.hand} fontSize={hd.statsSize} fill={C.ink}>
             Product in <tspan fill={C.tealDark} fontWeight="bold">{share.withProduct} of {share.moments}</tspan> moments

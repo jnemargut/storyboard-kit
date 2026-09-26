@@ -358,6 +358,45 @@ describe("step names", () => {
   });
 });
 
+describe("custom scenes", () => {
+  const laundry: Board = {
+    schemaVersion: 1, title: "Laundry", cast: { n: {} },
+    scenes: {
+      laundromat: {
+        name: "Laundromat",
+        shapes: [{ type: "rect", points: [[20, 150], [80, 234]], fill: "light" }, { type: "text", points: [[300, 60]], text: "COINS ONLY" }],
+        front: [{ type: "rect", points: [[240, 190], [400, 234]] }],
+        marks: { washers: { x: 210, facing: "left" }, folding: { x: 300, behind: true } },
+      },
+      pharmacy: { base: "store" },
+    },
+    panels: [
+      { id: "a", scene: "laundromat", characters: [{ who: "n", at: "folding" }] },
+      { id: "b", scene: "pharmacy", characters: [{ who: "n", at: "checkout" }] },
+    ],
+  };
+  it("validates, draws the scene and places people at its marks", () => {
+    expect(validate(laundry).errors).toEqual([]);
+    const svg = renderBoardSVG(laundry, { asset });
+    expect(svg).toContain("COINS ONLY");
+    const placed = layoutPanel(laundry, laundry.panels[0] as ScenePanel, asset).chars[0];
+    expect(placed.x).toBe(300);
+    expect(placed.behind).toBe(true);
+    // a scene with only a base inherits the base's marks
+    expect(layoutPanel(laundry, laundry.panels[1] as ScenePanel, asset).chars[0].x).toBeGreaterThan(0);
+  });
+  it("explains bad scenes, marks and ids", () => {
+    const bad = structuredClone(laundry) as Board;
+    bad.panels[0] = { id: "a", scene: "laundromatt", characters: [{ who: "n", at: "washer" }] } as never;
+    bad.scenes!.kitchen = {};
+    bad.scenes!.laundromat.marks!.washers = { x: 900 };
+    const errs = validate(bad).errors;
+    expect(errs.find((e) => e.path === "$.panels[0].scene")?.hint).toContain('"laundromat"');
+    expect(errs.some((e) => e.path === "$.scenes.kitchen")).toBe(true);
+    expect(errs.some((e) => e.path === "$.scenes.laundromat.marks.washers.x")).toBe(true);
+  });
+});
+
 describe("poses on seats", () => {
   it("a seat mark sits people down by default, but an explicit standing pose stands", () => {
     const b: Board = { schemaVersion: 1, title: "Seats", cast: { a: {} }, panels: [

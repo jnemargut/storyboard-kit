@@ -62,6 +62,9 @@ Or just click around yourself. Your edits and the agent's edits land in the same
   glasses, canes, wheelchairs, backpacks and beards.
 - **23 places.** Home, office, coffee shop, car, bus stop, gym, airport, clinic, school, parking garage, and more.
   Each one can wear your brand on its signs, or another store's name, or nothing at all.
+- **Any place you need.** Laundromat, pharmacy drive-through, warehouse dock? Ask your agent and it draws a new
+  scene from simple shapes, checks a preview of it, and uses it like any other. Or draw on a panel in the editor
+  and hit **Save as scene…** to reuse it.
 - **11 poses from 4 angles**, 12 very readable moods (with sweat drops and little question marks), and crowds
   that don't all look like clones.
 - **Camera shots** from wide to close-up, plus over-the-shoulder, straight-at-the-screen and POV.
@@ -116,6 +119,8 @@ sb validate my.storyboard.json
 sb critique my.storyboard.json
 sb dev my.storyboard.json
 sb export my.storyboard.json --png --pptx
+sb scene new laundromat my.storyboard.json   # a place of your own
+sb scene my.storyboard.json                  # preview it with a grid and marks
 ```
 
 ## Hacking on it

@@ -73,7 +73,59 @@ export function validate(input: unknown): Result {
     return { ok: false, errors, warnings };
   }
   const b = input;
-  known("$", b, ["$schema", "schemaVersion", "title", "subtitle", "persona", "notes", "page", "cast", "panels"]);
+  known("$", b, ["$schema", "schemaVersion", "title", "subtitle", "persona", "notes", "page", "cast", "scenes", "panels"]);
+
+  /** Simple drawn shapes: used by panels and by custom scenes. */
+  const checkShapes = (path: string, list: unknown) => {
+    const shapes = list ?? [];
+    if (!Array.isArray(shapes)) { err(path, "must be an array."); return; }
+    shapes.forEach((s, j) => {
+      const sp = `${path}[${j}]`;
+      if (!isObj(s)) { err(sp, "must be an object."); return; }
+      known(sp, s, ["id", "type", "points", "fill", "text", "color"]);
+      oneOf(`${sp}.color`, s.color, MARKER_COLORS, "color");
+      oneOf(`${sp}.type`, s.type, SHAPES, "shape");
+      if (s.type === undefined) err(`${sp}.type`, "is required.", `One of: ${ids(SHAPES).join(", ")}`);
+      oneOf(`${sp}.fill`, s.fill, SHAPE_FILLS, "shape-fill");
+      const pts = s.points;
+      const isText = s.type === "text";
+      if (!Array.isArray(pts) || pts.length < (isText ? 1 : 2) || pts.some((q) => !Array.isArray(q) || q.length !== 2 || q.some((n) => typeof n !== "number" || !Number.isFinite(n))))
+        err(`${sp}.points`, isText ? "must be one [x, y] point: where the text is centred (panel units, 400 wide, 260 tall)." : "must be at least two [x, y] points in panel units (400 wide, 260 tall).", isText ? "e.g. [[200, 40]]" : "e.g. [[40, 120], [120, 200]]");
+      if (isText) str(`${sp}.text`, s.text, true);
+    });
+  };
+
+  // ---- the board's own scenes
+  const customMarks: Record<string, string[]> = {};
+  if (b.scenes !== undefined) {
+    if (!isObj(b.scenes)) err("$.scenes", "must be an object keyed by scene id.", 'e.g. { "laundromat": { "base": "store", "shapes": [...], "marks": { "machine": { "x": 120 } } } }');
+    else for (const [id, sc] of Object.entries(b.scenes)) {
+      const sp = `$.scenes.${id}`;
+      if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) err(sp, "Scene ids are lowercase words joined by dashes.", 'e.g. "laundromat" or "pharmacy-counter"');
+      if ((ids(SCENES) as string[]).includes(id)) err(sp, `"${id}" is already a built-in scene.`, "Pick a new id, or use the built-in one as this scene's base.");
+      if (!isObj(sc)) { err(sp, "must be an object."); continue; }
+      known(sp, sc, ["name", "base", "shapes", "front", "marks", "sign"]);
+      str(`${sp}.name`, sc.name);
+      oneOf(`${sp}.base`, sc.base, SCENES, "scene");
+      checkShapes(`${sp}.shapes`, sc.shapes);
+      checkShapes(`${sp}.front`, sc.front);
+      if (sc.marks !== undefined) {
+        if (!isObj(sc.marks)) err(`${sp}.marks`, "must be an object of named spots.", 'e.g. { "counter": { "x": 220, "facing": "left" } }');
+        else for (const [mk, m] of Object.entries(sc.marks)) {
+          const mp = `${sp}.marks.${mk}`;
+          if (!isObj(m)) { err(mp, "must be an object like { \"x\": 200 }."); continue; }
+          known(mp, m, ["x", "y", "facing", "seated", "behind", "scale"]);
+          if (typeof m.x !== "number" || m.x < 0 || m.x > 400) err(`${mp}.x`, "is required: 0 (left) to 400 (right).");
+          if (m.y !== undefined && (typeof m.y !== "number" || m.y < 60 || m.y > 260)) err(`${mp}.y`, "is where their feet go: 60 to 260 (floor is 234).");
+          oneOf(`${mp}.facing`, m.facing, FACING, "facing");
+        }
+      }
+      if (sc.sign !== undefined && (!isObj(sc.sign) || ["x", "y", "w", "h"].some((k) => typeof (sc.sign as Record<string, unknown>)[k] !== "number")))
+        err(`${sp}.sign`, 'must be a box: { "x": 20, "y": 20, "w": 120, "h": 22 }.');
+      const base = typeof sc.base === "string" ? SCENE_MARKS[sc.base] : undefined;
+      customMarks[id] = isObj(sc.marks) && Object.keys(sc.marks).length ? Object.keys(sc.marks) : base ?? SCENE_MARKS.blank;
+    }
+  }
   if (b.schemaVersion !== SCHEMA_VERSION) err("$.schemaVersion", `must be ${SCHEMA_VERSION}.`, `Add "schemaVersion": ${SCHEMA_VERSION}`);
   str("$.title", b.title, true);
   str("$.subtitle", b.subtitle);
@@ -175,12 +227,18 @@ export function validate(input: unknown): Result {
       err(`${p}.feeling`, "must be an integer from -2 (awful) to 2 (great).");
     str(`${p}.workaround`, raw.workaround);
     if (raw.scene === undefined) err(`${p}.scene`, "is required for scene panels.", `One of: ${ids(SCENES).join(", ")}`);
-    oneOf(`${p}.scene`, raw.scene, SCENES, "scene");
+    else if (!(typeof raw.scene === "string" && customMarks[raw.scene])) {
+      const sceneIds = [...ids(SCENES), ...Object.keys(customMarks)];
+      if (typeof raw.scene !== "string" || !sceneIds.includes(raw.scene)) {
+        const s = typeof raw.scene === "string" ? suggest(raw.scene, sceneIds) : undefined;
+        err(`${p}.scene`, `"${String(raw.scene)}" is not a scene.`, s ? `Did you mean "${s}"? Or draw it yourself: add it to the board's "scenes" (see custom-scenes.md).` : `Built-in: ${ids(SCENES).slice(0, 8).join(", ")}, … Or draw your own in the board's "scenes" (see custom-scenes.md).`);
+      }
+    }
     oneOf(`${p}.shot`, raw.shot, SHOTS, "shot");
     if (typeof raw.shot === "string") shots.add(raw.shot);
     else shots.add("wide");
     str(`${p}.caption`, raw.caption);
-    const marks = SCENE_MARKS[raw.scene as string];
+    const marks = SCENE_MARKS[raw.scene as string] ?? customMarks[raw.scene as string];
     const checkMark = (path: string, v: unknown) => {
       if (!marks) return; // scene itself is wrong; that error is enough
       if (typeof v !== "string" || !marks.includes(v)) {
@@ -294,22 +352,7 @@ export function validate(input: unknown): Result {
       if (c.target !== undefined && !localIds.has(c.target as string)) err(`${cp}.target`, `"${String(c.target)}" isn't in this panel.`);
     });
 
-    const shapes = raw.shapes ?? [];
-    if (!Array.isArray(shapes)) err(`${p}.shapes`, "must be an array.");
-    else shapes.forEach((s, j) => {
-      const sp = `${p}.shapes[${j}]`;
-      if (!isObj(s)) { err(sp, "must be an object."); return; }
-      known(sp, s, ["id", "type", "points", "fill", "text", "color"]);
-      oneOf(`${sp}.color`, s.color, MARKER_COLORS, "color");
-      oneOf(`${sp}.type`, s.type, SHAPES, "shape");
-      if (s.type === undefined) err(`${sp}.type`, "is required.", `One of: ${ids(SHAPES).join(", ")}`);
-      oneOf(`${sp}.fill`, s.fill, SHAPE_FILLS, "shape-fill");
-      const pts = s.points;
-      const isText = s.type === "text";
-      if (!Array.isArray(pts) || pts.length < (isText ? 1 : 2) || pts.some((q) => !Array.isArray(q) || q.length !== 2 || q.some((n) => typeof n !== "number" || !Number.isFinite(n))))
-        err(`${sp}.points`, isText ? "must be one [x, y] point: where the text is centred (panel units, 400 wide, 260 tall)." : "must be at least two [x, y] points in panel units (400 wide, 260 tall).", isText ? "e.g. [[200, 40]]" : "e.g. [[40, 120], [120, 200]]");
-      if (isText) str(`${sp}.text`, s.text, true);
-    });
+    checkShapes(`${p}.shapes`, raw.shapes);
 
     const images = raw.images ?? [];
     if (!Array.isArray(images)) err(`${p}.images`, "must be an array.");

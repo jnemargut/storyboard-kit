@@ -31,6 +31,16 @@ const base = {
 
 const device = { type: "string", ...oneOf(DEVICES) };
 
+const shapeItem = {
+  type: "object", required: ["type", "points"], additionalProperties: false,
+  properties: {
+    id: { type: "string" }, type: oneOf(SHAPES), fill: oneOf(SHAPE_FILLS),
+    points: { type: "array", minItems: 1, items: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2 } },
+    text: { type: "string", description: "The words, for a text shape." },
+    color: oneOf(MARKER_COLORS),
+  },
+};
+
 export function buildSchema() {
   return {
     $schema: "https://json-schema.org/draft/2020-12/schema",
@@ -58,6 +68,24 @@ export function buildSchema() {
             skin: oneOf(SKIN), hair: oneOf(HAIR), hairShade: oneOf(HAIR_SHADE), hat: oneOf(HATS), body: oneOf(BODY),
             outfit: oneOf(OUTFITS), age: oneOf(AGES),
             accessories: { type: "array", items: oneOf(ACCESSORIES), uniqueItems: true },
+          },
+        },
+      },
+      scenes: {
+        type: "object",
+        description: "Places this board draws itself, keyed by scene id, for when no built-in scene fits. Panel units: 400 wide, 260 tall, floor at y 234.",
+        additionalProperties: {
+          type: "object", additionalProperties: false,
+          properties: {
+            name: { type: "string" },
+            base: { ...oneOf(SCENES), description: "Optional built-in scene to draw on top of." },
+            shapes: { type: "array", items: shapeItem, description: "Drawn behind people." },
+            front: { type: "array", items: shapeItem, description: "Drawn in front of people (a counter they stand behind)." },
+            marks: {
+              type: "object", description: "Named spots where people stand.",
+              additionalProperties: { type: "object", required: ["x"], additionalProperties: false, properties: { x: { type: "number", minimum: 0, maximum: 400 }, y: { type: "number" }, facing: { enum: ["left", "right"] }, seated: { type: "boolean" }, behind: { type: "boolean" }, scale: { type: "number" } } },
+            },
+            sign: { type: "object", required: ["x", "y", "w", "h"], properties: { x: { type: "number" }, y: { type: "number" }, w: { type: "number" }, h: { type: "number" } } },
           },
         },
       },
@@ -91,7 +119,7 @@ export function buildSchema() {
               properties: {
                 ...base,
                 type: { const: "scene" },
-                scene: oneOf(SCENES),
+                scene: { type: "string", description: `A built-in scene (${ids(SCENES).join(", ")}) or the id of one of the board's own "scenes".` },
                 shot: oneOf(SHOTS),
                 focus: { type: "string", description: "Id of the character or device the camera frames." },
                 caption: { type: "string", description: "Narration box in the top-left corner." },
@@ -151,15 +179,7 @@ export function buildSchema() {
                 shapes: {
                   type: "array",
                   description: "Simple drawn shapes for anything the vocabulary lacks. Panel coordinates, 400 wide x 260 tall.",
-                  items: {
-                    type: "object", required: ["type", "points"], additionalProperties: false,
-                    properties: {
-                      id: { type: "string" }, type: oneOf(SHAPES), fill: oneOf(SHAPE_FILLS),
-                      points: { type: "array", minItems: 1, items: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2 } },
-                      text: { type: "string", description: "The words, for a text shape." },
-                      color: oneOf(MARKER_COLORS),
-                    },
-                  },
+                  items: shapeItem,
                 },
                 gestures: {
                   type: "array",

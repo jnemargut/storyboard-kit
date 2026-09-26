@@ -10,7 +10,7 @@ import { ARRANGEABLE, type Arrange } from "./model";
 import { api } from "./api";
 import { Swatches } from "./Swatches";
 import { layoutPanel } from "../render/layout";
-import { SCENE_DEFS } from "../render/scenes";
+import { resolveScene } from "../render/scenes";
 
 interface Props {
   board: Board;
@@ -158,9 +158,9 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
     const main = (
       <>
         <span className="kind">{kind}</span>
-        {isScene(panel) && <Pick title="Scene" value={panel.scene} options={ids(SCENES)} onChange={(v) => set("scene", v)} />}
+        {isScene(panel) && <Pick title="Scene" value={panel.scene} options={[...ids(SCENES), ...Object.keys(board.scenes ?? {})]} labels={Object.fromEntries(Object.entries(board.scenes ?? {}).map(([k, v]) => [k, `${v.name ?? k} (this board)`]))} onChange={(v) => set("scene", v)} />}
         {isScene(panel) && <Pick title="Camera shot" value={panel.shot ?? "wide"} options={ids(SHOTS)} onChange={(v) => set("shot", v)} />}
-        {isScene(panel) && SCENE_DEFS[panel.scene]?.sign && (() => {
+        {isScene(panel) && resolveScene(board, panel.scene).sign && (() => {
           const boardName = board.page?.brand?.name || (board.page?.brand?.logo ? "logo" : "");
           const others = [...new Set(board.panels.flatMap((q) => (isScene(q) && typeof q.sign === "string" && q.sign ? [q.sign] : [])))];
           const cur = panel.sign === false ? "__blank" : panel.sign ?? "";
@@ -189,6 +189,35 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
         {isScene(panel) && <><button onClick={() => zoomCam(1 / 1.15)} title="Camera zoom out (drag the panel background to pan)">Camera −</button><button onClick={() => zoomCam(1.15)} title="Camera zoom in (drag the panel background to pan)">Camera +</button></>}
         {isScene(panel) && (cam.dx || cam.dy || cam.scale) && <button onClick={() => commit(resetLayoutOps(pi, "__camera"), "Camera reset")}>Reset camera</button>}
         {isScene(panel) && !panel.caption && <button onClick={() => set("caption", "Caption")}>+ Caption</button>}
+        {isScene(panel) && (panel.shapes?.length ?? 0) > 0 && (
+          <button title="Turn this panel's drawings into a scene you can reuse in other panels" onClick={() => {
+            const name = window.prompt("Name this place (it becomes a scene you can pick for other panels)", "");
+            if (!name?.trim()) return;
+            let id = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "place";
+            const taken = new Set([...ids(SCENES), ...Object.keys(board.scenes ?? {})]);
+            for (let k = 2; taken.has(id); k++) id = `${id.replace(/-\d+$/, "")}-${k}`;
+            const def = resolveScene(board, panel.scene);
+            const base = (ids(SCENES) as string[]).includes(panel.scene) ? panel.scene : board.scenes?.[panel.scene]?.base;
+            const scene = {
+              name: name.trim(), ...(base && base !== "blank" ? { base } : {}),
+              // bake each drawing's move and resize into its points (rotation isn't carried over)
+              shapes: panel.shapes!.map((s, k) => {
+                const { id: sid, ...rest } = s;
+                const ov = panel.layout?.[sid ?? `shape-${k}`] ?? {};
+                const xs = s.points.map((q) => q[0]), ys = s.points.map((q) => q[1]);
+                const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2, sc = ov.scale ?? 1;
+                return { ...rest, points: s.points.map(([x, y]) => [Math.round(cx + (x - cx) * sc + (ov.dx ?? 0)), Math.round(cy + (y - cy) * sc + (ov.dy ?? 0))] as [number, number]) };
+              }),
+              marks: Object.fromEntries(Object.entries(def.marks).map(([k, m]) => [k, { x: m.x, ...(m.facing ? { facing: m.facing } : {}), ...(m.seated ? { seated: true } : {}), ...(m.behind ? { behind: true } : {}) }])),
+            };
+            void commit([
+              { path: ["scenes", id], value: scene },
+              { path: ["panels", pi, "scene"], value: id },
+              { path: ["panels", pi, "shapes"], delete: true },
+              ...panel.shapes!.map((s, k) => ({ path: ["panels", pi, "layout", s.id ?? `shape-${k}`], delete: true })),
+            ], `Saved as scene "${name.trim()}". Pick it for any panel.`);
+          }}>Save as scene…</button>
+        )}
         {sep}
         <button onClick={() => move(-1)} disabled={pi === 0} title="Move earlier">Earlier</button>
         <button onClick={() => move(1)} disabled={pi === board.panels.length - 1} title="Move later">Later</button>
