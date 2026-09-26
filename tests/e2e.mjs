@@ -277,9 +277,17 @@ try {
   await page.keyboard.press("Escape"); // puts the pen down
   await page.keyboard.press("Escape"); // leaves play mode
   await sleep(300);
-  check((read().panels[1].markup ?? []).length === 1 && (await page.locator('[data-markup]').count()) > 0, "markup stays after leaving play mode");
+  check((read().panels[1].markup ?? []).length === 1 && (await page.locator('[data-markup]').count()) === 0, "markup is kept in the file but hidden outside play mode");
   await page.getByRole("button", { name: "▶ Play" }).click();
   await page.keyboard.press("ArrowRight");
+  check((await page.locator(".present [data-markup]").count()) > 0, "markup shows again in play mode");
+  // speaker notes are editable, and typing doesn't trigger shortcuts
+  await page.keyboard.press("n");
+  await page.locator(".present-notes textarea").fill("Pause here: ask the room when they last trusted an ETA");
+  await page.locator(".present-count").click();
+  await sleep(400);
+  check(read().panels[1].notes === "Pause here: ask the room when they last trusted an ETA" && (await page.locator(".present-count").textContent()).startsWith("2 /"), "speaker notes edit and save from play mode");
+  await page.keyboard.press("n");
   await page.keyboard.press("e");
   await page.mouse.move(sx + 25, sy + 17);
   await page.mouse.down();

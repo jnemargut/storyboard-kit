@@ -141,6 +141,11 @@ button, select, input, textarea { font: inherit; color: inherit; }
 .present-notes { max-width: 760px; width: 100%; border-left: 3px solid var(--color-product); padding: var(--space-2) var(--space-4); font-size: var(--text-base); color: var(--color-200); }
 .present-notes p { margin: 2px 0; }
 .present-notes .muted { color: var(--color-500); }
+.present-notes textarea { width: 100%; box-sizing: border-box; margin-top: 4px; background: var(--color-800); color: var(--color-paper); border: 1.5px solid var(--color-700); padding: 6px 10px; font: inherit; font-size: var(--text-base); resize: vertical; }
+.present-notes textarea:focus { outline: none; border-color: var(--color-product-tint); }
+.pen-color { position: relative; display: inline-flex; }
+.pen-dot { width: 22px; height: 22px; border-radius: 50%; padding: 0 !important; border: 2px solid var(--color-paper) !important; cursor: pointer; }
+.pen-pop { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); background: var(--color-800); padding: 6px 8px; border: 1.5px solid var(--color-600); z-index: 5; }
 .present-strip { display: flex; justify-content: center; gap: 6px; padding: var(--space-4) var(--space-5) var(--space-2); flex-wrap: wrap; }
 .present-strip button { background: none; border: none; color: var(--color-500); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px 4px; font-family: var(--font-mono); font-size: 11px; }
 .present-strip .tick { width: 28px; height: 6px; background: var(--color-700); }

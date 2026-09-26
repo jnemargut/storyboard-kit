@@ -425,9 +425,10 @@ describe("shapes (free drawing)", () => {
     b.panels[1].markup = [{ points: [[5, 5], [40, 40]], color: "yellow" }];
     expect(validate(b).errors).toEqual([]);
     const svg = renderBoardSVG(b, { asset });
-    expect(svg).toContain("#d9363e"); // red arrow + default red markup
+    expect(svg).toContain("#d9363e"); // red arrow
     expect(svg).toContain("#2f6fd0"); // blue box
-    expect(svg).toContain('data-markup="title"');
+    expect(svg).not.toContain("data-markup"); // markup only shows in play mode
+    expect(renderBoardSVG(b, { asset, showMarkup: true })).toContain('data-markup="title"');
     expect(svg).not.toContain("NaN");
     const bad = validate({ ...b, panels: [{ ...b.panels[1], markup: [{ points: [[1, 1]], color: "teal" as never }] }] }).errors.map((e) => e.path);
     expect(bad.some((p) => p.endsWith("markup[0].points"))).toBe(true);

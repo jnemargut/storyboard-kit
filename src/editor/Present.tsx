@@ -24,6 +24,7 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
   const n = board.panels.length;
   const [tool, setTool] = useState<Tool>(null);
   const [color, setColor] = useState<MarkerColor>("red");
+  const [picking, setPicking] = useState(false);
   const [live, setLive] = useState<[number, number][] | null>(null);
   const svg = useRef<SVGSVGElement>(null);
   const drawing = useRef<{ pts: [number, number][]; erasing: boolean; erased: Set<number> } | null>(null);
@@ -47,6 +48,8 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const k = e.key;
+      // typing speaker notes: only Esc (leave the box) is ours
+      if ((e.target as HTMLElement).tagName === "TEXTAREA") { if (k === "Escape") (e.target as HTMLElement).blur(); return; }
       if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].includes(k)) { e.preventDefault(); go(i + 1); }
       else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(k)) { e.preventDefault(); go(i - 1); }
       else if (k === "Home") { e.preventDefault(); go(0); }
@@ -118,11 +121,14 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
   const p = board.panels[i];
   const name = stepName(p);
   const feel = isScene(p) ? feelingOf(p) : undefined;
-  const speaker = [
+  const context = [
     isScene(p) && p.workaround ? `Workaround: ${p.workaround}` : "",
     feel !== undefined ? `Feels ${FEEL[feel + 2]}` : "",
-    p.notes ?? "",
-  ].filter(Boolean);
+  ].filter(Boolean).join(" · ");
+  const saveNotes = (v: string) => {
+    if (v.trim() === (p.notes ?? "").trim()) return;
+    void commit([v.trim() ? { path: ["panels", i, "notes"], value: v.trim() } : { path: ["panels", i, "notes"], delete: true }], "Notes saved");
+  };
 
   return (
     <div ref={root} className={`present${tool ? ` ${tool}` : ""}`} role="dialog" aria-label={`Play mode: ${board.title}`}>
@@ -132,7 +138,10 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
         <span className="spacer" />
         <div className="present-tools" role="group" aria-label="Markup">
           <button className={tool === "pen" ? "on" : ""} aria-pressed={tool === "pen"} onClick={() => setTool(tool === "pen" ? null : "pen")} title="Sharpie: draw over the step (D)">Sharpie</button>
-          <Swatches value={color} onChange={(c) => { setColor(c); setTool("pen"); }} label="Sharpie colour" />
+          <span className="pen-color">
+            <button className="pen-dot" style={{ background: MARKER[color] }} onClick={() => setPicking(!picking)} aria-expanded={picking} aria-label={`Sharpie colour: ${color}`} title="Sharpie colour" />
+            {picking && <span className="pen-pop"><Swatches value={color} onChange={(c) => { setColor(c); setTool("pen"); setPicking(false); }} label="Sharpie colour" /></span>}
+          </span>
           <button className={tool === "eraser" ? "on" : ""} aria-pressed={tool === "eraser"} onClick={() => setTool(tool === "eraser" ? null : "eraser")} title="Eraser: click or drag over strokes (E)">Eraser</button>
           <button onClick={clearSlide} disabled={!board.panels[i].markup?.length} title="Remove all markup from this step">Clear step</button>
           <button onClick={clearAll} disabled={!anyMarkup} title="Remove markup from every step">Clear all</button>
@@ -150,7 +159,7 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
               {WOBBLE_FILTER}
               <filter id="sb-gray"><feColorMatrix type="saturate" values="0" /></filter>
             </defs>
-            <PanelArt board={board} panel={p} opts={{ ...opts, markupHit: tool === "eraser" }} />
+            <PanelArt board={board} panel={p} opts={{ ...opts, showMarkup: true, markupHit: tool === "eraser" }} />
             {live && live.length > 1 && <path d={smooth(live)} fill="none" stroke={MARKER[color]} strokeWidth={color === "yellow" ? 12 : 4.5} strokeOpacity={color === "yellow" ? 0.55 : 0.92} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />}
           </svg>
           <figcaption>
@@ -159,7 +168,9 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
           </figcaption>
           {notes && (
             <div className="present-notes">
-              {speaker.length ? speaker.map((s, k) => <p key={k}>{s}</p>) : <p className="muted">No notes for this step. Add some in the file's "notes" field.</p>}
+              {context && <p className="muted">{context}</p>}
+              <textarea key={p.id} defaultValue={p.notes ?? ""} placeholder="Speaker notes for this step…" rows={3}
+                onBlur={(e) => saveNotes(e.target.value)} aria-label={`Speaker notes for step ${i + 1}`} />
             </div>
           )}
         </figure>

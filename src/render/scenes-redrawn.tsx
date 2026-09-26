@@ -36,36 +36,44 @@ export const REDRAWN_SCENES: Record<string, SceneDef> = {
   car: {
     back: () => (
       <g>
-        {/* glass */}
-        <Sh d="M0 44 Q150 26 286 38 L378 118 L378 158 H0 Z" fill={C.g1} sw={0} />
-        <L d="M0 44 Q150 26 286 38 L378 118" sw={3} />
-        {/* B-pillar and roof lining */}
-        <Sh d="M160 32 L176 32 L184 158 L166 158 Z" fill={C.g5} />
-        {/* seat backs + headrests */}
-        <Sh d="M186 214 L184 118 Q184 106 196 106 L206 106 Q214 106 214 118 L216 214 Z" fill={C.g7} />
-        <Sh d="M188 84 Q188 74 198 74 L206 74 Q212 74 212 84 L212 98 L188 98 Z" fill={C.g7} />
-        <Sh d="M70 214 L68 124 Q68 112 80 112 L90 112 Q98 112 98 124 L100 214 Z" fill={C.g7} />
-        <Sh d="M72 92 Q72 82 82 82 L90 82 Q96 82 96 92 L96 104 L72 104 Z" fill={C.g7} />
-        {/* mirror */}
-        <L d="M300 40 v8" sw={2} /><Sh d={rect(288, 48, 26, 9)} fill={C.g4} />
+        {/* the world outside the side windows: sky, hills, trees and the road going by */}
+        <path d="M0 40 Q150 22 290 34 L380 118 V168 H0 Z" fill={C.paper} />
+        <path d="M0 132 Q70 112 150 126 Q230 138 300 118 Q350 108 380 118 V168 H0 Z" fill={C.g1} />
+        {[40, 120, 250].map((x) => <g key={x}><L d={`M${x} 142 V124`} sw={1.6} color={C.g5} /><circle cx={x} cy={116} r={11} fill={C.g2} stroke={C.g5} strokeWidth={1.2} /></g>)}
+        <L d="M0 150 H380 M20 160 h26 M90 160 h26 M160 160 h26 M230 160 h26 M300 160 h26" sw={1.4} color={C.g5} />
+        {/* roof and window frame */}
+        <Sh d="M0 0 H400 V14 L292 26 Q150 14 0 30 Z" fill={C.g5} />
+        <L d="M0 40 Q150 22 290 34 L380 118" sw={3} />
+        {/* B-pillar between front and back windows */}
+        <Sh d="M158 28 L178 28 L186 168 L164 168 Z" fill={C.g5} />
+        {/* seat backs with headrests (the people sit in front of these) */}
+        <Sh d="M188 214 L186 124 Q186 112 198 112 L208 112 Q216 112 216 124 L218 214 Z" fill={C.g7} />
+        <Sh d="M190 90 Q190 80 200 80 L208 80 Q214 80 214 90 L214 104 L190 104 Z" fill={C.g7} />
+        <Sh d="M62 214 L60 128 Q60 116 72 116 L82 116 Q90 116 90 128 L92 214 Z" fill={C.g7} />
+        <Sh d="M64 96 Q64 86 74 86 L82 86 Q88 86 88 96 L88 110 L64 110 Z" fill={C.g7} />
+        {/* rear-view mirror */}
+        <L d="M306 30 v10" sw={2} /><Sh d={rect(292, 40, 28, 9)} fill={C.g4} />
       </g>
     ),
     front: () => (
       <g>
-        {/* dashboard + wheel in front of the driver */}
-        <Sh d="M292 122 Q344 108 400 112 V196 L296 196 Z" fill={C.g8} />
-        <L d="M300 138 Q350 128 400 130" sw={1.2} color={C.g5} />
-        <ellipse cx={266} cy={134} rx={7} ry={24} transform="rotate(-22 266 134)" fill="none" stroke={ink} strokeWidth={3.4} />
-        <L d="M272 140 L298 150" sw={4} />
-        {/* door panel: hides everyone below the chest, the way a car does */}
-        <Sh d="M0 160 H300 L304 234 H0 Z" fill={C.g4} />
-        <L d="M0 160 H300 M150 160 V234 M18 176 h40 M196 176 h40" sw={1.8} />
-        <Sh d="M40 196 h60 v6 h-60 Z" fill={C.g7} /><Sh d="M190 196 h60 v6 h-60 Z" fill={C.g7} />
+        {/* dashboard: a low sloped shelf under the windshield, not a wall */}
+        <Sh d="M296 150 Q340 132 400 128 V200 L300 200 Z" fill={C.g5} />
+        <L d="M304 162 Q350 146 400 144" sw={1.2} color={C.g7} />
+        {/* steering wheel and column */}
+        <ellipse cx={272} cy={138} rx={7} ry={24} transform="rotate(-22 272 138)" fill="none" stroke={ink} strokeWidth={3.4} />
+        <L d="M278 144 L304 158" sw={4} />
+        {/* doors below the window line: slim panels with handles and armrests, so people read as sitting inside */}
+        <Sh d="M0 168 H300 L304 236 H0 Z" fill={C.g2} />
+        <L d="M0 168 H300" sw={2.4} />
+        <L d="M152 168 V236" sw={1.6} />
+        <Sh d="M18 184 h46 v5 h-46 Z" fill={C.g5} sw={1.4} /><Sh d="M176 184 h46 v5 h-46 Z" fill={C.g5} sw={1.4} />
+        <L d="M110 200 h22 M268 200 h22" sw={2.4} />
       </g>
     ),
     marks: {
       "driver-seat": { x: 222, y: FLOOR_Y, facing: "right", seated: true, behind: true },
-      "passenger-seat": { x: 106, y: FLOOR_Y, facing: "right", seated: true, behind: true, scale: 0.94 },
+      "passenger-seat": { x: 96, y: FLOOR_Y, facing: "right", seated: true, behind: true, scale: 0.94 },
       dashboard: { x: 346, y: 130 },
     },
     order: ["driver-seat", "passenger-seat"],

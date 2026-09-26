@@ -18,6 +18,8 @@ export interface RenderOptions {
   sketch?: AssetResolver;
   /** Crit markup strokes can be clicked (the play-mode eraser). */
   markupHit?: boolean;
+  /** Draw crit markup. Only play mode does; the editor and exports leave it out. */
+  showMarkup?: boolean;
   /** Wobble filter on (off while dragging in the editor). */
   wobble?: boolean;
 }
@@ -327,7 +329,7 @@ export function PanelArt({ board, panel, opts }: { board: Board; panel: Panel; o
         {isScene(panel) ? <ScenePanelBody board={board} panel={panel} opts={opts} /> : <CardBody panel={panel} ts={board.page?.textScale ?? 1} />}
       </g>
       <rect x={1.3} y={1.3} width={PANEL_W - 2.6} height={PANEL_H - 2.6} fill="none" stroke={ink} strokeWidth={2.6} filter={wob} pointerEvents="none" />
-      {(panel.markup?.length ?? 0) > 0 && <Markup strokes={panel.markup!} pid={pid} hit={opts.markupHit} />}
+      {opts.showMarkup && (panel.markup?.length ?? 0) > 0 && <Markup strokes={panel.markup!} pid={pid} hit={opts.markupHit} />}
     </g>
   );
 }

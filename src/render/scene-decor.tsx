@@ -80,8 +80,9 @@ export const SCENE_DECOR: Record<string, () => ReactNode> = {
       <Sh d="M262 170 q0 -16 12 -16 q12 0 12 16 Z" fill={C.g4} /><L d="M286 160 q6 2 4 8" sw={1.4} />
       <Sh d="M298 170 l4 -18 h10 l-2 18 Z" fill={C.g7} sw={1.3} />
       {/* fruit bowl on the table, magnets and a drawing on the fridge, a plant on the sill */}
-      <Sh d="M136 186 q14 10 28 0 Z" fill={C.paper} sw={1.4} />
-      <circle cx={144} cy={182} r={4} fill={C.g4} stroke={ink} strokeWidth={1.2} /><circle cx={152} cy={180} r={4.5} fill={C.g5} stroke={ink} strokeWidth={1.2} /><circle cx={159} cy={183} r={3.5} fill={C.g2} stroke={ink} strokeWidth={1.2} />
+      {/* fruit bowl sitting on the table top (x 168–218, y 186) */}
+      <circle cx={200} cy={180} r={4} fill={C.g4} stroke={ink} strokeWidth={1.2} /><circle cx={208} cy={179} r={4.5} fill={C.g5} stroke={ink} strokeWidth={1.2} /><circle cx={214} cy={181} r={3.5} fill={C.g2} stroke={ink} strokeWidth={1.2} />
+      <Sh d="M194 184 q13 9 26 0 Z" fill={C.paper} sw={1.4} />
       <Sh d={rect(26, 112, 20, 16)} fill={C.paper} sw={1.2} /><L d="M29 124 l5 -7 l4 4 l5 -6" sw={1} />
       <circle cx={56} cy={120} r={2.4} fill={C.g7} /><circle cx={30} cy={146} r={2.4} fill={C.g5} />
       <Plant x={172} y={100} s={0.55} />

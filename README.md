@@ -76,22 +76,33 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 
 ## The editor bits
 
-![Play mode with sharpie markup](docs/play.png)
+**Editing**
 
 - Click anything to get its toolbar. Drag to move, pull the corner to resize, grab the round handle to rotate.
-- Double-click any text to edit it.
-- Cmd+C, Cmd+V and Cmd+D copy, paste and duplicate. Cmd+] and Cmd+[ move things up and down the layers
-  (add Shift to go all the way).
-- Delete deletes. Cmd+Z undoes. Arrow keys nudge.
-- **Journey lanes** add a strip under each panel: how the person feels, whether your product is there, and
-  what workaround they used. A feeling line runs across the whole page, with every step named so you can read the journey at a glance. Click "+ name this step" under any panel to name it.
-- **Ask agent** copies a precise pointer to whatever you clicked, so you can paste it to your agent and say
-  "make this angrier."
-- **▶ Play** turns the board into a slideshow for crit: one step at a time, full screen, arrow keys to move,
-  N for speaker notes, and a big pointer so the room can follow along. Grab the **sharpie** (D) to mark up
-  a step during the crit. Markup saves with the board, and you can erase it or clear a step (or everything). "From here" in a panel's toolbar starts mid-story.
-- **Export** to PNG, PDF, SVG, a slide deck (one panel per slide, with speaker notes) or a single HTML page
-  people can leave comments on.
+- Double-click any text to edit it. Click "+ name this step" under a panel to name it.
+- Cmd+C / Cmd+V / Cmd+D copy, paste and duplicate. Cmd+] and Cmd+[ move things up and down the layers.
+- Delete deletes, Cmd+Z undoes, arrow keys nudge.
+- **Ask agent** copies a pointer to whatever you clicked, so you can tell your agent "make this angrier."
+
+**Journey lanes**
+
+A strip under each panel: how the person feels, whether your product is there, and the workaround they used.
+A feeling line with every step named runs across the bottom of the page.
+
+**Play mode**
+
+![Play mode with sharpie markup](docs/play.png)
+
+Hit **▶ Play** (or P) to present the board one step at a time, with a big pointer the room can follow.
+
+- Arrow keys move between steps. "From here" in a panel's toolbar starts mid-story.
+- **N** opens speaker notes you can type into as you go.
+- **D** grabs the sharpie (tap the dot next to it to change colour), **E** the eraser. Clear one step or all of them.
+- Markup is saved with the board but only shows up in play mode, so your exports stay clean.
+
+**Export**
+
+PNG, PDF, SVG, a slide deck (one panel per slide, with speaker notes) or a single HTML page people can comment on.
 
 ## Under the hood
 
