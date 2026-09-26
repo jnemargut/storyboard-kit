@@ -6,7 +6,7 @@ You tell Claude Code (or Codex) what someone's day looks like. It sketches a sto
 little editor until it feels true. Then you drop it in your deck and watch everyone realize the app is only in
 3 of the 8 moments that matter.
 
-![Storyboard Kit sizzle reel](docs/sizzle.gif)
+![Storyboard Kit sizzle reel](docs/sizzle-c6aae4e.gif)
 
 ## Why though
 
@@ -17,7 +17,7 @@ Storyboard Kit draws all of that in a scrappy marker style where **only your pro
 Everything else is grey. So the board shows, pretty bluntly, where your product helps and where people are
 on their own. The header even keeps score: *"Product in 3 of 8 moments."*
 
-![The Late Latte, an example storyboard](docs/late-latte.png)
+![The Late Latte, an example storyboard](docs/late-latte-aceede9.png)
 
 ## Install (about 30 seconds)
 
@@ -53,9 +53,9 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 
 ## What's in the box
 
-![Meet the cast](docs/cast.png)
+![Meet the cast](docs/cast-eda2333.png)
 
-![A few of the scenes](docs/scenes.png)
+![A few of the scenes](docs/scenes-52664d6.png)
 
 - **A cast you build from parts.** 4 skin tones, 9 hair styles, 4 body types,
   3 ages, 16 outfits (scrubs, hi-vis, chef whites, lab coat, uniform, overalls and friends), 7 hats, plus
@@ -94,7 +94,7 @@ A feeling line with every step named runs across the bottom of the page.
 
 **Play mode**
 
-![Play mode with sharpie markup](docs/play.png)
+![Play mode with sharpie markup](docs/play-cdbbe6c.png)
 
 Hit **▶ Play** (or P) to present the board one step at a time, with a big pointer the room can follow.
 
