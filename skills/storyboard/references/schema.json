@@ -231,6 +231,41 @@
                   }
                 }
               },
+              "markup": {
+                "type": "array",
+                "description": "Sharpie strokes drawn over the panel in play mode (crit markup). Written by the editor.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "points"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "points": {
+                      "type": "array",
+                      "minItems": 2,
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                      }
+                    },
+                    "color": {
+                      "enum": [
+                        "ink",
+                        "grey",
+                        "red",
+                        "blue",
+                        "green",
+                        "yellow"
+                      ]
+                    }
+                  }
+                }
+              },
               "type": {
                 "const": "title"
               },
@@ -289,6 +324,41 @@
                     },
                     "z": {
                       "type": "number"
+                    }
+                  }
+                }
+              },
+              "markup": {
+                "type": "array",
+                "description": "Sharpie strokes drawn over the panel in play mode (crit markup). Written by the editor.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "points"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "points": {
+                      "type": "array",
+                      "minItems": 2,
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                      }
+                    },
+                    "color": {
+                      "enum": [
+                        "ink",
+                        "grey",
+                        "red",
+                        "blue",
+                        "green",
+                        "yellow"
+                      ]
                     }
                   }
                 }
@@ -361,6 +431,41 @@
                   }
                 }
               },
+              "markup": {
+                "type": "array",
+                "description": "Sharpie strokes drawn over the panel in play mode (crit markup). Written by the editor.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "points"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "points": {
+                      "type": "array",
+                      "minItems": 2,
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                      }
+                    },
+                    "color": {
+                      "enum": [
+                        "ink",
+                        "grey",
+                        "red",
+                        "blue",
+                        "green",
+                        "yellow"
+                      ]
+                    }
+                  }
+                }
+              },
               "type": {
                 "const": "text"
               },
@@ -415,6 +520,41 @@
                     },
                     "z": {
                       "type": "number"
+                    }
+                  }
+                }
+              },
+              "markup": {
+                "type": "array",
+                "description": "Sharpie strokes drawn over the panel in play mode (crit markup). Written by the editor.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "points"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "points": {
+                      "type": "array",
+                      "minItems": 2,
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                      }
+                    },
+                    "color": {
+                      "enum": [
+                        "ink",
+                        "grey",
+                        "red",
+                        "blue",
+                        "green",
+                        "yellow"
+                      ]
                     }
                   }
                 }
@@ -808,6 +948,17 @@
                     "text": {
                       "type": "string",
                       "description": "The words, for a text shape."
+                    },
+                    "color": {
+                      "enum": [
+                        "ink",
+                        "grey",
+                        "red",
+                        "blue",
+                        "green",
+                        "yellow"
+                      ],
+                      "description": "ink: Black marker (default).\ngrey: Grey marker.\nred: Red marker: problems, pain points.\nblue: Blue marker: notes, flows.\ngreen: Green marker: what works.\nyellow: Yellow highlighter."
                     }
                   }
                 }

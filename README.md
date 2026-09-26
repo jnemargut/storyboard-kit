@@ -69,7 +69,8 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 - **Taps, swipes, clicks and buzzes** in orange so they pop.
 - **Your own screens.** Drop a Figma export on a phone and it turns into a teal sketch that fits the device.
 - **Any picture at all.** Drag in a photo you found and it gets sketchified in greys to match (or not, your call).
-- **A pen, some shapes and free text** for anything we forgot to draw.
+- **A pen, some shapes and free text** for anything we forgot to draw, in six marker colours (teal stays
+  reserved for your product).
 
 ## The editor bits
 
@@ -83,7 +84,8 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 - **Ask agent** copies a precise pointer to whatever you clicked, so you can paste it to your agent and say
   "make this angrier."
 - **▶ Play** turns the board into a slideshow for crit: one step at a time, full screen, arrow keys to move,
-  N for speaker notes, and a big pointer so the room can follow along. "From here" in a panel's toolbar starts mid-story.
+  N for speaker notes, and a big pointer so the room can follow along. Grab the **sharpie** (D) to mark up
+  a step during the crit. Markup saves with the board, and you can erase it or clear a step (or everything). "From here" in a panel's toolbar starts mid-story.
 - **Export** to PNG, PDF, SVG, a slide deck (one panel per slide, with speaker notes) or a single HTML page
   people can leave comments on.
 

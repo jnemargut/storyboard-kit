@@ -419,6 +419,20 @@ describe("shapes (free drawing)", () => {
     expect(bad.some((p) => p.endsWith("shapes[0].text"))).toBe(true);
     expect(bad.some((p) => p.endsWith("shapes[1].points"))).toBe(true);
   });
+  it("colours shapes and keeps crit markup on any panel", () => {
+    const b = withShapes([{ type: "arrow", points: [[0, 0], [60, 40]], color: "red" }, { type: "rect", points: [[10, 10], [50, 40]], color: "blue", fill: "light" }]);
+    b.panels[0].markup = [{ points: [[10, 10], [80, 60], [120, 40]] }];
+    b.panels[1].markup = [{ points: [[5, 5], [40, 40]], color: "yellow" }];
+    expect(validate(b).errors).toEqual([]);
+    const svg = renderBoardSVG(b, { asset });
+    expect(svg).toContain("#d9363e"); // red arrow + default red markup
+    expect(svg).toContain("#2f6fd0"); // blue box
+    expect(svg).toContain('data-markup="title"');
+    expect(svg).not.toContain("NaN");
+    const bad = validate({ ...b, panels: [{ ...b.panels[1], markup: [{ points: [[1, 1]], color: "teal" as never }] }] }).errors.map((e) => e.path);
+    expect(bad.some((p) => p.endsWith("markup[0].points"))).toBe(true);
+    expect(bad.some((p) => p.endsWith("markup[0].color"))).toBe(true);
+  });
   it("copies and pastes a shape, offset so it's visible", () => {
     const b = withShapes([{ type: "rect", points: [[10, 10], [60, 50]] }]);
     const sel = { panel: b.panels[1].id, el: "shape-0", kind: "shape" as const };

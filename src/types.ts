@@ -1,6 +1,6 @@
 import type {
   Accessory, Age, Angle, Body, BubbleType, DeviceType, GestureType, Hair, HairShade, Hat, Mood, Outfit, Pose,
-  SceneId, ShapeFill, ShapeType, Shot, Skin, TimeIcon,
+  MarkerColor, SceneId, ShapeFill, ShapeType, Shot, Skin, TimeIcon,
 } from "./vocab";
 
 export const SCHEMA_VERSION = 1;
@@ -91,6 +91,8 @@ export interface Shape {
   fill?: ShapeFill;
   /** The words, for a "text" shape. */
   text?: string;
+  /** Marker colour; default ink. */
+  color?: MarkerColor;
 }
 
 /** Any picture placed in a scene (a found photo, a product shot, a prop). Sketchified in greys unless `sketch: false`. */
@@ -108,10 +110,18 @@ export interface SceneImage {
   sketch?: boolean;
 }
 
+/** A sharpie stroke drawn over a panel while presenting (crit markup). Panel units. */
+export interface MarkupStroke {
+  points: [number, number][];
+  color?: MarkerColor;
+}
+
 interface PanelBase {
   id: string;
   label?: string;
   notes?: string;
+  /** Crit markup from play mode. Kept until someone clears it. */
+  markup?: MarkupStroke[];
   layout?: Record<string, LayoutOverride>;
 }
 

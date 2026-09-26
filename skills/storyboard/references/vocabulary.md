@@ -251,3 +251,14 @@ Field: `shapes[].fill`
 - `light`: Light grey.
 - `mid`: Mid grey.
 - `dark`: Dark grey.
+
+## colors
+
+Field: `shapes[].color`
+
+- `ink`: Black marker (default).
+- `grey`: Grey marker.
+- `red`: Red marker: problems, pain points.
+- `blue`: Blue marker: notes, flows.
+- `green`: Green marker: what works.
+- `yellow`: Yellow highlighter.

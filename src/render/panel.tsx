@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
-import type { Board, LayoutOverride, Panel, SceneImage, ScenePanel, TimePanel } from "../types";
+import type { Board, LayoutOverride, MarkupStroke, Panel, SceneImage, ScenePanel, TimePanel } from "../types";
 import { isScene } from "../types";
 import { Character } from "./character";
 import { DEVICE_DEFS, Device, type Rect } from "./devices";
 import { ADV_TITLE, stackOrder, captionBox, heldDeviceOf, layoutPanel, placeBubbles, specialGeometry, toPanel, wrap, textWidth, type AssetResolver, type CharPlaced, type DevPlaced, type PanelLayout } from "./layout";
 import { BubbleShape, BubbleText, Callout, CaptionShape, CaptionText, GestureMark } from "./overlays";
 import { SceneBack, SceneFront } from "./scenes";
-import { ShapeMark, shapeId, shapeTransform } from "./shapes";
-import { C, FONT, PANEL_H, PANEL_W, SKIN, OUTFIT_FILL } from "./tokens";
+import { ShapeMark, shapeId, shapeTransform, smooth } from "./shapes";
+import { C, FONT, MARKER, PANEL_H, PANEL_W, SKIN, OUTFIT_FILL } from "./tokens";
 import type { Pt } from "./rig";
 
 export interface RenderOptions {
@@ -16,6 +16,8 @@ export interface RenderOptions {
   raw?: AssetResolver;
   /** Images placed in a scene, sketchified in greys. Falls back to `raw`, then `asset`. */
   sketch?: AssetResolver;
+  /** Crit markup strokes can be clicked (the play-mode eraser). */
+  markupHit?: boolean;
   /** Wobble filter on (off while dragging in the editor). */
   wobble?: boolean;
 }
@@ -296,6 +298,24 @@ function CardBody({ panel, ts }: { panel: Panel; ts: number }) {
   return null;
 }
 
+/** Crit markup from play mode: thick sharpie strokes over everything, clipped to the panel. */
+function Markup({ strokes, pid, hit }: { strokes: MarkupStroke[]; pid: string; hit?: boolean }) {
+  return (
+    <g data-markup={pid} clipPath={`url(#sb-clip-${pid})`} pointerEvents={hit ? "stroke" : "none"}>
+      {strokes.map((m, i) => {
+        const hl = m.color === "yellow";
+        const d = smooth(m.points);
+        return (
+          <g key={i} data-mk={i}>
+            {hit && <path d={d} fill="none" stroke="transparent" strokeWidth={16} strokeLinecap="round" />}
+            <path d={d} fill="none" stroke={MARKER[m.color ?? "red"] ?? MARKER.red} strokeWidth={hl ? 12 : 4.5} strokeOpacity={hl ? 0.55 : 0.92} strokeLinecap="round" strokeLinejoin="round" />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
 export function PanelArt({ board, panel, opts }: { board: Board; panel: Panel; opts: RenderOptions }): ReactNode {
   const pid = panel.id;
   const wob = opts.wobble === false ? undefined : "url(#sb-wobble)";
@@ -307,6 +327,7 @@ export function PanelArt({ board, panel, opts }: { board: Board; panel: Panel; o
         {isScene(panel) ? <ScenePanelBody board={board} panel={panel} opts={opts} /> : <CardBody panel={panel} ts={board.page?.textScale ?? 1} />}
       </g>
       <rect x={1.3} y={1.3} width={PANEL_W - 2.6} height={PANEL_H - 2.6} fill="none" stroke={ink} strokeWidth={2.6} filter={wob} pointerEvents="none" />
+      {(panel.markup?.length ?? 0) > 0 && <Markup strokes={panel.markup!} pid={pid} hit={opts.markupHit} />}
     </g>
   );
 }

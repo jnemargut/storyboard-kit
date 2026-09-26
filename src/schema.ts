@@ -1,6 +1,6 @@
 import {
   ACCESSORIES, AGES, ANGLES, BODY, BUBBLES, DEVICES, DIRECTIONS, FACING, GESTURES, HAIR, HAIR_SHADE, HATS, MOODS,
-  OUTFITS, POSES, SCENES, SHAPE_FILLS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
+  OUTFITS, POSES, SCENES, MARKER_COLORS, SHAPE_FILLS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
 } from "./vocab";
 
 const oneOf = (list: readonly Entry[]) => ({ enum: ids(list), description: list.map((x) => `${x.id}: ${x.desc}`).join("\n") });
@@ -23,6 +23,10 @@ const base = {
   label: { type: "string", description: "Short caption under the panel (optional)." },
   notes: { type: "string", description: "Designer/research notes. Not drawn." },
   layout: layoutOverride,
+  markup: {
+    type: "array", description: "Sharpie strokes drawn over the panel in play mode (crit markup). Written by the editor.",
+    items: { type: "object", required: ["points"], additionalProperties: false, properties: { points: { type: "array", minItems: 2, items: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2 } }, color: { enum: ["ink", "grey", "red", "blue", "green", "yellow"] } } },
+  },
 };
 
 const device = { type: "string", ...oneOf(DEVICES) };
@@ -153,6 +157,7 @@ export function buildSchema() {
                       id: { type: "string" }, type: oneOf(SHAPES), fill: oneOf(SHAPE_FILLS),
                       points: { type: "array", minItems: 1, items: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2 } },
                       text: { type: "string", description: "The words, for a text shape." },
+                      color: oneOf(MARKER_COLORS),
                     },
                   },
                 },

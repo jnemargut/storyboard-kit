@@ -1,6 +1,6 @@
 import {
   ACCESSORIES, AGES, ANGLES, BODY, BUBBLES, DEVICES, DIRECTIONS, FACING, GESTURES, HAIR, HAIR_SHADE, HATS, MOODS,
-  OUTFITS, PANEL_TYPES, POSES, SCENES, SCENE_MARKS, SHAPE_FILLS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
+  OUTFITS, PANEL_TYPES, POSES, SCENES, SCENE_MARKS, MARKER_COLORS, SHAPE_FILLS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
 } from "./vocab";
 import { SCHEMA_VERSION } from "./types";
 import { HANDHELD } from "./vocab";
@@ -139,7 +139,16 @@ export function validate(input: unknown): Result {
     else panelIds.add(raw.id);
     str(`${p}.label`, raw.label);
     str(`${p}.notes`, raw.notes);
-    const common = ["id", "type", "label", "notes", "layout"];
+    const common = ["id", "type", "label", "notes", "layout", "markup"];
+    const markup = raw.markup ?? [];
+    if (!Array.isArray(markup)) err(`${p}.markup`, "must be an array of strokes.");
+    else markup.forEach((m, j) => {
+      const mp = `${p}.markup[${j}]`;
+      if (!isObj(m)) { err(mp, "must be an object."); return; }
+      known(mp, m, ["points", "color"]);
+      if (!Array.isArray(m.points) || m.points.length < 2) err(`${mp}.points`, "must be at least two [x, y] points.");
+      oneOf(`${mp}.color`, m.color, MARKER_COLORS, "color");
+    });
 
     if (type === "title") {
       known(p, raw, [...common, "title", "subtitle"]);
@@ -290,7 +299,8 @@ export function validate(input: unknown): Result {
     else shapes.forEach((s, j) => {
       const sp = `${p}.shapes[${j}]`;
       if (!isObj(s)) { err(sp, "must be an object."); return; }
-      known(sp, s, ["id", "type", "points", "fill", "text"]);
+      known(sp, s, ["id", "type", "points", "fill", "text", "color"]);
+      oneOf(`${sp}.color`, s.color, MARKER_COLORS, "color");
       oneOf(`${sp}.type`, s.type, SHAPES, "shape");
       if (s.type === undefined) err(`${sp}.type`, "is required.", `One of: ${ids(SHAPES).join(", ")}`);
       oneOf(`${sp}.fill`, s.fill, SHAPE_FILLS, "shape-fill");

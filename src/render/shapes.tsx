@@ -1,7 +1,7 @@
 /** Designer-drawn shapes: boxes, ovals, lines, arrows and freehand, for anything the vocabulary lacks. */
 import type { LayoutOverride, Shape } from "../types";
 import type { Rect } from "./devices";
-import { C, FONT } from "./tokens";
+import { C, FONT, MARKER } from "./tokens";
 
 const SHAPE_FILL: Record<string, string> = { none: "none", light: C.g2, mid: C.g4, dark: C.g7 };
 
@@ -13,7 +13,7 @@ export function shapeBox(s: Pick<Shape, "points">): Rect {
 }
 
 /** Freehand points → a smooth path through their midpoints. */
-function smooth(pts: [number, number][]): string {
+export function smooth(pts: [number, number][]): string {
   if (pts.length < 3) return `M${pts.map((p) => p.join(" ")).join(" L")}`;
   let d = `M${pts[0][0]} ${pts[0][1]}`;
   for (let i = 1; i < pts.length - 1; i++) {
@@ -36,17 +36,21 @@ export function ShapeMark({ s }: { s: Shape }) {
     return (
       <g>
         <rect x={x - w / 2 - 4} y={y - h / 2 - 3} width={w + 8} height={h + 6} fill="transparent" />
-        <text textAnchor="middle" fontFamily={FONT.hand} fontSize={size} fill={C.ink} stroke={C.paper} strokeWidth={3.5} strokeLinejoin="round" paintOrder="stroke">
+        <text textAnchor="middle" fontFamily={FONT.hand} fontSize={size} fill={s.color && s.color !== "yellow" ? MARKER[s.color] : C.ink} stroke={s.color === "yellow" ? MARKER.yellow : C.paper} strokeWidth={3.5} strokeLinejoin="round" paintOrder="stroke">
           {lines.map((l, i) => <tspan key={i} x={x} y={top + i * lh}>{l || "\u00a0"}</tspan>)}
         </text>
       </g>
     );
   }
   const [a, b] = s.points;
-  const fill = SHAPE_FILL[s.fill ?? "none"] ?? "none";
+  const ink = MARKER[s.color ?? "ink"] ?? C.ink;
+  const coloured = !!s.color && s.color !== "ink" && s.color !== "grey";
+  // grey fills stay grey; a coloured shape gets a see-through tint of its own colour instead
+  const fill = coloured && s.fill && s.fill !== "none" ? ink : SHAPE_FILL[s.fill ?? "none"] ?? "none";
+  const fillOpacity = coloured ? ({ light: 0.18, mid: 0.35, dark: 0.6 } as Record<string, number>)[s.fill ?? "none"] : undefined;
   // closed shapes stay clickable inside even when unfilled
   const area = fill === "none" ? "transparent" : fill;
-  const stroke = { stroke: C.ink, strokeWidth: 2.4, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  const stroke = { stroke: ink, strokeWidth: s.color === "yellow" ? 5 : 2.4, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, strokeOpacity: s.color === "yellow" ? 0.75 : undefined, fillOpacity };
   const hit = (d: string) => <path d={d} fill="none" stroke="transparent" strokeWidth={14} />;
   if (s.type === "rect" || s.type === "ellipse") {
     const r = shapeBox({ points: [a, b] });

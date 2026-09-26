@@ -262,6 +262,39 @@ try {
   await page.keyboard.press("Escape");
   await sleep(300);
   check(!(await page.locator(".present").count()) && JSON.stringify(read()) === before, "Esc leaves play mode without changing the file");
+  // the sharpie: draw over a step, it saves, survives leaving play mode, and can be erased or cleared
+  await page.getByRole("button", { name: "▶ Play" }).click();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("d");
+  const slide = await page.locator(".present-panel").boundingBox();
+  const sx = slide.x + slide.width * 0.3, sy = slide.y + slide.height * 0.4;
+  await page.mouse.move(sx, sy);
+  await page.mouse.down();
+  for (let k = 1; k <= 8; k++) await page.mouse.move(sx + k * 25, sy + Math.sin(k) * 20);
+  await page.mouse.up();
+  await sleep(400);
+  check((read().panels[1].markup ?? []).length === 1, "sharpie strokes save to the step");
+  await page.keyboard.press("Escape"); // puts the pen down
+  await page.keyboard.press("Escape"); // leaves play mode
+  await sleep(300);
+  check((read().panels[1].markup ?? []).length === 1 && (await page.locator('[data-markup]').count()) > 0, "markup stays after leaving play mode");
+  await page.getByRole("button", { name: "▶ Play" }).click();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("e");
+  await page.mouse.move(sx + 25, sy + 17);
+  await page.mouse.down();
+  await page.mouse.move(sx + 100, sy + 15, { steps: 8 });
+  await page.mouse.up();
+  await sleep(400);
+  check(!(read().panels[1].markup ?? []).length, "the eraser removes a stroke");
+  await page.keyboard.press("d");
+  await page.mouse.move(sx, sy); await page.mouse.down(); await page.mouse.move(sx + 80, sy + 30, { steps: 5 }); await page.mouse.up();
+  await sleep(300);
+  await page.getByRole("button", { name: "Clear step" }).click();
+  await sleep(300);
+  check(!(read().panels[1].markup ?? []).length, "Clear step removes this step's markup");
+  await page.keyboard.press("Escape"); await page.keyboard.press("Escape");
+
   const lastPanel = page.locator(`g[data-panel="${read().panels.at(-1).id}"] > rect[data-el="__panel"]`);
   await lastPanel.scrollIntoViewIfNeeded();
   const lb = await lastPanel.boundingBox();

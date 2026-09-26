@@ -147,6 +147,15 @@ export const SHAPES = [
   e("path", "Freehand line through every point (sketch anything missing)."),
   e("text", "Free text written on the panel. `points`: one [x, y] centre; `text`: the words (\\n for a new line)."),
 ] as const;
+/** Marker colours for drawings and crit markup. Teal (the product) and orange (what people do) stay reserved. */
+export const MARKER_COLORS = [
+  e("ink", "Black marker (default)."),
+  e("grey", "Grey marker."),
+  e("red", "Red marker: problems, pain points."),
+  e("blue", "Blue marker: notes, flows."),
+  e("green", "Green marker: what works."),
+  e("yellow", "Yellow highlighter."),
+] as const;
 export const SHAPE_FILLS = [e("none", "Outline only (default for lines)."), e("light", "Light grey."), e("mid", "Mid grey."), e("dark", "Dark grey.")] as const;
 
 export const SKIN = [
@@ -231,7 +240,7 @@ export const PANEL_TYPES = [
 export const VOCAB = {
   scenes: SCENES, shots: SHOTS, poses: POSES, moods: MOODS, angles: ANGLES, devices: DEVICES,
   bubbles: BUBBLES, gestures: GESTURES, skin: SKIN, hair: HAIR, "hair-shade": HAIR_SHADE, body: BODY,
-  outfits: OUTFITS, hats: HATS, ages: AGES, accessories: ACCESSORIES, "time-icons": TIME_ICONS, "panel-types": PANEL_TYPES, shapes: SHAPES, "shape-fills": SHAPE_FILLS,
+  outfits: OUTFITS, hats: HATS, ages: AGES, accessories: ACCESSORIES, "time-icons": TIME_ICONS, "panel-types": PANEL_TYPES, shapes: SHAPES, "shape-fills": SHAPE_FILLS, colors: MARKER_COLORS,
 } as const;
 
 export type VocabCategory = keyof typeof VOCAB;
@@ -257,3 +266,4 @@ export type Accessory = Ids<typeof ACCESSORIES>;
 export type TimeIcon = Ids<typeof TIME_ICONS>;
 export type ShapeType = Ids<typeof SHAPES>;
 export type ShapeFill = Ids<typeof SHAPE_FILLS>;
+export type MarkerColor = Ids<typeof MARKER_COLORS>;

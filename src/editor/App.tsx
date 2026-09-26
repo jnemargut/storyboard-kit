@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { applyOps, type Op } from "../json";
 import { BoardSVG, pageSize, panelOrigin } from "../render/board";
 import type { Board, LayoutOverride, ScenePanel, Shape } from "../types";
-import type { ShapeType } from "../vocab";
+import type { MarkerColor, ShapeType } from "../vocab";
 import { isScene } from "../types";
 import type { Result } from "../validate";
 import { api, assetUrl } from "./api";
@@ -38,6 +38,8 @@ export function App() {
   const [zoom, setZoom] = useState<"fit" | number>("fit");
   /** Active drawing tool from the drawer's Draw tab; null = normal select/move. */
   const [tool, setTool] = useState<ShapeType | null>(null);
+  /** Colour for new drawings and text. */
+  const [drawColor, setDrawColor] = useState<MarkerColor>("ink");
   /** Play mode: the panel index being shown, or null while editing. */
   const [playing, setPlaying] = useState<number | null>(null);
   // picking a drawing tool drops the selection, so its toolbar can't sit on top of where you draw
@@ -169,7 +171,7 @@ export function App() {
         const index = (p.shapes ?? []).length, el = `shape-${index}`;
         const s: Sel = { panel: p.id, el, kind: "shape" };
         setTool(null);
-        void commit([{ path: ["panels", pi, "shapes", index], value: { type: "text", points: [pt], text: "Text" } }], "Text added").then(() => {
+        void commit([{ path: ["panels", pi, "shapes", index], value: { type: "text", points: [pt], text: "Text", ...(drawColor !== "ink" ? { color: drawColor } : {}) } }], "Text added").then(() => {
           setSel(s);
           window.setTimeout(() => { const b = measure(s); if (b) setEditing({ sel: s, field: "text", value: "", box: b }); }, 30);
         });
@@ -288,7 +290,7 @@ export function App() {
       const tiny = d.shape.type === "path" ? d.shape.points.length < 3 : Math.hypot(b[0] - a[0], b[1] - a[1]) < 6;
       if (tiny) return;
       const closed = d.shape.type === "rect" || d.shape.type === "ellipse";
-      const shape: Shape = { type: d.shape.type, points: d.shape.points, ...(closed ? { fill: "light" as const } : {}) };
+      const shape: Shape = { type: d.shape.type, points: d.shape.points, ...(closed ? { fill: "light" as const } : {}), ...(drawColor !== "ink" ? { color: drawColor } : {}) };
       const id = `shape-${d.index}`;
       void commit([{ path: ["panels", d.pi, "shapes", d.index], value: shape }], "Shape added").then(() => {
         if (d.shape.type !== "path") { setTool(null); setSel({ panel: d.pid, el: id, kind: "shape" }); }
@@ -569,10 +571,11 @@ export function App() {
         </div>
       </div>
       <Drawer board={board} sel={sel} commit={commit} setSel={setSel} flash={flash} tool={tool} setTool={setTool}
-        addImage={(f) => addImage(f).catch((err) => flash(`Upload failed: ${(err as Error).message}`))} sketchNew={sketchNew} setSketchNew={setSketchNew} />
+        addImage={(f) => addImage(f).catch((err) => flash(`Upload failed: ${(err as Error).message}`))} sketchNew={sketchNew} setSketchNew={setSketchNew}
+        drawColor={drawColor} setDrawColor={setDrawColor} />
       {toast && <div className="toast">{toast}</div>}
       {playing !== null && board && (
-        <Present board={board} opts={{ asset: opts.asset, raw: opts.raw, sketch: opts.sketch, wobble: true }} start={playing}
+        <Present board={board} opts={{ asset: opts.asset, raw: opts.raw, sketch: opts.sketch, wobble: true }} start={playing} commit={commit} undo={undo}
           onExit={(at) => {
             setPlaying(null);
             // land back on the step you stopped at, without selecting it (its toolbar would jump the page)

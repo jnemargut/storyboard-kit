@@ -2,13 +2,14 @@ import { useRef, useState } from "react";
 import type { Op } from "../json";
 import type { Board, CastMember, Panel, ScenePanel } from "../types";
 import { isScene } from "../types";
-import { ACCESSORIES, AGES, BODY, BUBBLES, DEVICES, GESTURES, HAIR, HAIR_SHADE, HATS, OUTFITS, POSES, SCENES, SKIN, ids, type DeviceType, type Pose, type SceneId, type ShapeType } from "../vocab";
+import { ACCESSORIES, AGES, BODY, BUBBLES, DEVICES, GESTURES, HAIR, HAIR_SHADE, HATS, OUTFITS, POSES, SCENES, SKIN, ids, type DeviceType, type Pose, type SceneId, type ShapeType, type MarkerColor } from "../vocab";
 import { SceneBack, SceneFront } from "../render/scenes";
 import { Character } from "../render/character";
 import { Device, DEVICE_DEFS } from "../render/devices";
 import { figure } from "../render/rig";
 import { PanelArt } from "../render/panel";
 import { ShapeMark } from "../render/shapes";
+import { Swatches } from "./Swatches";
 import { insertPanelOps, newPanelId, panelIndex, type Sel } from "./model";
 
 export type AddPayload =
@@ -193,10 +194,11 @@ function PoseThumb({ pose, cast }: { pose: Pose; cast: CastMember }) {
 
 const TABS = ["People", "Poses", "Bubbles & notes", "Devices", "Gestures", "Draw & images", "Panels", "Cast"] as const;
 
-export function Drawer({ board, sel, commit, setSel, flash, tool, setTool, addImage, sketchNew, setSketchNew }: {
+export function Drawer({ board, sel, commit, setSel, flash, tool, setTool, addImage, sketchNew, setSketchNew, drawColor, setDrawColor }: {
   board: Board; sel: Sel | null; commit: (ops: Op[], label?: string) => Promise<void>; setSel: (s: Sel | null) => void; flash: (m: string) => void;
   tool: ShapeType | null; setTool: (t: ShapeType | null) => void;
   addImage: (f: File) => void; sketchNew: boolean; setSketchNew: (v: boolean) => void;
+  drawColor: MarkerColor; setDrawColor: (c: MarkerColor) => void;
 }) {
   const imgInput = useRef<HTMLInputElement>(null);
   const [tab, setTab] = useState<(typeof TABS)[number] | null>(null);
@@ -260,10 +262,11 @@ export function Drawer({ board, sel, commit, setSel, flash, tool, setTool, addIm
               {DRAW_TOOLS.map((t) => (
                 <button key={t.id} className={`tile tool${tool === t.id ? " on" : ""}`} aria-pressed={tool === t.id}
                   onClick={() => setTool(tool === t.id ? null : t.id)} title={`${t.name}: ${t.sub}`}>
-                  <svg width={56} height={48} viewBox="0 0 56 48"><ShapeMark s={{ type: t.id, points: t.sample, fill: t.id === "rect" || t.id === "ellipse" ? "light" : undefined, text: t.id === "text" ? "Aa" : undefined }} /></svg>
+                  <svg width={56} height={48} viewBox="0 0 56 48"><ShapeMark s={{ type: t.id, points: t.sample, fill: t.id === "rect" || t.id === "ellipse" ? "light" : undefined, text: t.id === "text" ? "Aa" : undefined, color: drawColor === "ink" ? undefined : drawColor }} /></svg>
                   <span className="t-name">{t.name}</span><span className="t-sub">{t.sub}</span>
                 </button>
               ))}
+              <label className="check swatch-row">Colour <Swatches value={drawColor} onChange={setDrawColor} /></label>
               <span className="hint">For anything the library doesn't have. Pick a tool, then drag on a scene panel. Select a shape to change its fill, rotate or delete it.</span>
             </>
           )}

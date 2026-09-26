@@ -102,7 +102,7 @@ const FIELD: Record<string, string> = {
   scenes: "panel `scene`", shots: "panel `shot`", poses: "character `pose`", moods: "character `mood`", angles: "character `angle`",
   devices: "`device` / `devices[].type`", bubbles: "`bubbles[].type`", gestures: "`gestures[].type`", skin: "cast `skin`", hair: "cast `hair`",
   "hair-shade": "cast `hairShade`", body: "cast `body`", outfits: "cast `outfit`", hats: "cast `hat`", ages: "cast `age`", accessories: "cast `accessories` (array)",
-  "time-icons": "time panel `icon`", "panel-types": "panel `type`", shapes: "`shapes[].type`", "shape-fills": "`shapes[].fill`",
+  "time-icons": "time panel `icon`", "panel-types": "panel `type`", shapes: "`shapes[].type`", "shape-fills": "`shapes[].fill`", colors: "`shapes[].color`",
 };
 
 export function vocabularyMd(): string {

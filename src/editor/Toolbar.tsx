@@ -8,6 +8,7 @@ import { CastEditor } from "./Drawer";
 import { handToOps, putDownOps, swapWhoOps, locate, movePanelOps, panelIndex, removeOps, resetLayoutOps, setFieldOps, layoutOps, type Sel } from "./model";
 import { ARRANGEABLE, type Arrange } from "./model";
 import { api } from "./api";
+import { Swatches } from "./Swatches";
 import { layoutPanel } from "../render/layout";
 import { SCENE_DEFS } from "../render/scenes";
 
@@ -346,6 +347,7 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
         <>
           <span className="kind">Text</span>
           {editText}
+          <Swatches value={sh.color ?? "ink"} onChange={(c) => set("color", c === "ink" ? undefined : c)} />
           <button onClick={() => size(1 / 1.2)} title="Smaller">A−</button>
           <button onClick={() => size(1.2)} title="Bigger">A+</button>
           <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: ((ov.rotate ?? 0) + 15) % 360 }))} title="Rotate 15°">⟳</button>
@@ -357,6 +359,7 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
     return render(
       <>
         <Pick title="Shape" value={sh.type} options={ids(SHAPES).filter((x) => x !== "text")} labels={{ rect: "box", ellipse: "oval", path: "freehand" }} onChange={(v) => set("type", v)} />
+        <Swatches value={sh.color ?? "ink"} onChange={(c) => set("color", c === "ink" ? undefined : c)} />
         {!open && <Pick title="Fill" value={sh.fill ?? "none"} options={ids(SHAPE_FILLS)} labels={{ none: "no fill", light: "light fill", mid: "mid fill", dark: "dark fill" }} onChange={(v) => set("fill", v === "none" ? undefined : v)} />}
         <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: ((ov.rotate ?? 0) + 15) % 360 }))} title="Rotate 15°">⟳</button>
         {remove}
