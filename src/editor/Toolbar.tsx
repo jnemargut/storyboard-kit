@@ -22,7 +22,7 @@ interface Props {
   upload: (f: File) => void;
   flash: (m: string) => void;
   zoomToPanel: (panelId: string) => void;
-  actions: { copy: () => void; paste: () => void; duplicate: () => void; arrange: (to: Arrange) => void };
+  actions: { copy: () => void; paste: () => void; duplicate: () => void; arrange: (to: Arrange) => void; play: (at: number) => void };
 }
 
 function Pick({ value, options, onChange, title, labels }: { value: string; options: string[]; onChange: (v: string) => void; title: string; labels?: Record<string, string> }) {
@@ -179,6 +179,7 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
         <button onClick={() => { const v = window.prompt("Name this step (shows under the panel and on the journey chart)", panel.label ?? ""); if (v !== null) void set("label", v.trim() || undefined); }}
           title="The step's name: under the panel and on the journey chart">{panel.label ? "Rename step" : "Name step"}</button>
         <button onClick={() => zoomToPanel(panel.id)} title="Zoom the editor in on this panel">Zoom to panel</button>
+        <button onClick={() => actions.play(pi)} title="Present the board starting at this step">▶ From here</button>
       </>
     );
     const more = (

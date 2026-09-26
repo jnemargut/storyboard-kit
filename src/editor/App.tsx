@@ -9,6 +9,7 @@ import { api, assetUrl } from "./api";
 import { Drawer, applyAdd, type AddPayload } from "./Drawer";
 import { arrangeOps, deleteOps, heldScreenOps, layoutOps, locate, panelIndex, pasteOps, clipFor, ARRANGEABLE, type Arrange, type Clip, type Kind, type Sel } from "./model";
 import { Toolbar } from "./Toolbar";
+import { Present } from "./Present";
 
 interface Box { x: number; y: number; w: number; h: number }
 type Drag =
@@ -37,6 +38,8 @@ export function App() {
   const [zoom, setZoom] = useState<"fit" | number>("fit");
   /** Active drawing tool from the drawer's Draw tab; null = normal select/move. */
   const [tool, setTool] = useState<ShapeType | null>(null);
+  /** Play mode: the panel index being shown, or null while editing. */
+  const [playing, setPlaying] = useState<number | null>(null);
   // picking a drawing tool drops the selection, so its toolbar can't sit on top of where you draw
   useEffect(() => { if (tool) { setSel(null); (document.activeElement as HTMLElement | null)?.blur?.(); } }, [tool]);
   /** Whether newly added pictures get the grey marker sketch (remembered per browser). */
@@ -356,6 +359,7 @@ export function App() {
       if (!clip) return flash("This can't be duplicated.");
       pasteClip(clip);
     },
+    play: (at: number) => startPlay(at),
     arrange: (to: Arrange) => {
       if (!board || !sel) return;
       const ops = arrangeOps(board, sel, to);
@@ -385,12 +389,21 @@ export function App() {
     return () => { document.removeEventListener("copy", onCopy); document.removeEventListener("paste", onPaste); };
   });
 
+  // ------------------------------------------------------------ play mode
+  /** From the top by default; the panel toolbar's "Play from here" passes its own index. */
+  const startPlay = (at = 0) => {
+    if (!board) return;
+    setEditing(null); setTool(null); setPlaying(at);
+  };
+
   // ------------------------------------------------------------ keyboard
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (playing !== null) return; // play mode owns the keyboard
       const tag = (e.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
       const mod = e.metaKey || e.ctrlKey;
+      if (e.key.toLowerCase() === "p" && !mod && board) { e.preventDefault(); startPlay(); return; }
       if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
       if (e.key === "Escape") { setSel(null); setTool(null); return; }
       if (!sel || !board) return;
@@ -511,7 +524,7 @@ export function App() {
   return (
     <div className="app">
       <TopBar file={file} nErr={nErr} nWarn={nWarn} result={result} canUndo={past.length > 0} canRedo={future.length > 0} undo={undo} redo={redo}
-        board={board} commit={commit} zoom={zoom} setZoom={setZoom} flash={flash} bumpAssets={() => setBust((b) => b + 1)} />
+        board={board} commit={commit} zoom={zoom} setZoom={setZoom} flash={flash} bumpAssets={() => setBust((b) => b + 1)} play={() => startPlay(0)} />
       <div className={`desk${dropping ? " dropping" : ""}`}
         onDragOver={(e) => { e.preventDefault(); setDropping(true); }} onDragLeave={() => setDropping(false)} onDrop={onDrop}>
         <div className="desk-inner" style={{ width: deskW, maxWidth: zoom === "fit" ? "100%" : undefined }}>
@@ -541,6 +554,14 @@ export function App() {
       <Drawer board={board} sel={sel} commit={commit} setSel={setSel} flash={flash} tool={tool} setTool={setTool}
         addImage={(f) => addImage(f).catch((err) => flash(`Upload failed: ${(err as Error).message}`))} sketchNew={sketchNew} setSketchNew={setSketchNew} />
       {toast && <div className="toast">{toast}</div>}
+      {playing !== null && board && (
+        <Present board={board} opts={{ asset: opts.asset, raw: opts.raw, sketch: opts.sketch, wobble: true }} start={playing}
+          onExit={(at) => {
+            setPlaying(null);
+            // land back on the step you stopped at, without selecting it (its toolbar would jump the page)
+            requestAnimationFrame(() => svgWrap.current?.querySelector(`g[data-panel="${CSS.escape(board.panels[at].id)}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" }));
+          }} />
+      )}
     </div>
   );
 }
@@ -548,7 +569,7 @@ export function App() {
 function TopBar(props: {
   file: string; nErr: number; nWarn: number; result: Result | null; canUndo: boolean; canRedo: boolean; undo: () => void; redo: () => void;
   board: Board; commit: (ops: Op[], label?: string) => Promise<void>;
-  zoom: "fit" | number; setZoom: (z: "fit" | number) => void; flash: (m: string) => void; bumpAssets: () => void;
+  zoom: "fit" | number; setZoom: (z: "fit" | number) => void; flash: (m: string) => void; bumpAssets: () => void; play: () => void;
 }) {
   const [menu, setMenu] = useState<null | "export" | "layout" | "issues" | "view" | "brand">(null);
   const lanes = !!props.board.page?.lanes;
@@ -557,6 +578,12 @@ function TopBar(props: {
   const { nErr, nWarn, result } = props;
   const status = nErr ? `${nErr} error${nErr > 1 ? "s" : ""}` : nWarn ? `${nWarn} suggestion${nWarn > 1 ? "s" : ""}` : "Saved to file · valid";
   const toggle = (m: typeof menu) => setMenu(menu === m ? null : m);
+  useEffect(() => {
+    if (!menu) return;
+    const close = (e: KeyboardEvent) => { if (e.key === "Escape") setMenu(null); };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [menu]);
   return (
     <div className="top" onMouseLeave={() => setMenu(null)}>
       <span className="brand">Storyboard</span>
@@ -604,13 +631,14 @@ function TopBar(props: {
         {menu === "layout" && (
           <div className="menu-list">
             {[0, 1, 2, 3, 4, 5, 6].map((n) => (
-              <button key={n} onClick={() => { setMenu(null); void props.commit(n ? [{ path: ["page", "columns"], value: n }] : [{ path: ["page"], delete: true }]); }}>
+              <button key={n} onClick={() => { setMenu(null); void props.commit(n ? [{ path: ["page", "columns"], value: n }] : [{ path: ["page", "columns"], delete: true }]); }}>
                 {n ? `${n} across` : "Auto"}
               </button>
             ))}
           </div>
         )}
       </div>
+      <button className="btn" onClick={props.play} title="Present the board one step at a time (P)">▶ Play</button>
       <div className="menu">
         <button className="btn dark" onClick={() => toggle("export")}>Export</button>
         {menu === "export" && (

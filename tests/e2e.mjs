@@ -234,6 +234,31 @@ try {
   await sleep(400);
   check(read().panels[3].characters.length === nChars + 1, "Cmd+D duplicates the person");
 
+  // play mode: step through with the keyboard, notes, and back out to the same panel
+  await page.mouse.click(5, 990);
+  await page.getByRole("button", { name: "▶ Play" }).click();
+  await page.locator(".present").waitFor();
+  check((await page.locator(".present-count").textContent()) === `1 / ${read().panels.length}`, "Play starts at step 1");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  check((await page.locator(".present-count").textContent()).startsWith("3 /"), "arrow keys step through the board");
+  check((await page.locator(".present-name").textContent()) === read().panels[2].label, "each step shows its name");
+  const before = JSON.stringify(read());
+  await page.keyboard.press("n");
+  check(await page.locator(".present-notes").isVisible(), "N shows speaker notes");
+  await sleep(500);
+  await page.screenshot({ path: `${shots}/e2e-5-play.png` });
+  await page.keyboard.press("Escape");
+  await sleep(300);
+  check(!(await page.locator(".present").count()) && JSON.stringify(read()) === before, "Esc leaves play mode without changing the file");
+  const lastPanel = page.locator(`g[data-panel="${read().panels.at(-1).id}"] > rect[data-el="__panel"]`);
+  await lastPanel.scrollIntoViewIfNeeded();
+  const lb = await lastPanel.boundingBox();
+  await page.mouse.click(lb.x + 6, lb.y + lb.height * 0.3);
+  await page.getByRole("button", { name: "▶ From here" }).click();
+  check((await page.locator(".present-count").textContent()) === `${read().panels.length} / ${read().panels.length}`, "Play from here starts at the selected panel");
+  await page.keyboard.press("Escape");
+
   await page.mouse.click(5, 990);
   await page.screenshot({ path: `${shots}/e2e-3-after.png` });
 

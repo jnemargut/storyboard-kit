@@ -82,6 +82,8 @@ Or just click around yourself. Your edits and the agent's edits land in the same
   what workaround they used. A feeling line runs across the whole page, with every step named so you can read the journey at a glance. Click "+ name this step" under any panel to name it.
 - **Ask agent** copies a precise pointer to whatever you clicked, so you can paste it to your agent and say
   "make this angrier."
+- **▶ Play** turns the board into a slideshow for crit: one step at a time, full screen, arrow keys to move,
+  N for speaker notes. "From here" in a panel's toolbar starts mid-story.
 - **Export** to PNG, PDF, SVG, a slide deck (one panel per slide, with speaker notes) or a single HTML page
   people can leave comments on.
 
