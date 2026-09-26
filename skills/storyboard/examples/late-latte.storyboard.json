@@ -2,33 +2,32 @@
   "$schema": "../references/schema.json",
   "schemaVersion": 1,
   "title": "The Late Latte",
-  "persona": "Maya, busy commuter",
+  "persona": "Marcus, busy commuter",
   "subtitle": "Journey: mobile order-ahead",
   "cast": {
-    "maya": {
-      "name": "Maya",
-      "skin": "tone-2",
-      "hair": "bun",
+    "marcus": {
+      "name": "Marcus",
+      "skin": "tone-4",
+      "hair": "short",
       "outfit": "jacket",
       "accessories": [
-        "bag"
+        "bag",
+        "beard"
       ]
     },
     "leo": {
       "name": "Leo",
-      "skin": "tone-2",
+      "skin": "tone-4",
       "hair": "curly",
       "age": "child",
       "outfit": "hoodie"
     },
     "sam": {
       "name": "Sam",
-      "skin": "tone-4",
-      "hair": "afro",
-      "outfit": "apron",
-      "accessories": [
-        "beard"
-      ]
+      "skin": "tone-1",
+      "hair": "long",
+      "hairShade": "light",
+      "outfit": "apron"
     }
   },
   "panels": [
@@ -36,7 +35,7 @@
       "id": "title",
       "type": "title",
       "title": "The Late Latte",
-      "subtitle": "Maya · Tuesday · ordered ahead, 4 min ETA"
+      "subtitle": "Marcus · Tuesday · ordered ahead, 4 min ETA"
     },
     {
       "id": "order-ahead",
@@ -46,7 +45,7 @@
       "caption": "7:58 · Packing Leo's lunch, ordering ahead.",
       "characters": [
         {
-          "who": "maya",
+          "who": "marcus",
           "pose": "holding-phone",
           "mood": "focused",
           "at": "counter",
@@ -68,13 +67,13 @@
         {
           "type": "speech",
           "from": "leo",
-          "text": "Mom! Where's my other shoe?"
+          "text": "Dad! Where's my other shoe?"
         }
       ],
       "gestures": [
         {
           "type": "tap",
-          "on": "maya"
+          "on": "marcus"
         }
       ]
     },
@@ -85,7 +84,7 @@
       "label": "Confirmation on the way",
       "characters": [
         {
-          "who": "maya",
+          "who": "marcus",
           "pose": "walking",
           "mood": "happy",
           "angle": "side",
@@ -96,14 +95,14 @@
       "bubbles": [
         {
           "type": "thought",
-          "from": "maya",
+          "from": "marcus",
           "text": "Ready at 8:14. Perfect."
         }
       ],
       "gestures": [
         {
           "type": "notification",
-          "on": "maya"
+          "on": "marcus"
         }
       ]
     },
@@ -115,7 +114,7 @@
       "caption": "8:14 · In line anyway. Is my order even started?",
       "characters": [
         {
-          "who": "maya",
+          "who": "marcus",
           "pose": "holding-phone",
           "mood": "impatient",
           "at": "counter",
@@ -143,7 +142,7 @@
       "label": "The app still says 4 min",
       "characters": [
         {
-          "who": "maya",
+          "who": "marcus",
           "pose": "holding-phone",
           "mood": "frustrated",
           "device": {
@@ -155,14 +154,14 @@
       "bubbles": [
         {
           "type": "thought",
-          "from": "maya",
+          "from": "marcus",
           "text": "It said 4 min. That was 12 min ago…"
         }
       ],
       "gestures": [
         {
           "type": "tap",
-          "on": "maya",
+          "on": "marcus",
           "at": [
             0.5,
             0.8
@@ -184,7 +183,7 @@
       "label": "The workaround: ask a human",
       "characters": [
         {
-          "who": "maya",
+          "who": "marcus",
           "pose": "standing",
           "mood": "stressed",
           "at": "counter"
@@ -193,7 +192,7 @@
       "bubbles": [
         {
           "type": "speech",
-          "from": "maya",
+          "from": "marcus",
           "text": "Sorry, is order 214 ready?"
         }
       ]
@@ -205,7 +204,7 @@
       "label": "Late for the 8:40",
       "characters": [
         {
-          "who": "maya",
+          "who": "marcus",
           "pose": "sitting",
           "mood": "tired",
           "at": "seat",
@@ -215,14 +214,14 @@
       "bubbles": [
         {
           "type": "thought",
-          "from": "maya",
+          "from": "marcus",
           "text": "Next time I'll just stand in line."
         }
       ],
       "callouts": [
         {
-          "text": "Trust lost: she'll skip ordering ahead next time",
-          "target": "maya"
+          "text": "Trust lost: he'll skip ordering ahead next time",
+          "target": "marcus"
         }
       ]
     }

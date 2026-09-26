@@ -1,6 +1,6 @@
 # Worked example
 
-Prompt: *"Storyboard Maya ordering coffee ahead. The app says 4 minutes, it takes 20, she ends up asking the barista and is late for her train."*
+Prompt: *"Storyboard Marcus ordering coffee ahead. The app says 4 minutes, it takes 20, he ends up asking the barista and is late for his train."*
 
 ```json
 {

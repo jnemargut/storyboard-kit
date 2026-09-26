@@ -394,6 +394,8 @@ export function captionBox(text: string, k = 1): Rect & { lines: string[]; size:
 export function placeBubbles(panel: ScenePanel, anchors: Record<string, Anchor>, reserved: Rect[], textScale = 1): BubbleBox[] {
   const out: BubbleBox[] = [];
   const taken = [...reserved];
+  // every face in the panel, with room above for hair, buns and hats: bubbles never sit on anyone's face
+  const faces: Rect[] = Object.values(anchors).flatMap((an) => (an.head ? [{ x: an.head.x - an.head.r * 1.3, y: an.head.y - an.head.r * 1.75, w: an.head.r * 2.6, h: an.head.r * 3 }] : []));
   (panel.bubbles ?? []).forEach((b, i) => {
     const id = b.id ?? `bubble-${i}`;
     const k = textScale * (panel.layout?.[id]?.scale ?? 1);
@@ -415,15 +417,18 @@ export function placeBubbles(panel: ScenePanel, anchors: Record<string, Anchor>,
         [head.x - w - 6, head.y + gap * 0.3], [head.x + 6, head.y + gap * 0.3],
       );
     }
-    cands.push([PANEL_W - w - 8, 8], [8, 8], [PANEL_W / 2 - w / 2, 8], [PANEL_W - w - 8, PANEL_H / 2]);
+    if (head) {
+      // a little further out, for tall hair and crowded panels
+      const far = head.r * 1.9 + 14;
+      cands.push([head.x - w - far, head.y - h - 4], [head.x + far, head.y - h - 4], [head.x - w / 2, head.y - h - far - 6]);
+    }
+    cands.push([PANEL_W - w - 8, 8], [8, 8], [PANEL_W / 2 - w / 2, 8], [PANEL_W - w - 8, PANEL_H / 2], [8, PANEL_H / 2]);
     const inside = ([x, y]: Pt) => x >= 5 && y >= 5 && x + w <= PANEL_W - 5 && y + h <= PANEL_H - 5;
     const clampP = ([x, y]: Pt): Pt => [Math.min(Math.max(5, x), PANEL_W - w - 5), Math.min(Math.max(5, y), PANEL_H - h - 5)];
-    const headRect: Rect | undefined = head ? { x: head.x - head.r, y: head.y - head.r, w: head.r * 2, h: head.r * 2 } : undefined;
-    let pos = cands.find((p) => inside(p) && !taken.some((t) => overlaps({ x: p[0], y: p[1], w, h }, t)) && !(headRect && overlaps({ x: p[0], y: p[1], w, h }, headRect, 2)));
+    let pos = cands.find((p) => inside(p) && !taken.some((t) => overlaps({ x: p[0], y: p[1], w, h }, t)) && !faces.some((f) => overlaps({ x: p[0], y: p[1], w, h }, f, 2)));
     if (!pos) {
       // nothing fits cleanly: pick the clamped spot that covers the least of any face and other bubbles
       const area = (a: Rect, b: Rect) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-      const faces = Object.values(anchors).flatMap((an) => (an.head ? [{ x: an.head.x - an.head.r, y: an.head.y - an.head.r, w: an.head.r * 2, h: an.head.r * 2.4 }] : []));
       const score = (p: Pt) => { const r = { x: p[0], y: p[1], w, h }; return faces.reduce((s, f) => s + area(r, f) * 4, 0) + taken.reduce((s, t) => s + area(r, t), 0); };
       pos = cands.map(clampP).reduce((best, p) => (score(p) < score(best) ? p : best));
     }

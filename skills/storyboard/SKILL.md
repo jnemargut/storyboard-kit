@@ -5,7 +5,7 @@ description: Draft low-fi, sketch-style service-design storyboards (comic-style 
 
 # Storyboards for service design
 
-You turn a designer's loose description ("Maya orders coffee ahead, it's late, she gets annoyed") into a
+You turn a designer's loose description ("Marcus orders coffee ahead, it's late, he gets annoyed") into a
 `*.storyboard.json` file, validate it, and open an editor where the designer tweaks it. The tool draws
 everything in a low-fi marker style where **the software is the only thing in color (teal)**, so the board
 shows where the product actually shows up in someone's day and where it doesn't.
@@ -62,7 +62,7 @@ The point is to see the product from inside the customer's life, not to illustra
 - **Let the product be absent sometimes.** Panels without a device are fine. That contrast is the point.
 - **Use time cards** ("12 minutes later…") for gaps, and a title card first.
 - **End on the outcome for the person**, not on a UI state. A callout can name the consequence
-  ("Trust lost: she'll skip ordering ahead").
+  ("Trust lost: he'll skip ordering ahead").
 - 5–9 panels is typical. Keep bubbles under ~12 words.
 - Build a varied, realistic cast (skin, age, body, hair, accessories such as glasses, cane, wheelchair,
   hijab) that fits the story. Don't default everyone to the same look. Dress staff for their job: `outfit`
