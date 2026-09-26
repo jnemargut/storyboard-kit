@@ -179,6 +179,7 @@ const DRAW_TOOLS: { id: ShapeType; name: string; sub: string; sample: [number, n
   { id: "line", name: "Line", sub: "drag end to end", sample: [[8, 38], [48, 10]] },
   { id: "arrow", name: "Arrow", sub: "drag tail to tip", sample: [[8, 38], [48, 10]] },
   { id: "path", name: "Pen", sub: "sketch freehand; Esc to stop", sample: [[6, 30], [14, 14], [24, 30], [34, 12], [44, 26], [50, 18]] },
+  { id: "text", name: "Text", sub: "click a panel, then type", sample: [[28, 26]] },
 ];
 
 function PoseThumb({ pose, cast }: { pose: Pose; cast: CastMember }) {
@@ -259,7 +260,7 @@ export function Drawer({ board, sel, commit, setSel, flash, tool, setTool, addIm
               {DRAW_TOOLS.map((t) => (
                 <button key={t.id} className={`tile tool${tool === t.id ? " on" : ""}`} aria-pressed={tool === t.id}
                   onClick={() => setTool(tool === t.id ? null : t.id)} title={`${t.name}: ${t.sub}`}>
-                  <svg width={56} height={48} viewBox="0 0 56 48"><ShapeMark s={{ type: t.id, points: t.sample, fill: t.id === "rect" || t.id === "ellipse" ? "light" : undefined }} /></svg>
+                  <svg width={56} height={48} viewBox="0 0 56 48"><ShapeMark s={{ type: t.id, points: t.sample, fill: t.id === "rect" || t.id === "ellipse" ? "light" : undefined, text: t.id === "text" ? "Aa" : undefined }} /></svg>
                   <span className="t-name">{t.name}</span><span className="t-sub">{t.sub}</span>
                 </button>
               ))}

@@ -1,7 +1,7 @@
 /** Designer-drawn shapes: boxes, ovals, lines, arrows and freehand, for anything the vocabulary lacks. */
 import type { LayoutOverride, Shape } from "../types";
 import type { Rect } from "./devices";
-import { C } from "./tokens";
+import { C, FONT } from "./tokens";
 
 const SHAPE_FILL: Record<string, string> = { none: "none", light: C.g2, mid: C.g4, dark: C.g7 };
 
@@ -26,6 +26,22 @@ function smooth(pts: [number, number][]): string {
 
 /** One shape in marker style: ink outline, grey fill, round ends. */
 export function ShapeMark({ s }: { s: Shape }) {
+  if (s.type === "text") {
+    // hand-lettered, centred on its point; a clear box behind makes it easy to grab
+    const [x, y] = s.points[0];
+    const lines = (s.text ?? "").split("\n");
+    const size = 16, lh = size * 1.2;
+    const w = Math.max(24, ...lines.map((l) => l.length * size * 0.45)), h = lines.length * lh;
+    const top = y - h / 2 + size * 0.85;
+    return (
+      <g>
+        <rect x={x - w / 2 - 4} y={y - h / 2 - 3} width={w + 8} height={h + 6} fill="transparent" />
+        <text textAnchor="middle" fontFamily={FONT.hand} fontSize={size} fill={C.ink} stroke={C.paper} strokeWidth={3.5} strokeLinejoin="round" paintOrder="stroke">
+          {lines.map((l, i) => <tspan key={i} x={x} y={top + i * lh}>{l || "\u00a0"}</tspan>)}
+        </text>
+      </g>
+    );
+  }
   const [a, b] = s.points;
   const fill = SHAPE_FILL[s.fill ?? "none"] ?? "none";
   // closed shapes stay clickable inside even when unfilled

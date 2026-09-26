@@ -41,19 +41,29 @@ export function BubbleShape({ b }: { b: BubbleBox }) {
   const fill = C.paper;
   const tailEl = (): ReactNode => {
     if (!tail) return null;
+    // work from the bubble's own centre and outline, so the tail always leaves the actual edge
+    const cx = x + w / 2, cy = y + h / 2;
+    const [tx, ty] = tail.to;
+    const dist = Math.hypot(tx - cx, ty - cy) || 1;
+    const ux = (tx - cx) / dist, uy = (ty - cy) / dist;
     if (type === "thought") {
-      const [fx, fy] = tail.from, [tx, ty] = tail.to;
-      const dots = [0.35, 0.62, 0.86].map((t, i) => (
-        <circle key={i} cx={fx + (tx - fx) * t} cy={fy + (ty - fy) * t} r={[4.2, 3, 2][i]} fill={fill} stroke={ink} strokeWidth={1.8} />
-      ));
+      // the cloud is an ellipse with bumps: start just outside it and keep the dots close together
+      const edge = 1 / Math.sqrt((ux * ux) / ((w / 2) ** 2) + (uy * uy) / ((h / 2) ** 2)) * 1.1;
+      const room = Math.max(12, Math.min(dist - edge - 6, 44));
+      const dots = [0.12, 0.5, 0.85].map((t, i) => {
+        const d = edge + 5 + room * t;
+        return <circle key={i} cx={cx + ux * d} cy={cy + uy * d} r={[4.2, 3, 2][i]} fill={fill} stroke={ink} strokeWidth={1.8} />;
+      });
       return <g>{dots}</g>;
     }
-    const [fx, fy] = tail.from, [tx, ty] = tail.to;
+    // speech, shout, whisper: the wedge starts well inside the body (drawn on top), so it joins at any angle
+    const boxEdge = Math.min(Math.abs(w / 2 / (ux || 1e-6)), Math.abs(h / 2 / (uy || 1e-6)));
+    const fx = cx + ux * boxEdge * 0.5, fy = cy + uy * boxEdge * 0.5;
     const ang = Math.atan2(ty - fy, tx - fx) + Math.PI / 2;
-    const bw = 7;
+    const bw = Math.min(15, Math.max(8, Math.hypot(tx - fx, ty - fy) * 0.07)); // longer tails get a wider base so they read as a wedge
     const p1: Pt = [fx + Math.cos(ang) * bw, fy + Math.sin(ang) * bw];
     const p2: Pt = [fx - Math.cos(ang) * bw, fy - Math.sin(ang) * bw];
-    const d = `M${p1[0]} ${p1[1]} Q${(p1[0] + tx) / 2} ${(p1[1] + ty) / 2} ${tx} ${ty} Q${(p2[0] + tx) / 2 + 2} ${(p2[1] + ty) / 2} ${p2[0]} ${p2[1]}`;
+    const d = `M${p1[0]} ${p1[1]} Q${(p1[0] + tx) / 2} ${(p1[1] + ty) / 2} ${tx} ${ty} Q${(p2[0] + tx) / 2 + 2} ${(p2[1] + ty) / 2} ${p2[0]} ${p2[1]} Z`;
     return <path d={d} fill={fill} stroke={ink} strokeWidth={2} strokeDasharray={type === "whisper" ? "4 3" : undefined} strokeLinejoin="round" />;
   };
   let body: ReactNode;

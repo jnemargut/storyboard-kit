@@ -89,6 +89,8 @@ export interface Shape {
   type: ShapeType;
   points: [number, number][];
   fill?: ShapeFill;
+  /** The words, for a "text" shape. */
+  text?: string;
 }
 
 /** Any picture placed in a scene (a found photo, a product shot, a prop). Sketchified in greys unless `sketch: false`. */

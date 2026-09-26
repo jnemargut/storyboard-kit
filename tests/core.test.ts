@@ -409,6 +409,16 @@ describe("shapes (free drawing)", () => {
     expect((after.panels[1] as { shapes?: unknown[] }).shapes).toHaveLength(1);
     expect(after.panels[1].layout?.["shape-1"]).toBeUndefined();
   });
+  it("free text: one point plus words, rendered and validated", () => {
+    const b = withShapes([{ type: "text", points: [[200, 40]], text: "Queue: 9 people\nnobody moving" }]);
+    expect(validate(b).errors).toEqual([]);
+    const svg = renderBoardSVG(b, { asset });
+    expect(svg).toContain("Queue: 9 people");
+    expect(svg).toContain("nobody moving");
+    const bad = validate(withShapes([{ type: "text", points: [[200, 40]] }, { type: "rect", points: [[1, 1]] }])).errors.map((e) => e.path);
+    expect(bad.some((p) => p.endsWith("shapes[0].text"))).toBe(true);
+    expect(bad.some((p) => p.endsWith("shapes[1].points"))).toBe(true);
+  });
   it("copies and pastes a shape, offset so it's visible", () => {
     const b = withShapes([{ type: "rect", points: [[10, 10], [60, 50]] }]);
     const sel = { panel: b.panels[1].id, el: "shape-0", kind: "shape" as const };

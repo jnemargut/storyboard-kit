@@ -145,6 +145,7 @@ export const SHAPES = [
   e("line", "Straight line between two points."),
   e("arrow", "Line with an arrowhead at the second point."),
   e("path", "Freehand line through every point (sketch anything missing)."),
+  e("text", "Free text written on the panel. `points`: one [x, y] centre; `text`: the words (\\n for a new line)."),
 ] as const;
 export const SHAPE_FILLS = [e("none", "Outline only (default for lines)."), e("light", "Light grey."), e("mid", "Mid grey."), e("dark", "Dark grey.")] as const;
 

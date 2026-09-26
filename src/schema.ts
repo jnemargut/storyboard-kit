@@ -151,7 +151,8 @@ export function buildSchema() {
                     type: "object", required: ["type", "points"], additionalProperties: false,
                     properties: {
                       id: { type: "string" }, type: oneOf(SHAPES), fill: oneOf(SHAPE_FILLS),
-                      points: { type: "array", minItems: 2, items: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2 } },
+                      points: { type: "array", minItems: 1, items: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2 } },
+                      text: { type: "string", description: "The words, for a text shape." },
                     },
                   },
                 },

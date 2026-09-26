@@ -779,9 +779,10 @@
                         "ellipse",
                         "line",
                         "arrow",
-                        "path"
+                        "path",
+                        "text"
                       ],
-                      "description": "rect: Box. `points`: two opposite corners [[x1,y1],[x2,y2]].\nellipse: Circle or oval inside the box given by two corners.\nline: Straight line between two points.\narrow: Line with an arrowhead at the second point.\npath: Freehand line through every point (sketch anything missing)."
+                      "description": "rect: Box. `points`: two opposite corners [[x1,y1],[x2,y2]].\nellipse: Circle or oval inside the box given by two corners.\nline: Straight line between two points.\narrow: Line with an arrowhead at the second point.\npath: Freehand line through every point (sketch anything missing).\ntext: Free text written on the panel. `points`: one [x, y] centre; `text`: the words (\\n for a new line)."
                     },
                     "fill": {
                       "enum": [
@@ -794,7 +795,7 @@
                     },
                     "points": {
                       "type": "array",
-                      "minItems": 2,
+                      "minItems": 1,
                       "items": {
                         "type": "array",
                         "items": {
@@ -803,6 +804,10 @@
                         "minItems": 2,
                         "maxItems": 2
                       }
+                    },
+                    "text": {
+                      "type": "string",
+                      "description": "The words, for a text shape."
                     }
                   }
                 }

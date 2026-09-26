@@ -241,6 +241,7 @@ Field: `shapes[].type`
 - `line`: Straight line between two points.
 - `arrow`: Line with an arrowhead at the second point.
 - `path`: Freehand line through every point (sketch anything missing).
+- `text`: Free text written on the panel. `points`: one [x, y] centre; `text`: the words (\n for a new line).
 
 ## shape-fills
 

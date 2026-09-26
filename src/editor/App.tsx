@@ -17,7 +17,7 @@ type Drag =
   | { mode: "draw"; pi: number; pid: string; shape: Shape; index: number; moved: boolean }
   | { mode: "rotate"; cx: number; cy: number; a0: number; ov: LayoutOverride; moved: boolean; sel: Sel };
 
-const TEXT_KINDS: Kind[] = ["bubble", "caption", "text", "callout", "header", "label", "workaround"];
+const TEXT_KINDS: Kind[] = ["bubble", "caption", "text", "callout", "header", "label", "workaround", "shape"];
 const ROTATABLE: Kind[] = ["character", "device", "shape", "image"];
 const SCALABLE: Kind[] = ["character", "device", "bubble", "caption", "callout", "text", "shape", "image"];
 
@@ -164,6 +164,17 @@ export function App() {
       const p = board.panels[pi];
       if (!p || !isScene(p)) { flash("Draw on a scene panel."); return; }
       const pt = panelPoint(e, board, pi);
+      if (tool === "text") {
+        // one click places the text and goes straight to typing
+        const index = (p.shapes ?? []).length, el = `shape-${index}`;
+        const s: Sel = { panel: p.id, el, kind: "shape" };
+        setTool(null);
+        void commit([{ path: ["panels", pi, "shapes", index], value: { type: "text", points: [pt], text: "Text" } }], "Text added").then(() => {
+          setSel(s);
+          window.setTimeout(() => { const b = measure(s); if (b) setEditing({ sel: s, field: "text", value: "", box: b }); }, 30);
+        });
+        return;
+      }
       drag.current = { mode: "draw", pi, pid: p.id, shape: { type: tool, points: [pt, pt] }, index: (p.shapes ?? []).length, moved: false };
       setSel(null);
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -304,6 +315,10 @@ export function App() {
     if (loc && (loc.key === "bubbles" || loc.key === "callouts")) {
       return { field: "text", value: ((p as ScenePanel)[loc.key]![loc.index] as { text: string }).text };
     }
+    if (loc?.key === "shapes") {
+      const sh = (p as ScenePanel).shapes![loc.index];
+      return sh.type === "text" ? { field: "text", value: sh.text ?? "" } : null;
+    }
     return null;
   };
   const startEdit = (s: Sel, field?: string) => {
@@ -324,8 +339,10 @@ export function App() {
     if (s.kind === "label" || s.kind === "workaround") return void commit([value.trim() ? { path: ["panels", pi, field], value: value.trim() } : { path: ["panels", pi, field], delete: true }]);
     const p = board.panels[pi];
     const loc = locate(p, s.el);
+    // free text left empty is removed rather than kept as an invisible shape
+    if (loc?.key === "shapes" && !value.trim()) { void commit([{ path: ["panels", pi, "shapes", loc.index], delete: true }, { path: ["panels", pi, "layout", s.el], delete: true }], "Empty text removed"); setSel(null); return; }
     const path = loc ? ["panels", pi, loc.key, loc.index, field] : ["panels", pi, field];
-    void commit([{ path, value: value.trim() }]);
+    void commit([{ path, value: loc?.key === "shapes" ? value.replace(/\s+$/, "") : value.trim() }]);
   };
 
   // ------------------------------------------------------------ copy / paste (system clipboard, works across boards)

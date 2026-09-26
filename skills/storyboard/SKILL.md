@@ -27,6 +27,8 @@ path. **Below, `sb` is short for that whole command.**
    `sb vocab scenes` (with marks), `sb vocab shots`, etc. `sb vocab --grep hospital` searches
    every category. If a place you need doesn't exist, pick the closest scene and say so in `label` or a `caption`.
    A missing prop (a parcel, a sign, a queue barrier) can be a few `shapes`; the designer can redraw it in the editor.
+   A `"text"` shape writes free words anywhere on a panel (a sign's wording, "9 people ahead"):
+   `{ "type": "text", "points": [[200, 40]], "text": "9 people ahead" }`.
    If the designer hands you a picture that isn't a screen (a photo, a product, a found image), put it in the
    panel's `images`. It's sketchified in greys to match; `"sketch": false` shows it as-is.
    Full list: [references/vocabulary.md](references/vocabulary.md).

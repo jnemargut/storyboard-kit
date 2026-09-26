@@ -213,6 +213,16 @@ try {
   const pics = read().panels[3].images ?? [];
   check(pics.length === 1 && pics[0].src.startsWith("./images/") && pics[0].sketch === undefined, "Picture… adds a sketchified image to the selected panel");
   check(await page.locator('g[data-panel="in-line"] [data-kind="image"] image').count() === 1, "the picture renders in the editor");
+  // free text: pick Text, click a panel, type
+  await page.locator(".tabs button", { hasText: "Draw" }).click();
+  await page.getByRole("button", { name: /^Text/ }).click();
+  await page.mouse.click(drawBox.x + drawBox.width * 0.5, drawBox.y + drawBox.height * 0.12);
+  await page.locator("textarea.inline-edit").waitFor();
+  await page.keyboard.type("Queue: 9 people");
+  await page.keyboard.press("Enter");
+  await sleep(400);
+  const txt = (read().panels[3].shapes ?? []).find((s) => s.type === "text");
+  check(txt?.text === "Queue: 9 people" && txt.points.length === 1, "Text tool: click a panel and type free text");
   await page.getByRole("button", { name: "Close" }).click();
 
   // arrange, rotate and duplicate the selected person with the keyboard / handle
@@ -239,6 +249,7 @@ try {
   await page.getByRole("button", { name: "▶ Play" }).click();
   await page.locator(".present").waitFor();
   check((await page.locator(".present-count").textContent()) === `1 / ${read().panels.length}`, "Play starts at step 1");
+  check((await page.evaluate(() => getComputedStyle(document.querySelector(".present")).cursor)).startsWith("url("), "play mode uses the big pointer");
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowRight");
   check((await page.locator(".present-count").textContent()).startsWith("3 /"), "arrow keys step through the board");

@@ -340,9 +340,23 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
     if (!sh) return null;
     const ov = panel.layout?.[sel.el] ?? {};
     const open = sh.type === "line" || sh.type === "arrow";
+    if (sh.type === "text") {
+      const size = (k: number) => commit(layoutOps(pi, sel.el, { scale: Math.round(Math.min(4, Math.max(0.4, (ov.scale ?? 1) * k)) * 100) / 100 }));
+      return render(
+        <>
+          <span className="kind">Text</span>
+          {editText}
+          <button onClick={() => size(1 / 1.2)} title="Smaller">A−</button>
+          <button onClick={() => size(1.2)} title="Bigger">A+</button>
+          <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: ((ov.rotate ?? 0) + 15) % 360 }))} title="Rotate 15°">⟳</button>
+          {remove}
+        </>,
+        reset ?? undefined,
+      );
+    }
     return render(
       <>
-        <Pick title="Shape" value={sh.type} options={ids(SHAPES)} labels={{ rect: "box", ellipse: "oval", path: "freehand" }} onChange={(v) => set("type", v)} />
+        <Pick title="Shape" value={sh.type} options={ids(SHAPES).filter((x) => x !== "text")} labels={{ rect: "box", ellipse: "oval", path: "freehand" }} onChange={(v) => set("type", v)} />
         {!open && <Pick title="Fill" value={sh.fill ?? "none"} options={ids(SHAPE_FILLS)} labels={{ none: "no fill", light: "light fill", mid: "mid fill", dark: "dark fill" }} onChange={(v) => set("fill", v === "none" ? undefined : v)} />}
         <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: ((ov.rotate ?? 0) + 15) % 360 }))} title="Rotate 15°">⟳</button>
         {remove}

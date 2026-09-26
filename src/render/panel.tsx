@@ -116,10 +116,8 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
         {device}
         {handheld && (
           <g data-el={c.id} data-kind="character">
-            {/* the back of the hand wraps the phone's edge, thumb over the screen */}
+            {/* just the back of the hand on the phone's edge: no fingers, the touch mark shows the tap */}
             <path d={`M${handP[0] - 12} ${handP[1] + 10} Q${handP[0] - 14} ${handP[1] - 8} ${handP[0] - 2} ${handP[1] - 12} Q${handP[0] + 10} ${handP[1] - 12} ${handP[0] + 11} ${handP[1] + 2} Q${handP[0] + 8} ${handP[1] + 14} ${handP[0] - 12} ${handP[1] + 10} Z`} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" />
-            <path d={`M${handP[0] + 4} ${handP[1] - 10} q8 -9 15 -6`} fill="none" stroke={ink} strokeWidth={5.5} strokeLinecap="round" />
-            <path d={`M${handP[0] + 4} ${handP[1] - 10} q8 -9 15 -6`} fill="none" stroke={skin} strokeWidth={2.6} strokeLinecap="round" />
           </g>
         )}
       </g>
@@ -127,7 +125,7 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
   }
   if (sp.kind === "screen") {
     const handP: Pt = [dcx + dw - 4, dcy + dh * 0.3];
-    return <g>{handheld && arm([PANEL_W + 20, PANEL_H + 20], [handP[0] + 10, handP[1] + 14], 22)}{device}{handheld && <g>{hand(handP, 14)}<path d={`M${handP[0] - 6} ${handP[1] - 8} q-12 -6 -16 4`} stroke={ink} strokeWidth={2} fill={skin} /></g>}</g>;
+    return <g>{handheld && arm([PANEL_W + 20, PANEL_H + 20], [handP[0] + 10, handP[1] + 14], 22)}{device}{handheld && hand(handP, 14)}</g>;
   }
   // pov: two hands
   const lh: Pt = [dcx - dw + 2, dcy + dh * 0.35], rh: Pt = [dcx + dw - 2, dcy + dh * 0.35];
@@ -199,7 +197,7 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
     if (it.kind === "character") { const c = L.chars.find((x) => x.id === it.id)!; return <CharEl key={c.id} c={c} pid={pid} cam={cam} layout={panel.layout} />; }
     if (it.kind === "image") return <ImageEl key={it.id} id={it.id} im={panel.images![it.index!]} ov={panel.layout?.[it.id] ?? {}} opts={opts} wrap={unCam} />;
     const sh = panel.shapes![it.index!], ov = panel.layout?.[it.id] ?? {};
-    return !ov.hidden && sh.points?.length >= 2 && <g key={it.id} transform={unCam}><g data-el={it.id} data-kind="shape" transform={shapeTransform(sh, ov)}><ShapeMark s={sh} /></g></g>;
+    return !ov.hidden && sh.points?.length >= 1 && <g key={it.id} transform={unCam}><g data-el={it.id} data-kind="shape" transform={shapeTransform(sh, ov)}><ShapeMark s={sh} /></g></g>;
   });
 
   return (
@@ -221,7 +219,7 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
         {L.special && (panel.images ?? []).map((im, i) => { const id = im.id ?? `image-${i}`; return <ImageEl key={id} id={id} im={im} ov={panel.layout?.[id] ?? {}} opts={opts} />; })}
         {L.special && (panel.shapes ?? []).map((sh, i) => {
           const id = shapeId(sh, i), ov = panel.layout?.[id] ?? {};
-          return !ov.hidden && sh.points?.length >= 2 && <g key={id} data-el={id} data-kind="shape" transform={shapeTransform(sh, ov)}><ShapeMark s={sh} /></g>;
+          return !ov.hidden && sh.points?.length >= 1 && <g key={id} data-el={id} data-kind="shape" transform={shapeTransform(sh, ov)}><ShapeMark s={sh} /></g>;
         })}
         {cap && !(panel.layout?.caption?.hidden) && <g data-el="caption" data-kind="caption"><CaptionShape r={cap} /></g>}
         {bubbles.map((b) => !(panel.layout?.[b.id]?.hidden) && <g key={b.id} data-el={b.id} data-kind="bubble"><BubbleShape b={b} /></g>)}

@@ -290,13 +290,15 @@ export function validate(input: unknown): Result {
     else shapes.forEach((s, j) => {
       const sp = `${p}.shapes[${j}]`;
       if (!isObj(s)) { err(sp, "must be an object."); return; }
-      known(sp, s, ["id", "type", "points", "fill"]);
+      known(sp, s, ["id", "type", "points", "fill", "text"]);
       oneOf(`${sp}.type`, s.type, SHAPES, "shape");
       if (s.type === undefined) err(`${sp}.type`, "is required.", `One of: ${ids(SHAPES).join(", ")}`);
       oneOf(`${sp}.fill`, s.fill, SHAPE_FILLS, "shape-fill");
       const pts = s.points;
-      if (!Array.isArray(pts) || pts.length < 2 || pts.some((q) => !Array.isArray(q) || q.length !== 2 || q.some((n) => typeof n !== "number" || !Number.isFinite(n))))
-        err(`${sp}.points`, "must be at least two [x, y] points in panel units (400 wide, 260 tall).", "e.g. [[40, 120], [120, 200]]");
+      const isText = s.type === "text";
+      if (!Array.isArray(pts) || pts.length < (isText ? 1 : 2) || pts.some((q) => !Array.isArray(q) || q.length !== 2 || q.some((n) => typeof n !== "number" || !Number.isFinite(n))))
+        err(`${sp}.points`, isText ? "must be one [x, y] point: where the text is centred (panel units, 400 wide, 260 tall)." : "must be at least two [x, y] points in panel units (400 wide, 260 tall).", isText ? "e.g. [[200, 40]]" : "e.g. [[40, 120], [120, 200]]");
+      if (isText) str(`${sp}.text`, s.text, true);
     });
 
     const images = raw.images ?? [];
