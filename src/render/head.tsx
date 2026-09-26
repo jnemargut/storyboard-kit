@@ -50,7 +50,7 @@ export function hairBack(cast: CastMember, f: Figure, hx: number, hy: number, r:
     }
     case "long":
       if (f.view === "side") return <path d={`M${hx - d * 0.15 * r} ${hy} L${hx - d * 0.35 * r} ${hy + 1.45 * r} L${hx - d * 1.15 * r} ${hy + 1.35 * r} L${hx - d * r} ${hy - 0.1 * r} Z`} {...st} />;
-      if (f.view === "back") return <path d={`M${hx - r} ${hy} L${hx - r - 1} ${hy + 1.55 * r} H${hx + r + 1} L${hx + r} ${hy} Z`} {...st} />;
+      if (f.view === "back") return null; // drawn over the back instead (hairFront)
       return <path d={`M${hx - r} ${hy - 0.2 * r} Q${hx - r - 2.5} ${hy + 1.1 * r} ${hx - r + 1} ${hy + 1.45 * r} L${hx + r - 1} ${hy + 1.45 * r} Q${hx + r + 2.5} ${hy + 1.1 * r} ${hx + r} ${hy - 0.2 * r} Z`} {...st} />;
     case "ponytail":
       if (f.view === "front" && f.angle === "three-quarter") {
@@ -76,6 +76,17 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
     return (
       <g>
         <circle cx={hx} cy={hy} r={r} {...st} />
+        {/* long hair seen from behind falls over the upper back, in front of the shoulders */}
+        {cast.hair === "long" && (() => {
+          // filled without an edge across the head, then inked down the sides and along the ends only
+          const d = `M${hx - r} ${hy} Q${hx - r - 2} ${hy + 1.2 * r} ${hx - 0.85 * r} ${hy + 1.85 * r} Q${hx} ${hy + 2.0 * r} ${hx + 0.85 * r} ${hy + 1.85 * r} Q${hx + r + 2} ${hy + 1.2 * r} ${hx + r} ${hy}`;
+          return <><path d={`${d} Z`} fill={st.fill} stroke="none" /><path d={d} fill="none" stroke={ink} strokeWidth={st.strokeWidth} strokeLinejoin="round" /></>;
+        })()}
+        {/* a couple of strands from the crown, so the back of a head reads as hair rather than a blank face */}
+        {["short", "long", "bun", "ponytail"].includes(cast.hair ?? "short") && (
+          <path d={`M${hx - 0.15 * r} ${hy - 0.8 * r} Q${hx - 0.45 * r} ${hy - 0.1 * r} ${hx - 0.4 * r} ${hy + (cast.hair === "long" ? 1.3 : 0.5) * r} M${hx + 0.25 * r} ${hy - 0.75 * r} Q${hx + 0.45 * r} ${hy - 0.05 * r} ${hx + 0.35 * r} ${hy + (cast.hair === "long" ? 1.4 : 0.55) * r}`}
+            fill="none" stroke={ink} strokeWidth={1} strokeLinecap="round" opacity={0.4} />
+        )}
         {cast.hair === "bun" && <circle cx={hx} cy={hy - r - 3} r={r * 0.42} {...st} />}
         {cast.hair === "ponytail" && <path d={`M${hx - 0.22 * r} ${hy + 0.35 * r} Q${hx - 0.3 * r} ${hy + 1.2 * r} ${hx} ${hy + 1.45 * r} Q${hx + 0.3 * r} ${hy + 1.2 * r} ${hx + 0.22 * r} ${hy + 0.35 * r} Z`} {...st} />}
       </g>

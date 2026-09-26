@@ -99,24 +99,27 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
     const ov = panel.layout?.[c.id] ?? {};
     const S = g.S * (ov.scale ?? 1);
     const cx = g.charX + (ov.dx ?? 0), cy = g.charY + (ov.dy ?? 0);
-    // the near arm comes up from her own shoulder and the hand grips the phone's lower corner: held at chest height
+    // seen from behind, the near arm reaches forward, away from us: the body hides the upper arm, so only the
+    // forearm shows, coming out from the side of the body up to the hand gripping the phone's lower corner
     const j = c.fig.j;
-    const nearLeft = j.shL[0] > j.shR[0]; // seen from behind, the shoulder on the phone's side
+    const nearLeft = j.shL[0] > j.shR[0]; // the shoulder on the phone's side
     const sh = nearLeft ? j.shL : j.shR;
-    const shoulder: Pt = [cx + sh[0] * S, cy + sh[1] * S + 6];
-    const handP: Pt = [dcx - dw * 0.62, dcy + dh * 0.86];
-    const elbow: Pt = [shoulder[0] + (handP[0] - shoulder[0]) * 0.55 + 10, Math.max(shoulder[1], handP[1]) + 26];
+    const shoulder: Pt = [cx + sh[0] * S, cy + sh[1] * S];
+    const handP: Pt = [dcx - dw * 0.55, dcy + dh * 0.8];
+    const elbow: Pt = [shoulder[0] - 14, shoulder[1] + 62]; // tucked in at the waist, behind the body
     return (
       <g>
+        {handheld && <g data-el={c.id} data-kind="character">{arm(elbow, handP, 15)}</g>}
         <g data-el={c.id} data-kind="character" transform={`translate(${cx} ${cy}) scale(${S})`}>
           <Character f={c.fig} cast={c.cast} mood={c.mood} hideArm={handheld ? (nearLeft ? "left" : "right") : undefined} />
         </g>
         {device}
         {handheld && (
           <g data-el={c.id} data-kind="character">
-            {arm(shoulder, elbow, 17)}{arm(elbow, handP, 15)}
-            <ellipse cx={handP[0] + 2} cy={handP[1]} rx={11} ry={13} transform={`rotate(-20 ${handP[0] + 2} ${handP[1]})`} fill={skin} stroke={ink} strokeWidth={2} />
-            <path d={`M${handP[0] + 6} ${handP[1] - 8} q9 -5 12 3`} fill="none" stroke={ink} strokeWidth={2} strokeLinecap="round" />
+            {/* the back of the hand wraps the phone's edge, thumb over the screen */}
+            <path d={`M${handP[0] - 12} ${handP[1] + 10} Q${handP[0] - 14} ${handP[1] - 8} ${handP[0] - 2} ${handP[1] - 12} Q${handP[0] + 10} ${handP[1] - 12} ${handP[0] + 11} ${handP[1] + 2} Q${handP[0] + 8} ${handP[1] + 14} ${handP[0] - 12} ${handP[1] + 10} Z`} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" />
+            <path d={`M${handP[0] + 4} ${handP[1] - 10} q8 -9 15 -6`} fill="none" stroke={ink} strokeWidth={5.5} strokeLinecap="round" />
+            <path d={`M${handP[0] + 4} ${handP[1] - 10} q8 -9 15 -6`} fill="none" stroke={skin} strokeWidth={2.6} strokeLinecap="round" />
           </g>
         )}
       </g>
