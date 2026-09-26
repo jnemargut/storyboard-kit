@@ -4,7 +4,6 @@ import type { Board, CharacterInPanel, Panel, ScenePanel } from "../types";
 import { isScene } from "../types";
 import { ANGLES, BUBBLES, DEVICES, DIRECTIONS, GESTURES, HANDHELD, MOODS, POSES, SCENES, SHAPE_FILLS, SHAPES, SHOTS, TIME_ICONS, ids } from "../vocab";
 import { heldDeviceOf } from "../render/layout";
-import { feelingOf } from "../render/board";
 import { CastEditor } from "./Drawer";
 import { handToOps, putDownOps, swapWhoOps, locate, movePanelOps, panelIndex, removeOps, resetLayoutOps, setFieldOps, layoutOps, type Sel } from "./model";
 import { ARRANGEABLE, type Arrange } from "./model";
@@ -134,7 +133,7 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
     return render(<><span className="kind">Workaround (journey lane)</span><button onClick={() => startEdit()}>Edit</button>{isScene(panel) && panel.workaround && <button onClick={() => commit([{ path: ["panels", pi, "workaround"], delete: true }])}>Remove</button>}</>);
   }
   if (sel.kind === "label") {
-    return render(<><span className="kind">Panel {pi + 1} label</span><button onClick={() => startEdit()}>Edit label</button>{panel.label && <button onClick={() => commit([{ path: ["panels", pi, "label"], delete: true }])}>Remove</button>}</>);
+    return render(<><span className="kind">Step {pi + 1} name</span><button onClick={() => startEdit()}>{panel.label ? "Rename" : "Name step"}</button>{panel.label && <button onClick={() => commit([{ path: ["panels", pi, "label"], delete: true }])}>Remove</button>}</>);
   }
   const special = isScene(panel) && ["over-the-shoulder", "screen", "pov"].includes(panel.shot ?? "");
   const set = (field: string, value: unknown) => commit(setFieldOps(board, sel, field, value));
@@ -167,7 +166,7 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
           return (
             <Pick title="Name on this panel's storefront or sign (Brand in the top bar sets the default)" value={cur}
               options={["", "__blank", ...others.filter((o) => o !== boardName), "__new"]}
-              labels={{ "": boardName ? `sign: ${boardName} (board brand)` : "sign: board brand (none set)", __blank: "sign: blank", __new: "sign: other name…" }}
+              labels={{ "": boardName ? `sign: ${boardName}` : "sign: default", __blank: "sign: blank", __new: "sign: other…" }}
               onChange={(v) => {
                 if (v === "__new") { const n = window.prompt("Name on this panel's sign (another store, a competitor…)", typeof panel.sign === "string" ? panel.sign : ""); if (n?.trim()) void set("sign", n.trim()); return; }
                 void set("sign", v === "__blank" ? false : v || undefined);
@@ -193,7 +192,6 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
         <button onClick={() => move(1)} disabled={pi === board.panels.length - 1} title="Move later">Later</button>
         {panel.layout && <button onClick={() => commit([{ path: ["panels", pi, "layout"], delete: true }], "All manual moves in this panel reset")}>Reset all moves</button>}
         {remove}
-        {isScene(panel) && !lanes && <span className="kind">{feelingOf(panel) !== undefined ? `feels ${feelingOf(panel)! > 0 ? "good" : feelingOf(panel)! < 0 ? "bad" : "okay"}` : ""}</span>}
       </>
     );
     return render(main, more);

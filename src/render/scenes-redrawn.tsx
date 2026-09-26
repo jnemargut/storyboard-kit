@@ -98,7 +98,7 @@ export const REDRAWN_SCENES: Record<string, SceneDef> = {
       </g>
     ),
     marks: {
-      "car-door": { x: 256, y: FLOOR_Y, facing: "left" },
+      "car-door": { x: 214, y: FLOOR_Y, facing: "left" },
       charger: { x: 296, y: FLOOR_Y, facing: "right" },
       walkway: { x: 386, y: FLOOR_Y, facing: "left" },
     },

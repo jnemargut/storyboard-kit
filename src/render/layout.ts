@@ -425,11 +425,22 @@ export function placeBubbles(panel: ScenePanel, anchors: Record<string, Anchor>,
     cands.push([PANEL_W - w - 8, 8], [8, 8], [PANEL_W / 2 - w / 2, 8], [PANEL_W - w - 8, PANEL_H / 2], [8, PANEL_H / 2]);
     const inside = ([x, y]: Pt) => x >= 5 && y >= 5 && x + w <= PANEL_W - 5 && y + h <= PANEL_H - 5;
     const clampP = ([x, y]: Pt): Pt => [Math.min(Math.max(5, x), PANEL_W - w - 5), Math.min(Math.max(5, y), PANEL_H - h - 5)];
-    let pos = cands.find((p) => inside(p) && !taken.some((t) => overlaps({ x: p[0], y: p[1], w, h }, t)) && !faces.some((f) => overlaps({ x: p[0], y: p[1], w, h }, f, 2)));
+    // the tail runs from the bubble to the speaker's head; it shouldn't cut across anyone else's face on the way
+    const own = head ? faces.find((f) => head.x >= f.x && head.x <= f.x + f.w && head.y >= f.y && head.y <= f.y + f.h) : undefined;
+    const tailClear = (p: Pt) => {
+      if (!head) return true;
+      const cx = p[0] + w / 2, cy = p[1] + h / 2;
+      for (let t = 0.05; t < 0.95; t += 0.05) {
+        const x = cx + (head.x - cx) * t, y = cy + (head.y - cy) * t;
+        if (faces.some((f) => f !== own && x > f.x && x < f.x + f.w && y > f.y && y < f.y + f.h)) return false;
+      }
+      return true;
+    };
+    let pos = cands.find((p) => inside(p) && !taken.some((t) => overlaps({ x: p[0], y: p[1], w, h }, t)) && !faces.some((f) => overlaps({ x: p[0], y: p[1], w, h }, f, 2)) && tailClear(p));
     if (!pos) {
       // nothing fits cleanly: pick the clamped spot that covers the least of any face and other bubbles
       const area = (a: Rect, b: Rect) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-      const score = (p: Pt) => { const r = { x: p[0], y: p[1], w, h }; return faces.reduce((s, f) => s + area(r, f) * 4, 0) + taken.reduce((s, t) => s + area(r, t), 0); };
+      const score = (p: Pt) => { const r = { x: p[0], y: p[1], w, h }; return faces.reduce((s, f) => s + area(r, f) * 4, 0) + taken.reduce((s, t) => s + area(r, t), 0) + (tailClear(p) ? 0 : 400); };
       pos = cands.map(clampP).reduce((best, p) => (score(p) < score(best) ? p : best));
     }
     const ov = panel.layout?.[id] ?? {};
