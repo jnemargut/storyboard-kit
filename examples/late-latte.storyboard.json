@@ -5,7 +5,7 @@
   "persona": "Marcus, busy commuter",
   "subtitle": "Journey: mobile order-ahead",
   "cast": {
-    "marcus": { "name": "Marcus", "skin": "tone-4", "hair": "short", "outfit": "jacket", "accessories": ["bag"] },
+    "marcus": { "name": "Marcus", "skin": "tone-4", "hair": "short", "outfit": "jacket" },
     "leo": { "name": "Leo", "skin": "tone-4", "hair": "curly", "age": "child", "outfit": "hoodie" },
     "sam": { "name": "Sam", "skin": "tone-1", "hair": "bun", "outfit": "apron" }
   },

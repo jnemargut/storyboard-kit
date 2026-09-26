@@ -9,10 +9,7 @@
       "name": "Marcus",
       "skin": "tone-4",
       "hair": "short",
-      "outfit": "jacket",
-      "accessories": [
-        "bag"
-      ]
+      "outfit": "jacket"
     },
     "leo": {
       "name": "Leo",

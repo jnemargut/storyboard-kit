@@ -130,7 +130,17 @@ export function Character({ f, cast, mood, held, stool, hideArm }: CharacterProp
         ? <rect x={side ? (f.dir > 0 ? j.shR[0] - 16 * w : j.shR[0] + 6 * w) : Math.min(j.shL[0], j.shR[0]) + 1} y={j.shR[1] + 2}
             width={side ? 10 * w : Math.abs(j.shR[0] - j.shL[0]) - 2} height={30} rx={4} fill={C.g5} stroke={ink} strokeWidth={1.8} />
         : <path d={`M${j.shL[0] + 3} ${j.shL[1]} v18 M${j.shR[0] - 3} ${j.shR[1]} v18`} stroke={C.g8} strokeWidth={2.4} strokeLinecap="round" />)}
-      {acc.has("bag") && <g><path d={`M${j.shR[0]} ${j.shR[1]} L${j.hipL[0] - 4} ${j.hipL[1] + 2}`} stroke={ink} strokeWidth={1.6} /><rect x={j.hipL[0] - 12} y={j.hipL[1] - 4} width={12} height={10} rx={2} fill={C.g5} stroke={ink} strokeWidth={1.6} /></g>}
+      {acc.has("bag") && (() => {
+        // a messenger bag resting against the upper thigh, below the hem and clear of the hand, strap across the chest
+        const bx = side ? j.hipR[0] - 3 * f.dir : j.hipL[0], by = hipY + 2;
+        return (
+          <g>
+            <path d={`M${j.shR[0]} ${j.shR[1]} L${bx} ${by}`} stroke={ink} strokeWidth={1.8} strokeLinecap="round" />
+            <rect x={bx - 8} y={by} width={16} height={13} rx={2.5} fill={C.g5} stroke={ink} strokeWidth={1.7} />
+            <path d={`M${bx - 8} ${by + 5} H${bx + 8}`} stroke={ink} strokeWidth={1.3} />
+          </g>
+        );
+      })()}
       {farFirst ? (side ? (nearArmOverHead ? null : armR) : <>{armL}{armR}</>) : null}
       {/* head */}
       <HeadFront f={f} cast={cast} mood={mood} hx={hx} hy={hy} r={r} skin={skin} />
