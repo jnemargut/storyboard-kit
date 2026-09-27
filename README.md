@@ -21,10 +21,11 @@ You see what comes before it, what happens around it, and where people quietly w
 
 ## Why storyboard at all?
 
-Because designers are really good at designing screens and really bad at noticing everything that happens
-between them. A storyboard makes you draw the between parts. You can't sketch someone ordering a coffee
-without deciding where they are, what's in their hands, who's next to them, and how they feel when it goes
-sideways. Every one of those decisions is a design question you'd otherwise skip.
+Designers are great at thinking about the whole experience. But when deadlines hit and the work lives in
+screens, the parts between the screens are easy to accidentally skip. A storyboard brings them back into the
+room. You can't sketch someone ordering a coffee without deciding where they are, what's in their hands,
+who's next to them, and how they feel when it goes sideways. Each of those is a design question worth asking
+on purpose.
 
 A storyboard helps you:
 
@@ -32,8 +33,8 @@ A storyboard helps you:
   lunch, a bill arrives, a flight gets moved. That moment tells you what the product is actually for.
 - **See the context.** Big screen or small? Hands free or full? Alone or in a crowd? Rushed or bored? The
   answers change what "good" looks like.
-- **Catch the workarounds.** Screenshots, sticky notes, texting a friend, asking a human. Workarounds are
-  people telling you, very politely, where your product fails them.
+- **Catch the workarounds.** Screenshots, sticky notes, texting a friend, asking a human. Workarounds point
+  straight at the places the experience could do more for people.
 - **Hear the unsaid.** Thought bubbles capture the stuff nobody says in a usability test ("it said 4
   minutes…"). That's usually the insight.
 - **Get the whole team on the same page.** Engineers, PMs and execs can all read a comic in thirty seconds.
