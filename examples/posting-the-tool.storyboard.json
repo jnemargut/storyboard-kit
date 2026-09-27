@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "title": "Posting the Tool and Hoping Folks Use It",
+  "persona": "Jon, designer who built a storyboarding tool",
+  "subtitle": "Journey: from launch post to 'why would I use this?'",
+  "page": {
+    "brand": { "name": "Storyboard Kit" },
+    "lanes": true
+  },
+  "cast": {
+    "jon": { "name": "Jon", "skin": "tone-2", "hair": "short", "outfit": "hoodie", "accessories": ["glasses"] },
+    "priya": { "name": "Priya", "skin": "tone-3", "hair": "bun", "outfit": "coat", "accessories": ["bag"] },
+    "dee": { "name": "Dee", "skin": "tone-4", "hair": "curly", "outfit": "sweater", "accessories": ["headphones"] },
+    "ken": { "name": "Ken", "skin": "tone-1", "hair": "long", "outfit": "polo" }
+  },
+  "panels": [
+    {
+      "id": "title",
+      "type": "title",
+      "title": "Posting the Tool",
+      "subtitle": "Jon · a Mac, a Discord server, and a room full of UX folks"
+    },
+    {
+      "id": "builds-it",
+      "label": "Finishes the storyboarding tool on his Mac",
+      "scene": "home-office",
+      "shot": "wide",
+      "caption": "11:40pm · Last bug fixed.",
+      "feeling": 2,
+      "characters": [
+        {
+          "who": "jon",
+          "at": "desk-chair",
+          "pose": "sitting-laptop",
+          "mood": "excited",
+          "device": "laptop"
+        }
+      ],
+      "bubbles": [{ "type": "thought", "from": "jon", "text": "Designers are going to love this." }],
+      "gestures": [{ "type": "typing", "on": "jon" }],
+      "layout": { "bubble-0": { "dx": -11, "dy": -24 }, "jon.device": { "dx": 35, "dy": -2 } }
+    },
+    {
+      "id": "posts-it",
+      "label": "Posts about it online",
+      "scene": "home-office",
+      "shot": "over-the-shoulder",
+      "focus": "jon",
+      "feeling": 1,
+      "characters": [
+        {
+          "who": "jon",
+          "at": "desk-chair",
+          "pose": "sitting-laptop",
+          "mood": "happy",
+          "device": { "type": "laptop", "product": false }
+        }
+      ],
+      "bubbles": [{ "type": "thought", "from": "jon", "text": "GIF, install steps, done. Ship it." }],
+      "gestures": [{ "type": "click", "on": "jon" }],
+      "layout": { "jon.screen": { "dx": -52, "dy": 103 } }
+    },
+    { "id": "next-morning", "type": "time", "text": "Next morning…", "icon": "sun" },
+    {
+      "id": "commute-scroll",
+      "label": "Priya skims it on the train",
+      "scene": "transit",
+      "shot": "medium",
+      "feeling": 0,
+      "characters": [
+        {
+          "who": "priya",
+          "at": "seat",
+          "pose": "holding-phone",
+          "mood": "confused",
+          "device": { "type": "phone", "product": false }
+        },
+        { "who": "ken", "at": "standing", "mood": "tired" }
+      ],
+      "bubbles": [{ "type": "thought", "from": "priya", "text": "Cool GIF… but when would I actually use this?" }],
+      "gestures": [{ "type": "swipe", "on": "priya", "direction": "up" }],
+      "workaround": "scrolls past, maybe later",
+      "layout": { "bubble-0": { "dx": -79, "dy": -54 } }
+    },
+    {
+      "id": "cant-try",
+      "label": "Dee can't try it from a phone",
+      "scene": "coffee-shop",
+      "shot": "close-up",
+      "focus": "dee",
+      "feeling": -1,
+      "characters": [
+        {
+          "who": "dee",
+          "at": "table",
+          "pose": "holding-phone",
+          "mood": "frustrated",
+          "device": { "type": "phone", "product": false }
+        }
+      ],
+      "bubbles": [{ "type": "thought", "from": "dee", "text": "\"Clone the repo\"? I'm on my phone." }],
+      "workaround": "bookmarks it, never comes back",
+      "layout": { "bubble-0": { "dx": -13, "dy": 0 } }
+    }
+  ]
+}

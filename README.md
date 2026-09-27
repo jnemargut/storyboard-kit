@@ -17,7 +17,41 @@ Storyboard Kit draws all of that in a scrappy marker style where **only your pro
 Everything else is grey, so your product sits inside the rest of someone's life instead of at the center of it.
 You see what comes before it, what happens around it, and where people quietly work around it.
 
-![The Late Latte, an example storyboard](docs/late-latte-a2538b0.png)
+![The Late Latte, an example storyboard](docs/late-latte-d549251.png)
+
+## Why storyboard at all?
+
+Because designers are really good at designing screens and really bad at noticing everything that happens
+between them. A storyboard makes you draw the between parts. You can't sketch someone ordering a coffee
+without deciding where they are, what's in their hands, who's next to them, and how they feel when it goes
+sideways. Every one of those decisions is a design question you'd otherwise skip.
+
+A storyboard helps you:
+
+- **Find the real trigger.** Nobody wakes up wanting to open your app. Something happens first: a kid needs
+  lunch, a bill arrives, a flight gets moved. That moment tells you what the product is actually for.
+- **See the context.** Big screen or small? Hands free or full? Alone or in a crowd? Rushed or bored? The
+  answers change what "good" looks like.
+- **Catch the workarounds.** Screenshots, sticky notes, texting a friend, asking a human. Workarounds are
+  people telling you, very politely, where your product fails them.
+- **Hear the unsaid.** Thought bubbles capture the stuff nobody says in a usability test ("it said 4
+  minutes…"). That's usually the insight.
+- **Get the whole team on the same page.** Engineers, PMs and execs can all read a comic in thirty seconds.
+  Nobody has to squint at a flow diagram, and everyone argues about the same day.
+- **Stay cheap and a little wrong.** It's quick marker sketches on purpose. Nobody gets attached, so it's easy
+  to redraw when you learn something new.
+
+### Case in point: we storyboarded our own launch
+
+We built this tool on a Mac, posted about it from the same Mac, and figured designers would love it. Then we
+storyboarded what actually happened next:
+
+![Posting the Tool and Hoping Folks Use It](docs/why-storyboard-7bd6905.png)
+
+Built on a big screen, read on a small one. People skimmed it on the train, couldn't try it from their phone,
+and quietly bookmarked it forever. The launch post showed features, but never the moment in someone's day
+when they'd need them. That's exactly the kind of gap a storyboard is great at catching, ideally *before*
+you ship. (Hence this section.)
 
 ## Install (about 30 seconds)
 

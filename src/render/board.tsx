@@ -122,7 +122,9 @@ function Journey({ board, y, width }: { board: Board; y: number; width: number }
           <text x={cx(i)} y={y + 88} textAnchor="middle" fontFamily={FONT.hand} fontSize={12} fill={C.g5}>{i + 1}</text>
           {/* the step's name, so the line reads as a journey rather than a squiggle */}
           {stepName(p) && (() => {
-            const lines = wrap(stepName(p)!, 13, Math.max(60, gap - 10));
+            // wrap to the room this step has: its share of the chart, and never past the page edge
+            const room = Math.min(Math.max(60, gap - 10), 2 * (cx(i) - PAGE.margin * 0.5), 2 * (width - PAGE.margin * 0.5 - cx(i)));
+            const lines = wrap(stepName(p)!, 13, Math.max(50, room));
             const shown = lines.length > 2 ? [lines[0], `${lines[1]}…`] : lines;
             return <text textAnchor="middle" fontFamily={FONT.hand} fontSize={13} fill={C.g8}>{shown.map((l, k) => <tspan key={k} x={cx(i)} y={y + 103 + k * 14}>{l}</tspan>)}</text>;
           })()}
