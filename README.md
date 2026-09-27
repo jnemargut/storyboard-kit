@@ -42,9 +42,9 @@ A storyboard helps you:
 - **Stay cheap and a little wrong.** It's quick marker sketches on purpose. Nobody gets attached, so it's easy
   to redraw when you learn something new.
 
-### Case in point: we storyboarded our own launch
+### Case in point: I storyboarded my own launch
 
-We built this tool on a Mac, posted about it from the same Mac, and figured designers would love it. Then we
+I built this tool on a Mac, posted about it from the same Mac, and figured designers would love it. Then I
 storyboarded what actually happened next:
 
 ![Posting the Tool and Hoping Folks Use It](docs/why-storyboard-7bd6905.png)
@@ -108,7 +108,7 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 - **Taps, swipes, clicks and buzzes** in orange so they pop.
 - **Your own screens.** Drop a Figma export on a phone and it turns into a teal sketch that fits the device.
 - **Any picture at all.** Drag in a photo you found and it gets sketchified in greys to match (or not, your call).
-- **A pen, some shapes and free text** for anything we forgot to draw, in six marker colours (teal stays
+- **A pen, some shapes and free text** for anything I forgot to draw, in six marker colours (teal stays
   reserved for your product).
 
 ## The editor bits
