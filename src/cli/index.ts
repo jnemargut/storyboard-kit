@@ -248,7 +248,7 @@ async function main() {
         done.push(installTo(join(homedir(), ".claude/skills/storyboard")));
         if (flags.codex) done.push(installTo(join(homedir(), ".codex/skills/storyboard")));
       }
-      console.log(`✓ storyboard skill installed:\n  ${done.join("\n  ")}\n\nRestart your agent, then ask: "storyboard <someone> doing <something>…"`);
+      console.log(`✓ storyboard skill installed:\n  ${done.join("\n  ")}\n\nRestart your agent, then type: /storyboard <someone> doing <something>…`);
       return;
     }
     case "init": {

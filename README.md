@@ -6,7 +6,7 @@ You tell Claude Code (or Codex) what someone's day looks like. It sketches a sto
 little editor until it feels true. Then you drop it in your deck and the room starts talking about the person's
 whole day, not just the screens.
 
-![Storyboard Kit sizzle reel](docs/sizzle-fa195fd.gif)
+![Storyboard Kit sizzle reel](docs/sizzle-33197b2.gif)
 
 ## Why though
 
@@ -62,7 +62,7 @@ git clone https://github.com/jnemargut/storyboard-kit.git
 node storyboard-kit/skills/storyboard/scripts/storyboard.mjs install
 ```
 
-That drops the skill into `~/.claude/skills/storyboard`. Restart Claude Code and you're good.
+That drops the skill into `~/.claude/skills/storyboard`. Restart Claude Code and `/storyboard` is ready to go.
 
 - **Codex?** Add `--codex` to the install command.
 - **Just one project?** Run `install --project` from inside that project.
@@ -70,10 +70,15 @@ That drops the skill into `~/.claude/skills/storyboard`. Restart Claude Code and
 
 ## Use it
 
-Just ask, in plain words:
+In Claude Code, type `/storyboard` followed by what happens, in plain words:
 
-> Storyboard Priya, an ER nurse, getting a shift-swap request while dropping her kid at school. The app logs
-> her out, so she calls a coworker instead.
+```
+/storyboard Priya, an ER nurse, gets a shift-swap request while dropping her kid at school. The app logs
+her out, so she calls a coworker instead.
+```
+
+The slash command is the surest way to kick it off. Asking for a storyboard without it usually works too,
+since the skill is there whenever you mention one. In Codex, just ask for a storyboard the same way.
 
 Your agent looks up what it can draw, writes `priya.storyboard.json`, checks it, runs a service-design
 critique on it, and opens the editor in your browser. Then keep talking to it:

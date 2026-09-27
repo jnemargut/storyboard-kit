@@ -513,7 +513,7 @@ Fix the errors above, then preview again.`),process.exit(1));let l=r[1]?[r[1]]:O
   ${a.join(`
   `)}
 
-Restart your agent, then ask: "storyboard <someone> doing <something>\u2026"`);return}case"init":{let a=tu(r[0]??".");O0(a,{recursive:!0});let i=[];if(w_(a).some(o=>o.endsWith(".storyboard.json"))||(na(Gr(a,"playground.storyboard.json"),_o(zk("Playground"))),i.push("playground.storyboard.json (a board to experiment on)")),n.example){O0(Gr(a,"screens"),{recursive:!0});let o=JSON.parse(Jf(Gr(xl,"examples/late-latte.storyboard.json"),"utf8"));delete o.$schema,na(Gr(a,"late-latte.storyboard.json"),_o(o)),na(Gr(a,"screens/order-status.png"),Jf(Gr(xl,"examples/screens/order-status.png"))),i.push("late-latte.storyboard.json + screens/ (example)")}console.log(i.length?`\u2713 ${a}
+Restart your agent, then type: /storyboard <someone> doing <something>\u2026`);return}case"init":{let a=tu(r[0]??".");O0(a,{recursive:!0});let i=[];if(w_(a).some(o=>o.endsWith(".storyboard.json"))||(na(Gr(a,"playground.storyboard.json"),_o(zk("Playground"))),i.push("playground.storyboard.json (a board to experiment on)")),n.example){O0(Gr(a,"screens"),{recursive:!0});let o=JSON.parse(Jf(Gr(xl,"examples/late-latte.storyboard.json"),"utf8"));delete o.$schema,na(Gr(a,"late-latte.storyboard.json"),_o(o)),na(Gr(a,"screens/order-status.png"),Jf(Gr(xl,"examples/screens/order-status.png"))),i.push("late-latte.storyboard.json + screens/ (example)")}console.log(i.length?`\u2713 ${a}
   ${i.join(`
   `)}`:"Nothing to do: this folder already has a storyboard.");return}case void 0:case"help":case"--help":case"-h":console.log(b_);return;default:console.error(`Unknown command "${e}".
 
