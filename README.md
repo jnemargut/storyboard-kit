@@ -51,8 +51,7 @@ storyboarded what actually happened next:
 
 Built on a big screen, read on a small one. People skimmed it on the train, couldn't try it from their phone,
 and quietly bookmarked it forever. The launch post showed features, but never the moment in someone's day
-when they'd need them. That's exactly the kind of gap a storyboard is great at catching, ideally *before*
-you ship. (Hence this section.)
+when they'd need them. That's exactly the kind of gap a storyboard is great at catching.
 
 ## Install (about 30 seconds)
 
