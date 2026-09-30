@@ -12,6 +12,8 @@ import { Toolbar } from "./Toolbar";
 import { Present } from "./Present";
 
 interface Box { x: number; y: number; w: number; h: number }
+/** Private clipboard format for storyboard clips (Chrome/Edge expose it to web pages as "web " + this). */
+const CLIP_TYPE = "application/x-storyboard";
 type Drag =
   | { mode: "move" | "resize"; sx: number; sy: number; ov: LayoutOverride; size: number; moved: boolean; sel: Sel }
   | { mode: "draw"; pi: number; pid: string; shape: Shape; index: number; moved: boolean }
@@ -349,6 +351,30 @@ export function App() {
   // ------------------------------------------------------------ copy / paste (system clipboard, works across boards)
   /** Last thing copied in this tab, so the Paste button works even when the browser won't let a page read the clipboard. */
   const lastClip = useRef<Clip | null>(null);
+  /** Byte size of the last panel image we put on the clipboard, to recognise it when it's pasted back here. */
+  const lastImageSize = useRef<number | null>(null);
+  /**
+   * A copied panel goes on the system clipboard twice over: as a PNG, so Miro, Figma, Slack and friends paste
+   * a picture, and as a storyboard clip in a private web format, so pasting back into an editor makes a real,
+   * editable panel. Browsers without custom formats (Safari) get the PNG, and this tab remembers the clip.
+   */
+  const copyPanelEverywhere = (clip: Clip, panelId: string) => {
+    const png = fetch(`/api/panel.png?id=${encodeURIComponent(panelId)}&scale=2`).then((r) => r.blob()).then((b) => { lastImageSize.current = b.size; return b; });
+    const json = new Blob([JSON.stringify(clip)], { type: CLIP_TYPE });
+    const custom = typeof ClipboardItem !== "undefined" && (ClipboardItem as unknown as { supports?: (t: string) => boolean }).supports?.(`web ${CLIP_TYPE}`);
+    try {
+      return navigator.clipboard.write([new ClipboardItem(custom ? { "image/png": png, [`web ${CLIP_TYPE}`]: json } : { "image/png": png })]);
+    } catch (err) { return Promise.reject(err); }
+  };
+  /** The storyboard clip riding along with a copied image, if the browser can read it back. */
+  const readCustomClip = async (): Promise<unknown | undefined> => {
+    try {
+      for (const item of await navigator.clipboard.read()) {
+        if (item.types.includes(`web ${CLIP_TYPE}`)) return JSON.parse(await (await item.getType(`web ${CLIP_TYPE}`)).text());
+      }
+    } catch { /* no permission or no custom format */ }
+    return undefined;
+  };
   const pasteClip = (clip: unknown) => {
     if (!board) return false;
     const res = pasteOps(board, clip, sel);
@@ -363,12 +389,17 @@ export function App() {
       const clip = clipFor(board, sel);
       if (!clip) return flash("This can't be copied.");
       lastClip.current = clip;
+      if (clip.kind === "panel") {
+        try { await copyPanelEverywhere(clip, clip.panel.id); flash("Copied panel. Paste it here as a panel, or into Miro, Figma or Slack as an image."); }
+        catch { flash("Copied panel (paste it here). This browser wouldn't put an image on the clipboard."); }
+        return;
+      }
       try { await navigator.clipboard.writeText(JSON.stringify(clip)); } catch { /* the in-tab copy still works */ }
       flash(`Copied ${clip.kind}. Cmd+V pastes into the selected panel.`);
     },
     paste: async () => {
-      let clip: unknown = lastClip.current;
-      try { clip = JSON.parse(await navigator.clipboard.readText()); } catch { /* fall back to the in-tab copy */ }
+      let clip: unknown = (await readCustomClip()) ?? lastClip.current;
+      if (clip === lastClip.current) { try { clip = JSON.parse(await navigator.clipboard.readText()); } catch { /* fall back to the in-tab copy */ } }
       if (!pasteClip(clip) && !(clip !== lastClip.current && pasteClip(lastClip.current))) flash("Nothing to paste. Copy something first.");
     },
     duplicate: () => {
@@ -392,15 +423,34 @@ export function App() {
       const clip = clipFor(board, sel);
       if (!clip) return;
       lastClip.current = clip;
-      e.clipboardData?.setData("text/plain", JSON.stringify(clip));
       e.preventDefault();
+      if (clip.kind === "panel") {
+        // text now as a fallback; the image + clip replace it a moment later if the browser allows
+        e.clipboardData?.setData("text/plain", JSON.stringify(clip));
+        void copyPanelEverywhere(clip, clip.panel.id)
+          .then(() => flash("Copied panel. Paste it here as a panel, or into Miro, Figma or Slack as an image."))
+          .catch(() => flash("Copied panel. Paste it into any board."));
+        return;
+      }
+      e.clipboardData?.setData("text/plain", JSON.stringify(clip));
       flash(`Copied ${clip.kind}. Paste it into any panel or board.`);
     };
     const onPaste = (e: ClipboardEvent) => {
       if (typing() || !board) return;
       let clip: unknown;
-      try { clip = JSON.parse(e.clipboardData?.getData("text/plain") ?? ""); } catch { return; }
-      if (pasteClip(clip)) e.preventDefault();
+      try { clip = JSON.parse(e.clipboardData?.getData("text/plain") ?? ""); } catch { /* not a text clip */ }
+      if (clip !== undefined) { if (pasteClip(clip)) e.preventDefault(); return; }
+      const img = Array.from(e.clipboardData?.files ?? []).find((f) => f.type.startsWith("image/"));
+      if (!img) return;
+      e.preventDefault();
+      void (async () => {
+        // our own copied panel comes back as a panel, not a picture of one
+        const own = await readCustomClip();
+        if (own !== undefined && pasteClip(own)) return;
+        if (lastClip.current?.kind === "panel" && lastImageSize.current === img.size && pasteClip(lastClip.current)) return;
+        // any other image (a screenshot, a photo from another app) becomes a picture in the selected panel
+        try { await addImage(img); } catch (err) { flash(`Couldn't paste the image: ${(err as Error).message}`); }
+      })();
     };
     document.addEventListener("copy", onCopy);
     document.addEventListener("paste", onPaste);

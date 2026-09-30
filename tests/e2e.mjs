@@ -144,8 +144,43 @@ try {
     document.dispatchEvent(new ClipboardEvent("copy", { clipboardData: dt, bubbles: true }));
     document.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, bubbles: true }));
   });
-  await sleep(500);
+  // copying a panel also renders its PNG on the server, which can hold up the save for a moment
+  for (let t = 0; t < 40 && read().panels.length === n0; t++) await sleep(150);
   check(read().panels.length === n0 + 1 && read().panels[6].id === "later-2", "copy/paste duplicates a panel with a fresh id");
+
+  // copying a panel puts a real PNG on the system clipboard (for Miro, Figma…) plus the storyboard clip
+  await page.locator('g[data-panel="walking"] rect[data-el="__panel"]').click({ position: { x: 12, y: 12 }, force: true });
+  await page.keyboard.press("Meta+c");
+  for (let t = 0; t < 40; t++) {
+    if ((await page.evaluate(async () => (await navigator.clipboard.read()).flatMap((i) => i.types))).includes("image/png")) break;
+    await sleep(150);
+  }
+  const clipInfo = await page.evaluate(async () => {
+    const items = await navigator.clipboard.read();
+    const types = items.flatMap((i) => i.types);
+    const png = items.find((i) => i.types.includes("image/png"));
+    const blob = png ? await png.getType("image/png") : null;
+    const head = blob ? Array.from(new Uint8Array(await blob.slice(0, 4).arrayBuffer())) : [];
+    return { types, size: blob?.size ?? 0, isPng: head.join(",") === "137,80,78,71" };
+  });
+  check(clipInfo.isPng && clipInfo.size > 5000 && clipInfo.types.includes("web application/x-storyboard"), `copied panel is a PNG image on the clipboard, with the storyboard clip alongside (${clipInfo.types.join(", ")})`);
+  // pasting that image back into the editor makes an editable panel, not a picture
+  const n1 = read().panels.length;
+  await page.evaluate(async () => {
+    const item = (await navigator.clipboard.read()).find((i) => i.types.includes("image/png"));
+    const blob = await item.getType("image/png");
+    const dt = new DataTransfer();
+    dt.items.add(new File([blob], "image.png", { type: "image/png" }));
+    document.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, bubbles: true }));
+  });
+  for (let t = 0; t < 40 && read().panels.length === n1; t++) await sleep(150);
+  const afterPaste = read();
+  const pasted = afterPaste.panels.find((p) => p.id.startsWith("walking-"));
+  check(afterPaste.panels.length === n1 + 1 && pasted && !(pasted.images ?? []).length, "pasting a copied panel back in makes a real panel, not an image");
+  await page.mouse.click(5, 990);
+  await page.keyboard.press("Meta+z"); // take the pasted panel back out so later checks see the original layout
+  for (let t = 0; t < 40 && read().panels.length !== n1; t++) await sleep(150);
+  await page.locator('g[data-panel="later-2"] rect[data-el="__panel"]').click({ position: { x: 12, y: 12 }, force: true });
 
   // zoom to panel
   await page.getByRole("button", { name: "Zoom to panel" }).click();

@@ -123,6 +123,8 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 - Click anything to get its toolbar. Drag to move, pull the corner to resize, grab the round handle to rotate.
 - Double-click any text to edit it. Click "+ name this step" under a panel to name it.
 - Cmd+C / Cmd+V / Cmd+D copy, paste and duplicate. Cmd+] and Cmd+[ move things up and down the layers.
+- Copy a whole panel and paste it into Miro, Figma, Slack or a doc as an image. Paste it back into a board and
+  it's a normal, editable panel again. Paste any other image in and it becomes a picture in the panel.
 - Delete deletes, Cmd+Z undoes, arrow keys nudge.
 - **Ask agent** copies a pointer to whatever you clicked, so you can tell your agent "make this angrier."
 

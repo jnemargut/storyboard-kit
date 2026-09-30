@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import { applyOps, formatStoryboard, type Op } from "../json";
 import { validate } from "../validate";
-import { bakeScreen, boardToSVG, cacheDirFor, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";
+import { bakeScreen, boardToSVG, cacheDirFor, panelPNGs, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";
 import { pageSize } from "../render";
 import type { Board } from "../types";
 
@@ -110,6 +110,15 @@ export async function dev(file: string, o: DevOptions) {
         while (existsSync(join(dir, name))) name = `${basename(raw, extname(raw))}-${i++}${extname(raw) || ext}`;
         writeFileSync(join(dir, name), await body(req));
         return json(res, 200, { path: "./" + relative(base, join(dir, name)).split(sep).join("/") });
+      }
+      if (url.pathname === "/api/panel.png") {
+        // one panel as a PNG, for copying a frame into other tools (Miro, Figma, Slack…)
+        const board = read();
+        const i = board.panels.findIndex((p) => p.id === url.searchParams.get("id"));
+        if (i < 0) { res.writeHead(404); return res.end(); }
+        const png = panelPNGs(board, abs, Math.min(4, Math.max(1, Number(url.searchParams.get("scale") ?? 2))))[i];
+        res.writeHead(200, { "content-type": "image/png", "cache-control": "no-cache" });
+        return res.end(png);
       }
       if (url.pathname === "/api/export") {
         const fmt = url.searchParams.get("format") ?? "png";
