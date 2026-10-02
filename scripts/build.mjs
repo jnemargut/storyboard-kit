@@ -39,7 +39,7 @@ execFileSync("node", ["dist/gen.mjs"], { stdio: "inherit" });
 
 // fonts used by export (the editor bundles its own copies)
 mkdirSync(`${OUT}/assets/fonts`, { recursive: true });
-for (const f of ["PermanentMarker-Regular.ttf", "PatrickHand-Regular.ttf", "LICENSE-Apache-PermanentMarker.txt", "OFL-PatrickHand.txt"])
+for (const f of ["PermanentMarker-Regular.ttf", "PatrickHand-Regular.ttf", "IBMPlexMono-Regular.ttf", "LICENSE-Apache-PermanentMarker.txt", "OFL-PatrickHand.txt", "OFL-IBMPlexMono.txt"])
   cpSync(`src/sketch/fonts/${f}`, `${OUT}/assets/fonts/${f}`);
 
 // example board (+ its screen)

@@ -142,6 +142,9 @@ never open the app), my third kit, [Flowchart Kit](https://github.com/jnemargut/
 a low-fi canvas where panels become cards in a flow, next to stickies, wireframe screens and arrows. Copy a panel
 here, paste it onto a board, and it stays a live card that follows this file.
 
+Flowchart Kit also comes with `/low-fi-think`: hand it a request ("the PM wants X, here are the Jiras") and it decides
+which of the three kits the thinking needs, then builds the storyboard, the screens and the board together.
+
 ## The editor bits
 
 **Editing**

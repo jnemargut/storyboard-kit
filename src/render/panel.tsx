@@ -195,6 +195,12 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
   if (panel.caption) {
     const ov = panel.layout?.caption ?? {};
     cap = captionBox(panel.caption, ts * (ov.scale ?? 1));
+    // don't cover the shop's sign: if the brand is showing where the caption would go, drop to the bottom corner
+    const sign = brand ? resolveScene(board, panel.scene).sign : undefined;
+    if (sign && ov.dx === undefined && ov.dy === undefined) {
+      const sr = { x: sign.x * cam.s + cam.tx, y: sign.y * cam.s + cam.ty, w: sign.w * cam.s, h: sign.h * cam.s };
+      if (cap.x < sr.x + sr.w && sr.x < cap.x + cap.w && cap.y < sr.y + sr.h && sr.y < cap.y + cap.h) cap = { ...cap, y: PANEL_H - cap.h - 7 };
+    }
     cap = { ...cap, x: cap.x + (ov.dx ?? 0), y: cap.y + (ov.dy ?? 0) };
     reserved.push(cap);
   }

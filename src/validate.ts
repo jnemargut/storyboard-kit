@@ -1,3 +1,4 @@
+import { findUndrawable, undrawableHint } from "./sketch/glyphs";
 import {
   ACCESSORIES, AGES, ANGLES, BODY, BUBBLES, DEVICES, DIRECTIONS, FACING, GESTURES, HAIR, HAIR_SHADE, HATS, MOODS,
   OUTFITS, PANEL_TYPES, POSES, SCENES, SCENE_MARKS, MARKER_COLORS, SHAPE_FILLS, SHAPE_WEIGHTS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
@@ -359,6 +360,7 @@ export function validate(input: unknown): Result {
     warn("$.panels", "No thought bubbles.", "What the person thinks but doesn't say is often the insight. Add one where they're frustrated or unsure.");
   if (sceneCount >= 4 && shots.size === 1)
     warn("$.panels", `Every panel uses the same shot (${[...shots][0]}).`, "Mix wide (context), close-up (emotion) and over-the-shoulder (the screen).");
+  for (const u of findUndrawable(b)) { const h = undrawableHint(u.chars); warn(u.path, h.message, h.hint); }
 
   return { ok: errors.length === 0, errors, warnings };
 }

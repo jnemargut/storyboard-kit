@@ -195,7 +195,9 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     const def = DEVICE_DEFS[d.type];
     // sit on the surface: shift up by half height for things on tables
     const onSurface = mark?.surface !== undefined;
-    const y = onSurface ? spot.y - (def.h * s) / 2 : spot.y;
+    // at a spot with no tabletop: a kiosk stands on the floor; anything smaller sits at hand height, not in the floor
+    const h = def.h * s;
+    const y = onSurface ? spot.y - h / 2 : mark ? (d.type === "kiosk" ? FLOOR_Y - h / 2 : FLOOR_Y - 96) : spot.y;
     devices.push({ id, type: d.type, product: d.product !== false, href: d.screen ? asset(d.screen) : undefined, x: spot.x, y, s, rot: 0, behind: !!(spot as { behind?: boolean }).behind, ov: ovOf(panel, id), tilt: d.tilt });
   });
   const proxy: Record<string, string> = {};
