@@ -140,7 +140,7 @@ export function buildSchema() {
                       variant: { type: "integer", minimum: 1, maximum: 3, description: "Pose variation 1–3 (auto if omitted)." },
                       device: {
                         description: "Device in their hands: phone, tablet, laptop or watch only. Kiosks, car displays, TVs etc. go in the panel's `devices`.",
-                        oneOf: [device, { type: "object", required: ["type"], additionalProperties: false, properties: { type: device, screen: { type: "string" }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn grey, not teal. Default true." } } }],
+                        oneOf: [device, { type: "object", required: ["type"], additionalProperties: false, properties: { type: device, screen: { type: "string" }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn gray, not teal. Default true." } } }],
                       },
                     },
                   },
@@ -149,7 +149,7 @@ export function buildSchema() {
                   type: "array",
                   items: {
                     type: "object", required: ["type"], additionalProperties: false,
-                    properties: { id: { type: "string" }, type: device, at: { type: "string" }, tilt: { enum: ["left", "right"], description: "Screen turned away from the viewer." }, screen: { type: "string", description: "Path to a screen image, relative to the storyboard file." }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn grey, not teal. Default true." } },
+                    properties: { id: { type: "string" }, type: device, at: { type: "string" }, tilt: { enum: ["left", "right"], description: "Screen turned away from the viewer." }, screen: { type: "string", description: "Path to a screen image, relative to the storyboard file." }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn gray, not teal. Default true." } },
                   },
                 },
                 bubbles: {
@@ -166,7 +166,7 @@ export function buildSchema() {
                 sign: { oneOf: [{ type: "string" }, { const: false }], description: "Name on this panel's storefront or sign, e.g. another store. Overrides page.brand; false = blank sign." },
                 images: {
                   type: "array",
-                  description: "Any picture placed in the scene. Sketchified in greys unless sketch is false. Panel units, 400 x 260.",
+                  description: "Any picture placed in the scene. Sketchified in grays unless sketch is false. Panel units, 400 x 260.",
                   items: {
                     type: "object", required: ["src"], additionalProperties: false,
                     properties: {

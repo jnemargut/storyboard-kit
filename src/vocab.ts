@@ -145,9 +145,9 @@ export const SHAPES = [
   e("line", "Straight line between two points."),
   e("arrow", "Line with an arrowhead at the second point."),
   e("path", "Freehand line through every point (sketch anything missing)."),
-  e("text", "Free text written on the panel. `points`: one [x, y] centre; `text`: the words (\\n for a new line)."),
+  e("text", "Free text written on the panel. `points`: one [x, y] center; `text`: the words (\\n for a new line)."),
 ] as const;
-/** Marker colours for drawings and crit markup. Teal (the product) and orange (what people do) stay reserved. */
+/** Marker colors for drawings and crit markup. Teal (the product) and orange (what people do) stay reserved. */
 export const MARKER_COLORS = [
   e("ink", "Black marker (default)."),
   e("grey", "Grey marker."),
@@ -156,7 +156,7 @@ export const MARKER_COLORS = [
   e("green", "Green marker: what works."),
   e("yellow", "Yellow highlighter."),
 ] as const;
-export const SHAPE_FILLS = [e("none", "Outline only (default for lines)."), e("light", "Light grey."), e("mid", "Mid grey."), e("dark", "Dark grey.")] as const;
+export const SHAPE_FILLS = [e("none", "Outline only (default for lines)."), e("light", "Light gray."), e("mid", "Mid gray."), e("dark", "Dark gray.")] as const;
 
 export const SKIN = [
   e("tone-1", "Lightest skin tone."),

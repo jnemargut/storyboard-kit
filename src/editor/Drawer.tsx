@@ -126,7 +126,7 @@ function DeviceIcon({ type }: { type: DeviceType }) {
 export function CastEditor({ id, m, commit }: { id: string; m: CastMember; commit: (ops: Op[]) => Promise<void> }) {
   const set = (k: keyof CastMember, v: unknown) => commit([{ path: ["cast", id, k], ...(v === "" || v === undefined ? { delete: true } : { value: v }) }]);
   const sel = (k: keyof CastMember, list: readonly { id: string }[], def: string) => (
-    <label>{k === "hairShade" ? "hair colour" : k}
+    <label>{k === "hairShade" ? "hair color" : k}
       <select value={(m[k] as string) ?? def} onChange={(e) => set(k, e.target.value)}>{list.map((x) => <option key={x.id} value={x.id}>{x.id || "none"}</option>)}</select>
     </label>
   );
@@ -255,7 +255,7 @@ export function Drawer({ board, sel, commit, setSel, flash, tool, setTool, addIm
                 <span className="t-name">Picture…</span><span className="t-sub">or drag a file onto a panel</span>
               </button>
               <input ref={imgInput} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) addImage(f); e.target.value = ""; }} />
-              <label className="check" title="Sketchify turns pictures into grey marker drawings so they sit in the storyboard style. Change any picture later from its toolbar.">
+              <label className="check" title="Sketchify turns pictures into gray marker drawings so they sit in the storyboard style. Change any picture later from its toolbar.">
                 <input type="checkbox" checked={sketchNew} onChange={(e) => setSketchNew(e.target.checked)} /> Sketchify new pictures
               </label>
               <span className="sep-v" />
@@ -266,7 +266,7 @@ export function Drawer({ board, sel, commit, setSel, flash, tool, setTool, addIm
                   <span className="t-name">{t.name}</span><span className="t-sub">{t.sub}</span>
                 </button>
               ))}
-              <label className="check swatch-row">Colour <Swatches value={drawColor} onChange={setDrawColor} /></label>
+              <label className="check swatch-row">Color <Swatches value={drawColor} onChange={setDrawColor} /></label>
               <span className="hint">For anything the library doesn't have. Pick a tool, then drag on a scene panel. Select a shape to change its fill, rotate or delete it.</span>
             </>
           )}

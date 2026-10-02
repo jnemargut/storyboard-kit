@@ -33,7 +33,7 @@ export interface SceneDef {
 }
 
 const ink = C.ink;
-/** Marker shape: offset grey fill + ink outline. */
+/** Marker shape: offset gray fill + ink outline. */
 export function Sh({ d, fill = C.g2, sw = 2.1 }: { d: string; fill?: string; sw?: number }) {
   return (
     <g>

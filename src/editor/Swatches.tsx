@@ -1,8 +1,8 @@
 import { MARKER_COLORS, ids, type MarkerColor } from "../vocab";
 import { MARKER } from "../render/tokens";
 
-/** A row of marker-colour swatches. */
-export function Swatches({ value, onChange, label = "Colour" }: { value: MarkerColor; onChange: (c: MarkerColor) => void; label?: string }) {
+/** A row of marker-color swatches. */
+export function Swatches({ value, onChange, label = "Color" }: { value: MarkerColor; onChange: (c: MarkerColor) => void; label?: string }) {
   return (
     <span className="swatches" role="radiogroup" aria-label={label}>
       {(ids(MARKER_COLORS) as MarkerColor[]).map((c) => (

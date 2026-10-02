@@ -1,5 +1,5 @@
 /**
- * Redrawn scenes (v2): car, parking, school, gym, airport. More recognisable silhouettes, props that sit on
+ * Redrawn scenes (v2): car, parking, school, gym, airport. More recognizable silhouettes, props that sit on
  * the floor, and front layers that overlap people the way the real place would (a car door hides legs).
  */
 import type { SceneDef } from "./scenes";

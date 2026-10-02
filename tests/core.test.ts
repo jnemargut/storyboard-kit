@@ -94,7 +94,7 @@ describe("agent-eval regressions", () => {
   it("phone poses imply a personal phone, so gestures on them are fine", () => {
     expect(validate(base({ characters: [{ who: "p", pose: "phone-to-ear" }], gestures: [{ type: "tap", on: "p" }] })).ok).toBe(true);
   });
-  it("personal devices (product: false) are grey and don't count as the product", () => {
+  it("personal devices (product: false) are gray and don't count as the product", () => {
     const personal = base({ characters: [{ who: "p", device: { type: "phone", product: false } }] });
     const svg = renderBoardSVG(personal, { asset });
     expect(svg).not.toContain("#8fd6dc");
@@ -102,7 +102,7 @@ describe("agent-eval regressions", () => {
     const ours = renderBoardSVG(base({ characters: [{ who: "p", device: "phone" }] }), { asset });
     expect(ours).toContain("#8fd6dc");
   });
-  it("an empty-handed phone pose still gets a (grey) phone", () => {
+  it("an empty-handed phone pose still gets a (gray) phone", () => {
     const svg = renderBoardSVG(base({ characters: [{ who: "p", pose: "phone-to-ear" }] }), { asset });
     expect(svg).toContain('data-drop="char:p"');
     expect(svg).not.toContain("#8fd6dc");
@@ -461,7 +461,7 @@ describe("shapes (free drawing)", () => {
     expect(bad.some((p) => p.endsWith("shapes[0].text"))).toBe(true);
     expect(bad.some((p) => p.endsWith("shapes[1].points"))).toBe(true);
   });
-  it("colours shapes and keeps crit markup on any panel", () => {
+  it("colors shapes and keeps crit markup on any panel", () => {
     const b = withShapes([{ type: "arrow", points: [[0, 0], [60, 40]], color: "red" }, { type: "rect", points: [[10, 10], [50, 40]], color: "blue", fill: "light" }]);
     b.panels[0].markup = [{ points: [[10, 10], [80, 60], [120, 40]] }];
     b.panels[1].markup = [{ points: [[5, 5], [40, 40]], color: "yellow" }];
@@ -501,7 +501,7 @@ describe("script + screens", () => {
 });
 
 describe("Wireframe Kit screens", () => {
-  it("recognises wireframe references and where their PNGs live", () => {
+  it("recognizes wireframe references and where their PNGs live", () => {
     expect(isWireframeRef("./app.wireframe.json#pay")).toBe(true);
     expect(isWireframeRef("./app.wireframe.json")).toBe(true);
     expect(isWireframeRef("./screens/pay.png")).toBe(false);

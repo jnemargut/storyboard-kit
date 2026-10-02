@@ -1,4 +1,4 @@
-/** Hats, drawn over the hair. Head centre (hx, hy), radius r; side views put brims and visors on the facing side. */
+/** Hats, drawn over the hair. Head center (hx, hy), radius r; side views put brims and visors on the facing side. */
 import type { CastMember } from "../types";
 import type { Figure } from "./rig";
 import { C, OFFSET } from "./tokens";

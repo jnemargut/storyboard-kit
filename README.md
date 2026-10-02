@@ -14,7 +14,7 @@ Most product flows start at the app's home screen. Real life doesn't. People are
 asking the barista, texting a friend, screenshotting a code because the app logged them out again.
 
 Storyboard Kit draws all of that in a scrappy marker style where **only your product is in color (teal)**.
-Everything else is grey, so your product sits inside the rest of someone's life instead of at the center of it.
+Everything else is gray, so your product sits inside the rest of someone's life instead of at the center of it.
 You see what comes before it, what happens around it, and where people quietly work around it.
 
 ![The Late Latte, an example storyboard](docs/late-latte-d549251.png)
@@ -114,8 +114,8 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 - **Your own screens.** Drop a Figma export on a phone and it turns into a teal sketch that fits the device.
 - **Wireframes, too.** Point a phone at a [Wireframe Kit](https://github.com/jnemargut/wireframe-kit) screen and
   it shows up in teal, and stays in sync when the wireframe changes.
-- **Any picture at all.** Drag in a photo you found and it gets sketchified in greys to match (or not, your call).
-- **A pen, some shapes and free text** for anything I forgot to draw, in six marker colours (teal stays
+- **Any picture at all.** Drag in a photo you found and it gets sketchified in grays to match (or not, your call).
+- **A pen, some shapes and free text** for anything I forgot to draw, in six marker colors (teal stays
   reserved for your product).
 
 ## Real screens from Wireframe Kit
@@ -158,7 +158,7 @@ Hit **▶ Play** (or P) to present the board one step at a time, with a big poin
 
 - Arrow keys move between steps. "From here" in a panel's toolbar starts mid-story.
 - **N** opens speaker notes you can type into as you go.
-- **D** grabs the sharpie (tap the dot next to it to change colour), **E** the eraser. Clear one step or all of them.
+- **D** grabs the sharpie (tap the dot next to it to change color), **E** the eraser. Clear one step or all of them.
 - Markup is saved with the board but only shows up in play mode, so your exports stay clean.
 
 **Export**

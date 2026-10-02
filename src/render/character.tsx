@@ -10,7 +10,7 @@ const ink = C.ink;
 const ln = (a: Pt, b: Pt, w: number, color: string, key?: string) => (
   <line key={key} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={color} strokeWidth={w} strokeLinecap="round" />
 );
-/** Ink outline + inner marker colour: a limb. */
+/** Ink outline + inner marker color: a limb. */
 const limb = (a: Pt, b: Pt, outer: number, fill: string, key: string) => (
   <g key={key}>{ln(a, b, outer, ink)}{ln(a, b, outer - 3.6, fill)}</g>
 );

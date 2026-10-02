@@ -39,7 +39,7 @@ path. **Below, \`sb\` is short for that whole command.**
    A \`"text"\` shape writes free words anywhere on a panel (a sign's wording, "9 people ahead"):
    \`{ "type": "text", "points": [[200, 40]], "text": "9 people ahead" }\`.
    If the designer hands you a picture that isn't a screen (a photo, a product, a found image), put it in the
-   panel's \`images\`. It's sketchified in greys to match; \`"sketch": false\` shows it as-is.
+   panel's \`images\`. It's sketchified in grays to match; \`"sketch": false\` shows it as-is.
    Full list: [references/vocabulary.md](references/vocabulary.md).
 2. **Write the file**: \`<name>.storyboard.json\` (\`${CLI} new <file>\` makes a starter). Shape: [references/format.md](references/format.md).
    Worked example: [references/example.md](references/example.md).
@@ -80,7 +80,7 @@ The point is to see the product from inside the customer's life, not to illustra
   (\`uniform\`, \`hi-vis\`, \`lab-coat\`, \`chef\`, \`scrubs\`, \`apron\`, \`overalls\`…) and \`hat\` (\`sb vocab hats\`).
 - **Teal means "our product" and nothing else.** A personal call, a text to a coworker, or someone else's app
   is not the product: give that device \`"product": false\` (e.g. \`"device": { "type": "phone", "product": false }\`)
-  and it's drawn grey. Phone poses (\`holding-phone\`, \`phone-to-ear\`) without a device get a grey phone
+  and it's drawn gray. Phone poses (\`holding-phone\`, \`phone-to-ear\`) without a device get a gray phone
   automatically. This is how the board shows where the product helps and where people route around it.
 - Gestures (tap, swipe, click…) are drawn **orange**: what the person does. Teal stays reserved for the product.
 - **Hold only what a hand holds.** \`device\` on a character is for phone, tablet, laptop or watch. Kiosks, car
@@ -148,14 +148,14 @@ export const FORMAT_MD = `# storyboard.json format
       "characters": [{
         "who": "maya", "pose": "holding-phone", "mood": "frustrated",
         "angle": "three-quarter", "facing": "right", "at": "counter",   // at = a scene mark
-        "device": { "type": "phone", "screen": "./screens/order-status.png" }  // or "./app.wireframe.json#status"; product: false = grey
+        "device": { "type": "phone", "screen": "./screens/order-status.png" }  // or "./app.wireframe.json#status"; product: false = gray
       }],
       "devices": [{ "id": "menu", "type": "kiosk", "at": "queue" }],   // devices placed in the scene
       "bubbles": [{ "type": "thought", "from": "maya", "text": "It said 4 minutes…" }],
       "gestures": [{ "type": "tap", "on": "maya", "at": [0.5, 0.8] }], // on = character (their device) or device id
       "callouts": [{ "text": "Status never updates", "target": "maya" }],
       "sign": "Corner Deli",                // optional: this panel's store name; false = blank sign (default: page.brand)
-      "images": [{ "src": "./images/receipt.jpg", "x": 300, "y": 120, "w": 90 }], // any picture; grey sketch unless "sketch": false
+      "images": [{ "src": "./images/receipt.jpg", "x": 300, "y": 120, "w": 90 }], // any picture; gray sketch unless "sketch": false
       "shapes": [{ "type": "rect", "points": [[300, 150], [360, 200]], "fill": "light" }], // props the library lacks
       "notes": "From interview P4",          // not drawn
       "layout": { "maya": { "dx": -12 } }    // written by the editor. Leave it alone.
@@ -169,7 +169,7 @@ export const FORMAT_MD = `# storyboard.json format
 Rules: every \`who\` must be in \`cast\`; \`from\`, \`on\`, \`target\` and \`focus\` refer to a character id (\`who\`, or
 \`id\` if you gave one) or a device \`id\` (defaults to its type) **in the same panel**. Scene panels need \`scene\`.
 Positions are automatic; don't add coordinates. The exceptions are \`shapes\` (box, oval, line, arrow, freehand
-\`path\`) and \`images\` (centre \`x\`, \`y\`, box \`w\`, \`h\`), which use panel units: 400 wide, 260 tall, origin
+\`path\`) and \`images\` (center \`x\`, \`y\`, box \`w\`, \`h\`), which use panel units: 400 wide, 260 tall, origin
 top-left, floor at about y 234.
 `;
 
@@ -222,7 +222,7 @@ ${CLI} scene new pharmacy my.storyboard.json --base store     # on top of a buil
 ## 2. Draw it
 
 Everything is in **panel units: 400 wide, 260 tall, origin top-left, floor at y 234**. People are about 120 tall
-and stand with their feet on the floor. The back wall usually ends around y 150 (a thin grey line there helps).
+and stand with their feet on the floor. The back wall usually ends around y 150 (a thin gray line there helps).
 
 \`\`\`jsonc
 "scenes": {
@@ -249,8 +249,8 @@ and stand with their feet on the floor. The back wall usually ends around y 150 
 \`\`\`
 
 Shapes: \`rect\` and \`ellipse\` (two opposite corners), \`line\` and \`arrow\` (two ends), \`path\` (any number of
-points, freehand), \`text\` (one centre point plus \`text\`). \`fill\`: none, light, mid, dark. \`color\`: ink (default),
-grey, red, blue, green, yellow. Keep scenes in greys: teal belongs to the product only.
+points, freehand), \`text\` (one center point plus \`text\`). \`fill\`: none, light, mid, dark. \`color\`: ink (default),
+gray, red, blue, green, yellow. Keep scenes in grays: teal belongs to the product only.
 
 Sizes to plan around (panel units):
 - A standing adult's head is around y 100 to 130; seated, around y 135 to 160. Feet are on the floor (y 234).
@@ -265,7 +265,7 @@ Tips that make scenes read well:
 - Stand furniture on the floor: its bottom edge at y 234.
 - Put tall things (shelves, machines) at the sides, and leave the middle 120 to 300 clear-ish for people.
 - Keep big shapes below y 60 or above y 110 near marks, so heads (around y 100 to 130) stay visible.
-- Two to four props that say "this place" beat twenty details. A labelled sign (text shape) does a lot.
+- Two to four props that say "this place" beat twenty details. A labeled sign (text shape) does a lot.
 - A mark with \`"behind": true\` stands behind the \`front\` shapes (a clerk behind a counter).
 
 ## 3. Look at it, then fix it
@@ -275,7 +275,7 @@ ${CLI} scene my.storyboard.json laundromat
 \`\`\`
 
 That writes \`my.scenes.png\`: each scene as a wide shot with a 50-unit grid, the floor line and a sample person at
-every mark (labelled underneath), next to the same scene as a medium shot so you can see how it crops. **Open
+every mark (labeled underneath), next to the same scene as a medium shot so you can see how it crops. **Open
 the image and look at it.** Check props sit on the floor, people stand where they should, nothing covers a head
 and no feet poke out below a counter. Adjust the numbers and preview again. Then use it in panels and \`${CLI} validate\` as usual.
 

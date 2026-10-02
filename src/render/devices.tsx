@@ -5,7 +5,7 @@ import { C, OFFSET } from "./tokens";
 export interface Rect { x: number; y: number; w: number; h: number }
 
 interface DeviceDef {
-  /** Natural size in device units; origin is the device centre. */
+  /** Natural size in device units; origin is the device center. */
   w: number;
   h: number;
   screen: Rect | null;
@@ -76,11 +76,11 @@ export interface DeviceProps {
   /** Uploaded screen image href (already baked to teal duotone by the host). */
   href?: string;
   clipId: string;
-  /** false = someone's personal device, not the product: drawn grey instead of teal. */
+  /** false = someone's personal device, not the product: drawn gray instead of teal. */
   product?: boolean;
 }
 
-/** Draws a device centred at the origin in device units. Wrap in a transform to place/scale it. */
+/** Draws a device centered at the origin in device units. Wrap in a transform to place/scale it. */
 export function Device({ type, href, clipId, product = true }: DeviceProps) {
   const def = DEVICE_DEFS[type];
   const s = def.screen;

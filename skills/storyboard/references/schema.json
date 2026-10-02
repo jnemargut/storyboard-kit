@@ -235,7 +235,7 @@
                     "path",
                     "text"
                   ],
-                  "description": "rect: Box. `points`: two opposite corners [[x1,y1],[x2,y2]].\nellipse: Circle or oval inside the box given by two corners.\nline: Straight line between two points.\narrow: Line with an arrowhead at the second point.\npath: Freehand line through every point (sketch anything missing).\ntext: Free text written on the panel. `points`: one [x, y] centre; `text`: the words (\\n for a new line)."
+                  "description": "rect: Box. `points`: two opposite corners [[x1,y1],[x2,y2]].\nellipse: Circle or oval inside the box given by two corners.\nline: Straight line between two points.\narrow: Line with an arrowhead at the second point.\npath: Freehand line through every point (sketch anything missing).\ntext: Free text written on the panel. `points`: one [x, y] center; `text`: the words (\\n for a new line)."
                 },
                 "fill": {
                   "enum": [
@@ -244,7 +244,7 @@
                     "mid",
                     "dark"
                   ],
-                  "description": "none: Outline only (default for lines).\nlight: Light grey.\nmid: Mid grey.\ndark: Dark grey."
+                  "description": "none: Outline only (default for lines).\nlight: Light gray.\nmid: Mid gray.\ndark: Dark gray."
                 },
                 "points": {
                   "type": "array",
@@ -299,7 +299,7 @@
                     "path",
                     "text"
                   ],
-                  "description": "rect: Box. `points`: two opposite corners [[x1,y1],[x2,y2]].\nellipse: Circle or oval inside the box given by two corners.\nline: Straight line between two points.\narrow: Line with an arrowhead at the second point.\npath: Freehand line through every point (sketch anything missing).\ntext: Free text written on the panel. `points`: one [x, y] centre; `text`: the words (\\n for a new line)."
+                  "description": "rect: Box. `points`: two opposite corners [[x1,y1],[x2,y2]].\nellipse: Circle or oval inside the box given by two corners.\nline: Straight line between two points.\narrow: Line with an arrowhead at the second point.\npath: Freehand line through every point (sketch anything missing).\ntext: Free text written on the panel. `points`: one [x, y] center; `text`: the words (\\n for a new line)."
                 },
                 "fill": {
                   "enum": [
@@ -308,7 +308,7 @@
                     "mid",
                     "dark"
                   ],
-                  "description": "none: Outline only (default for lines).\nlight: Light grey.\nmid: Mid grey.\ndark: Dark grey."
+                  "description": "none: Outline only (default for lines).\nlight: Light gray.\nmid: Mid gray.\ndark: Dark gray."
                 },
                 "points": {
                   "type": "array",
@@ -944,7 +944,7 @@
                             },
                             "product": {
                               "type": "boolean",
-                              "description": "false = not the product (personal call/text, someone else's app): drawn grey, not teal. Default true."
+                              "description": "false = not the product (personal call/text, someone else's app): drawn gray, not teal. Default true."
                             }
                           }
                         }
@@ -997,7 +997,7 @@
                     },
                     "product": {
                       "type": "boolean",
-                      "description": "false = not the product (personal call/text, someone else's app): drawn grey, not teal. Default true."
+                      "description": "false = not the product (personal call/text, someone else's app): drawn gray, not teal. Default true."
                     }
                   }
                 }
@@ -1067,7 +1067,7 @@
               },
               "images": {
                 "type": "array",
-                "description": "Any picture placed in the scene. Sketchified in greys unless sketch is false. Panel units, 400 x 260.",
+                "description": "Any picture placed in the scene. Sketchified in grays unless sketch is false. Panel units, 400 x 260.",
                 "items": {
                   "type": "object",
                   "required": [
@@ -1126,7 +1126,7 @@
                         "path",
                         "text"
                       ],
-                      "description": "rect: Box. `points`: two opposite corners [[x1,y1],[x2,y2]].\nellipse: Circle or oval inside the box given by two corners.\nline: Straight line between two points.\narrow: Line with an arrowhead at the second point.\npath: Freehand line through every point (sketch anything missing).\ntext: Free text written on the panel. `points`: one [x, y] centre; `text`: the words (\\n for a new line)."
+                      "description": "rect: Box. `points`: two opposite corners [[x1,y1],[x2,y2]].\nellipse: Circle or oval inside the box given by two corners.\nline: Straight line between two points.\narrow: Line with an arrowhead at the second point.\npath: Freehand line through every point (sketch anything missing).\ntext: Free text written on the panel. `points`: one [x, y] center; `text`: the words (\\n for a new line)."
                     },
                     "fill": {
                       "enum": [
@@ -1135,7 +1135,7 @@
                         "mid",
                         "dark"
                       ],
-                      "description": "none: Outline only (default for lines).\nlight: Light grey.\nmid: Mid grey.\ndark: Dark grey."
+                      "description": "none: Outline only (default for lines).\nlight: Light gray.\nmid: Mid gray.\ndark: Dark gray."
                     },
                     "points": {
                       "type": "array",

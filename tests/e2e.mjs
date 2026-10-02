@@ -17,8 +17,8 @@ let failures = 0;
 const check = (ok, msg) => { console.log(`${ok ? "PASS" : "FAIL"} ${msg}`); if (!ok) failures++; };
 
 const server = spawn("node", ["skills/storyboard/scripts/storyboard.mjs", "dev", file, "--no-open", "--port", "4400"], { stdio: ["ignore", "pipe", "inherit"] });
-await new Promise((ok) => server.stdout.on("data", (d) => String(d).includes("localhost") && ok()));
-const url = "http://localhost:4400/";
+// the dev server moves to the next free port if 4400 is taken, so read the address it actually chose
+const url = await new Promise((ok) => server.stdout.on("data", (d) => { const m = /http:\/\/localhost:\d+\//.exec(String(d)); if (m) ok(m[0]); }));
 
 const browser = await chromium.launch({ channel: "chrome" });
 const ctx = await browser.newContext({ viewport: { width: 1500, height: 1000 }, permissions: ["clipboard-read", "clipboard-write"] });

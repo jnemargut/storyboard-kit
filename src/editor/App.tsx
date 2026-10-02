@@ -40,13 +40,13 @@ export function App() {
   const [zoom, setZoom] = useState<"fit" | number>("fit");
   /** Active drawing tool from the drawer's Draw tab; null = normal select/move. */
   const [tool, setTool] = useState<ShapeType | null>(null);
-  /** Colour for new drawings and text. */
+  /** Color for new drawings and text. */
   const [drawColor, setDrawColor] = useState<MarkerColor>("ink");
   /** Play mode: the panel index being shown, or null while editing. */
   const [playing, setPlaying] = useState<number | null>(null);
   // picking a drawing tool drops the selection, so its toolbar can't sit on top of where you draw
   useEffect(() => { if (tool) { setSel(null); (document.activeElement as HTMLElement | null)?.blur?.(); } }, [tool]);
-  /** Whether newly added pictures get the grey marker sketch (remembered per browser). */
+  /** Whether newly added pictures get the gray marker sketch (remembered per browser). */
   const [sketchNew, setSketchNewState] = useState(() => { try { return localStorage.getItem("sb-sketch-new") !== "0"; } catch { return true; } });
   const setSketchNew = (v: boolean) => { setSketchNewState(v); try { localStorage.setItem("sb-sketch-new", v ? "1" : "0"); } catch { /* per-browser nicety only */ } };
   const svgWrap = useRef<HTMLDivElement>(null);
@@ -351,7 +351,7 @@ export function App() {
   // ------------------------------------------------------------ copy / paste (system clipboard, works across boards)
   /** Last thing copied in this tab, so the Paste button works even when the browser won't let a page read the clipboard. */
   const lastClip = useRef<Clip | null>(null);
-  /** Byte size of the last panel image we put on the clipboard, to recognise it when it's pasted back here. */
+  /** Byte size of the last panel image we put on the clipboard, to recognize it when it's pasted back here. */
   const lastImageSize = useRef<number | null>(null);
   /**
    * A copied panel goes on the system clipboard twice over: as a PNG, so Miro, Figma, Slack and friends paste
@@ -683,7 +683,7 @@ function TopBar(props: {
               try { const { path } = await api.upload(f); await setBrand("logo", path); props.bumpAssets(); } catch (err) { props.flash(`Upload failed: ${(err as Error).message}`); }
             }} /></label>
             {brand.logo && <button onClick={() => void setBrand("logo", undefined)}>Remove logo</button>}
-            <p className="fine">Shown in grey on shop signs, so teal stays reserved for the product.</p>
+            <p className="fine">Shown in gray on shop signs, so teal stays reserved for the product.</p>
           </div>
         )}
       </div>

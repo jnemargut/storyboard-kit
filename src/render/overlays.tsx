@@ -41,7 +41,7 @@ export function BubbleShape({ b }: { b: BubbleBox }) {
   const fill = C.paper;
   const tailEl = (): ReactNode => {
     if (!tail) return null;
-    // work from the bubble's own centre and outline, so the tail always leaves the actual edge
+    // work from the bubble's own center and outline, so the tail always leaves the actual edge
     const cx = x + w / 2, cy = y + h / 2;
     const [tx, ty] = tail.to;
     const dist = Math.hypot(tx - cx, ty - cy) || 1;

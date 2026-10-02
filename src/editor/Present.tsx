@@ -139,8 +139,8 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
         <div className="present-tools" role="group" aria-label="Markup">
           <button className={tool === "pen" ? "on" : ""} aria-pressed={tool === "pen"} onClick={() => setTool(tool === "pen" ? null : "pen")} title="Sharpie: draw over the step (D)">Sharpie</button>
           <span className="pen-color">
-            <button className="pen-dot" style={{ background: MARKER[color] }} onClick={() => setPicking(!picking)} aria-expanded={picking} aria-label={`Sharpie colour: ${color}`} title="Sharpie colour" />
-            {picking && <span className="pen-pop"><Swatches value={color} onChange={(c) => { setColor(c); setTool("pen"); setPicking(false); }} label="Sharpie colour" /></span>}
+            <button className="pen-dot" style={{ background: MARKER[color] }} onClick={() => setPicking(!picking)} aria-expanded={picking} aria-label={`Sharpie color: ${color}`} title="Sharpie color" />
+            {picking && <span className="pen-pop"><Swatches value={color} onChange={(c) => { setColor(c); setTool("pen"); setPicking(false); }} label="Sharpie color" /></span>}
           </span>
           <button className={tool === "eraser" ? "on" : ""} aria-pressed={tool === "eraser"} onClick={() => setTool(tool === "eraser" ? null : "eraser")} title="Eraser: click or drag over strokes (E)">Eraser</button>
           <button onClick={clearSlide} disabled={!board.panels[i].markup?.length} title="Remove all markup from this step">Clear step</button>

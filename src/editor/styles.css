@@ -159,7 +159,7 @@ button, select, input, textarea { font: inherit; color: inherit; }
 @keyframes present-in-left { from { opacity: 0; transform: translateX(-24px); } }
 @media (prefers-reduced-motion: reduce) { .present-slide .present-panel { animation: none !important; } }
 
-/* marker colour swatches */
+/* marker color swatches */
 .swatches { display: inline-flex; gap: 4px; align-items: center; }
 .swatch { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--color-paper); box-shadow: 0 0 0 1.5px var(--color-600); padding: 0; cursor: pointer; }
 .swatch.on { box-shadow: 0 0 0 2.5px var(--color-ink); }

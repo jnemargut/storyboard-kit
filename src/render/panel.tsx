@@ -6,7 +6,8 @@ import { DEVICE_DEFS, Device, type Rect } from "./devices";
 import { ADV_TITLE, stackOrder, captionBox, heldDeviceOf, layoutPanel, placeBubbles, specialGeometry, toPanel, wrap, textWidth, type AssetResolver, type CharPlaced, type DevPlaced, type PanelLayout } from "./layout";
 import { BubbleShape, BubbleText, Callout, CaptionShape, CaptionText, GestureMark } from "./overlays";
 import { SceneBack, SceneFront, resolveScene } from "./scenes";
-import { ShapeMark, shapeId, shapeTransform, smooth } from "./shapes";
+import { ShapeMark, shapeId, shapeTransform } from "./shapes";
+import { MarkupStrokes } from "../sketch/shapes";
 import { C, FLOOR_Y, FONT, MARKER, PANEL_H, PANEL_W, SKIN, OUTFIT_FILL } from "./tokens";
 import type { Pt } from "./rig";
 
@@ -14,11 +15,11 @@ export interface RenderOptions {
   asset: AssetResolver;
   /** Unprocessed images (brand logo). Falls back to `asset`. */
   raw?: AssetResolver;
-  /** Images placed in a scene, sketchified in greys. Falls back to `raw`, then `asset`. */
+  /** Images placed in a scene, sketchified in grays. Falls back to `raw`, then `asset`. */
   sketch?: AssetResolver;
   /** Crit markup strokes can be clicked (the play-mode eraser). */
   markupHit?: boolean;
-  /** Scene-authoring guides: a 50-unit grid and every mark, labelled (the `scene` preview command). */
+  /** Scene-authoring guides: a 50-unit grid and every mark, labeled (the `scene` preview command). */
   guides?: boolean;
   /** Draw crit markup. Only play mode does; the editor and exports leave it out. */
   showMarkup?: boolean;
@@ -58,7 +59,7 @@ function DevEl({ d, pid, cam }: { d: DevPlaced; pid: string; cam: { s: number } 
   );
 }
 
-/** A placed picture: centre (x, y), fit inside w × h, then the designer's move / scale / rotate. */
+/** A placed picture: center (x, y), fit inside w × h, then the designer's move / scale / rotate. */
 function ImageEl({ id, im, ov, opts, wrap }: { id: string; im: SceneImage; ov: LayoutOverride; opts: RenderOptions; wrap?: string }) {
   if (ov.hidden) return null;
   const w = im.w ?? 120, h = im.h ?? 90;
@@ -336,16 +337,7 @@ function CardBody({ panel, ts }: { panel: Panel; ts: number }) {
 function Markup({ strokes, pid, hit }: { strokes: MarkupStroke[]; pid: string; hit?: boolean }) {
   return (
     <g data-markup={pid} clipPath={`url(#sb-clip-${pid})`} pointerEvents={hit ? "stroke" : "none"}>
-      {strokes.map((m, i) => {
-        const hl = m.color === "yellow";
-        const d = smooth(m.points);
-        return (
-          <g key={i} data-mk={i}>
-            {hit && <path d={d} fill="none" stroke="transparent" strokeWidth={16} strokeLinecap="round" />}
-            <path d={d} fill="none" stroke={MARKER[m.color ?? "red"] ?? MARKER.red} strokeWidth={hl ? 12 : 4.5} strokeOpacity={hl ? 0.55 : 0.92} strokeLinecap="round" strokeLinejoin="round" />
-          </g>
-        );
-      })}
+      <MarkupStrokes strokes={strokes} hit={hit} />
     </g>
   );
 }

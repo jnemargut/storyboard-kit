@@ -1,5 +1,5 @@
 /**
- * Extra detail for the original scenes: the props that make a place recognisable at a glance (a menu board and
+ * Extra detail for the original scenes: the props that make a place recognizable at a glance (a menu board and
  * cups, a hob and a fruit bowl, a crosswalk). Drawn behind people, kept off the wall band where heads appear, and
  * never moving a mark, so existing boards look the same except richer.
  */
@@ -8,7 +8,7 @@ import { C, OFFSET } from "./tokens";
 
 const ink = C.ink;
 const rect = (x: number, y: number, w: number, h: number) => `M${x} ${y} h${w} v${h} h${-w} Z`;
-/** Marker shape: offset grey fill + ink outline. */
+/** Marker shape: offset gray fill + ink outline. */
 const Sh = ({ d, fill = C.g2, sw = 1.8 }: { d: string; fill?: string; sw?: number }) => (
   <g>
     {fill !== "none" && <path d={d} fill={fill} transform={`translate(${OFFSET.x * 0.7} ${OFFSET.y * 0.7})`} />}

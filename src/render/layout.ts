@@ -43,10 +43,10 @@ export interface DevPlaced {
 }
 
 export interface Anchor {
-  /** Head centre + radius (panel units) for characters. */
+  /** Head center + radius (panel units) for characters. */
   head?: { x: number; y: number; r: number };
   screen?: Rect;
-  /** The screen belongs to the product (teal) rather than a personal device (grey). */
+  /** The screen belongs to the product (teal) rather than a personal device (gray). */
   product?: boolean;
   box: Rect;
 }
@@ -84,7 +84,7 @@ export function heldDeviceOf(c: CharacterInPanel): { type: DeviceType; screen?: 
 
 export const isHandheld = (t: DeviceType) => (HANDHELD as readonly string[]).includes(t);
 
-/** Phone poses without a device still get a phone in hand, a personal (grey) one. Non-handheld devices are never held. */
+/** Phone poses without a device still get a phone in hand, a personal (gray) one. Non-handheld devices are never held. */
 export function effectiveDevice(c: CharacterInPanel): { type: DeviceType; screen?: string; product: boolean } | undefined {
   const d = heldDeviceOf(c);
   if (d && isHandheld(d.type)) return { ...d, product: d.product !== false };

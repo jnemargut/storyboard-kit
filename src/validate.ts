@@ -60,7 +60,7 @@ export function validate(input: unknown): Result {
       const pts = s.points;
       const isText = s.type === "text";
       if (!Array.isArray(pts) || pts.length < (isText ? 1 : 2) || pts.some((q) => !Array.isArray(q) || q.length !== 2 || q.some((n) => typeof n !== "number" || !Number.isFinite(n))))
-        err(`${sp}.points`, isText ? "must be one [x, y] point: where the text is centred (panel units, 400 wide, 260 tall)." : "must be at least two [x, y] points in panel units (400 wide, 260 tall).", isText ? "e.g. [[200, 40]]" : "e.g. [[40, 120], [120, 200]]");
+        err(`${sp}.points`, isText ? "must be one [x, y] point: where the text is centered (panel units, 400 wide, 260 tall)." : "must be at least two [x, y] points in panel units (400 wide, 260 tall).", isText ? "e.g. [[200, 40]]" : "e.g. [[40, 120], [120, 200]]");
       if (isText) str(`${sp}.text`, s.text, true);
     });
   };

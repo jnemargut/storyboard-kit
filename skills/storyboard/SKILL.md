@@ -34,7 +34,7 @@ path. **Below, `sb` is short for that whole command.**
    A `"text"` shape writes free words anywhere on a panel (a sign's wording, "9 people ahead"):
    `{ "type": "text", "points": [[200, 40]], "text": "9 people ahead" }`.
    If the designer hands you a picture that isn't a screen (a photo, a product, a found image), put it in the
-   panel's `images`. It's sketchified in greys to match; `"sketch": false` shows it as-is.
+   panel's `images`. It's sketchified in grays to match; `"sketch": false` shows it as-is.
    Full list: [references/vocabulary.md](references/vocabulary.md).
 2. **Write the file**: `<name>.storyboard.json` (`sb new <file>` makes a starter). Shape: [references/format.md](references/format.md).
    Worked example: [references/example.md](references/example.md).
@@ -75,7 +75,7 @@ The point is to see the product from inside the customer's life, not to illustra
   (`uniform`, `hi-vis`, `lab-coat`, `chef`, `scrubs`, `apron`, `overalls`…) and `hat` (`sb vocab hats`).
 - **Teal means "our product" and nothing else.** A personal call, a text to a coworker, or someone else's app
   is not the product: give that device `"product": false` (e.g. `"device": { "type": "phone", "product": false }`)
-  and it's drawn grey. Phone poses (`holding-phone`, `phone-to-ear`) without a device get a grey phone
+  and it's drawn gray. Phone poses (`holding-phone`, `phone-to-ear`) without a device get a gray phone
   automatically. This is how the board shows where the product helps and where people route around it.
 - Gestures (tap, swipe, click…) are drawn **orange**: what the person does. Teal stays reserved for the product.
 - **Hold only what a hand holds.** `device` on a character is for phone, tablet, laptop or watch. Kiosks, car

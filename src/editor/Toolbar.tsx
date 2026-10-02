@@ -244,7 +244,7 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
       <>
         <span className="kind">{c.who}'s</span>
         <Pick title="Device" value={held?.type ?? "phone"} options={handheld ? [...HANDHELD] : ids(DEVICES)} onChange={(v) => setHeld({ type: v })} />
-        <button onClick={() => setHeld({ product: product ? false : undefined })} title="Teal = our product. Grey = a personal device or someone else's app.">{product ? "Our product" : "Personal"}</button>
+        <button onClick={() => setHeld({ product: product ? false : undefined })} title="Teal = our product. Gray = a personal device or someone else's app.">{product ? "Our product" : "Personal"}</button>
         {screenBtn}
         <button onClick={() => commit(putDownOps(board, sel), "Put down in the scene")} title="Detach it from the person and place it in the scene">Put down</button>
       </>,
@@ -291,7 +291,7 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
     return render(
       <>
         {d && <Pick title="Device" value={d.type} options={ids(DEVICES)} onChange={(v) => set("type", v)} />}
-        {d && <button onClick={() => set("product", d.product === false ? undefined : false)} title="Teal = our product. Grey = a personal device or someone else's app.">{d.product === false ? "Personal" : "Our product"}</button>}
+        {d && <button onClick={() => set("product", d.product === false ? undefined : false)} title="Teal = our product. Gray = a personal device or someone else's app.">{d.product === false ? "Personal" : "Our product"}</button>}
         {screenBtn}
         {canHold && <Pick title="Hand it to someone" value="" options={["", ...people]} labels={{ "": "hand to…" }} onChange={(v) => v && commit(handToOps(board, sel, v), `Handed to ${v}`)} />}
       </>,
@@ -351,7 +351,7 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
       <>
         <span className="kind">Picture</span>
         <button className={sketched ? "on" : ""} aria-pressed={sketched} onClick={() => set("sketch", sketched ? false : undefined)}
-          title="Sketchify: grey marker drawing that matches the storyboard. Off: the original picture.">{sketched ? "Sketchified" : "Original"}</button>
+          title="Sketchify: gray marker drawing that matches the storyboard. Off: the original picture.">{sketched ? "Sketchified" : "Original"}</button>
         <button onClick={() => input.current?.click()} title="Swap in a different picture, keeping its place and size">Replace…</button>
         <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={async (e) => {
           const f = e.target.files?.[0]; e.target.value = "";

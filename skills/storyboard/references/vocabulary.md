@@ -241,16 +241,16 @@ Field: `shapes[].type`
 - `line`: Straight line between two points.
 - `arrow`: Line with an arrowhead at the second point.
 - `path`: Freehand line through every point (sketch anything missing).
-- `text`: Free text written on the panel. `points`: one [x, y] centre; `text`: the words (\n for a new line).
+- `text`: Free text written on the panel. `points`: one [x, y] center; `text`: the words (\n for a new line).
 
 ## shape-fills
 
 Field: `shapes[].fill`
 
 - `none`: Outline only (default for lines).
-- `light`: Light grey.
-- `mid`: Mid grey.
-- `dark`: Dark grey.
+- `light`: Light gray.
+- `mid`: Mid gray.
+- `dark`: Dark gray.
 
 ## colors
 

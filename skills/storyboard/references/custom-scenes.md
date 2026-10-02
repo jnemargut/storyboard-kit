@@ -16,7 +16,7 @@ sb scene new pharmacy my.storyboard.json --base store     # on top of a built-in
 ## 2. Draw it
 
 Everything is in **panel units: 400 wide, 260 tall, origin top-left, floor at y 234**. People are about 120 tall
-and stand with their feet on the floor. The back wall usually ends around y 150 (a thin grey line there helps).
+and stand with their feet on the floor. The back wall usually ends around y 150 (a thin gray line there helps).
 
 ```jsonc
 "scenes": {
@@ -43,8 +43,8 @@ and stand with their feet on the floor. The back wall usually ends around y 150 
 ```
 
 Shapes: `rect` and `ellipse` (two opposite corners), `line` and `arrow` (two ends), `path` (any number of
-points, freehand), `text` (one centre point plus `text`). `fill`: none, light, mid, dark. `color`: ink (default),
-grey, red, blue, green, yellow. Keep scenes in greys: teal belongs to the product only.
+points, freehand), `text` (one center point plus `text`). `fill`: none, light, mid, dark. `color`: ink (default),
+gray, red, blue, green, yellow. Keep scenes in grays: teal belongs to the product only.
 
 Sizes to plan around (panel units):
 - A standing adult's head is around y 100 to 130; seated, around y 135 to 160. Feet are on the floor (y 234).
@@ -59,7 +59,7 @@ Tips that make scenes read well:
 - Stand furniture on the floor: its bottom edge at y 234.
 - Put tall things (shelves, machines) at the sides, and leave the middle 120 to 300 clear-ish for people.
 - Keep big shapes below y 60 or above y 110 near marks, so heads (around y 100 to 130) stay visible.
-- Two to four props that say "this place" beat twenty details. A labelled sign (text shape) does a lot.
+- Two to four props that say "this place" beat twenty details. A labeled sign (text shape) does a lot.
 - A mark with `"behind": true` stands behind the `front` shapes (a clerk behind a counter).
 
 ## 3. Look at it, then fix it
@@ -69,7 +69,7 @@ sb scene my.storyboard.json laundromat
 ```
 
 That writes `my.scenes.png`: each scene as a wide shot with a 50-unit grid, the floor line and a sample person at
-every mark (labelled underneath), next to the same scene as a medium shot so you can see how it crops. **Open
+every mark (labeled underneath), next to the same scene as a medium shot so you can see how it crops. **Open
 the image and look at it.** Check props sit on the floor, people stand where they should, nothing covers a head
 and no feet poke out below a counter. Adjust the numbers and preview again. Then use it in panels and `sb validate` as usual.
 

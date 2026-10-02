@@ -115,7 +115,7 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
   const L = hx - r, Rt = hx + r;
   // short hair stops at the temples so the sides of the face show; longer styles come down past the ears
   const sideY = cast.hair === "short" || cast.hair === "buzz" ? hy - 0.2 * r : hy - 0.08 * r;
-  // the cap hugs the head: an arc around the head's own centre, from temple to temple
+  // the cap hugs the head: an arc around the head's own center, from temple to temple
   const sx = Math.sqrt(Math.max(0, R * R - (hy - sideY) ** 2));
   const fringe = cast.hair === "short"
     ? `Q${hx + o + 0.4 * r} ${hy - 0.66 * r} ${hx + o - 0.08 * r} ${hy - 0.6 * r} Q${hx + o - 0.55 * r} ${hy - 0.56 * r} ${hx - sx} ${sideY}` // soft side part
@@ -123,7 +123,7 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
   const cap = `M${hx - sx} ${sideY} A${R} ${R} 0 0 1 ${hx + sx} ${sideY} ${fringe} Z`;
   // the afro's cap is a half-circle over the whole crown, so no forehead band shows; it merges into the cloud behind
   if (cast.hair === "afro") {
-    const k = r + 1.5; // centred on the face and a touch bigger, so no sliver of forehead shows above it
+    const k = r + 1.5; // centered on the face and a touch bigger, so no sliver of forehead shows above it
     return <path d={`M${hx - k} ${hy} A${k} ${k} 0 0 1 ${hx + k} ${hy} L${Rt} ${hy - 0.08 * r} ${fringe} Z`} fill={fill} stroke="none" />;
   }
   if (cast.hair === "curly") {
@@ -143,7 +143,7 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
 /** Comic symbols floating near the head: they carry the mood when the face is small or turned away. */
 /**
  * How far hair, hats and headphones reach past the bare head (as multiples of r): `side` horizontally,
- * `top` above the centre. Mood marks go outside this so they never sit on a bun, a brim or a chef's hat.
+ * `top` above the center. Mood marks go outside this so they never sit on a bun, a brim or a chef's hat.
  */
 export function headExtent(cast: CastMember, f: Figure): { side: number; top: number } {
   const sideView = f.view === "side";

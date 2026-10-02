@@ -81,7 +81,7 @@ function LaneStrip({ p, k, editing }: { p: Panel; k: number; editing?: boolean }
       ))}
       <MiniFace x={dotX(4) + 16} y={19} happy />
       <text x={dotX(4) + 28} y={24} fontFamily={FONT.hand} fontSize={size} fill={C.g8}>{f === undefined ? "" : FEEL_WORD[f]}</text>
-      {/* teal = the product shows up in this step (the legend's colour), marked only where it does */}
+      {/* teal = the product shows up in this step (the legend's color), marked only where it does */}
       {product && (
         <g data-lane-product={p.id}>
           <rect x={172} y={12} width={14} height={14} fill={C.teal} stroke={C.ink} strokeWidth={1.5} />

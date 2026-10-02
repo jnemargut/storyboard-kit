@@ -31,7 +31,7 @@ export interface LayoutOverride {
 export interface HeldDevice {
   type: DeviceType;
   screen?: string;
-  /** false = not the product (a personal call, a text): drawn grey instead of teal. Default true. */
+  /** false = not the product (a personal call, a text): drawn gray instead of teal. Default true. */
   product?: boolean;
 }
 
@@ -91,22 +91,22 @@ export interface Shape {
   fill?: ShapeFill;
   /** The words, for a "text" shape. */
   text?: string;
-  /** Marker colour; default ink. */
+  /** Marker color; default ink. */
   color?: MarkerColor;
 }
 
-/** Any picture placed in a scene (a found photo, a product shot, a prop). Sketchified in greys unless `sketch: false`. */
+/** Any picture placed in a scene (a found photo, a product shot, a prop). Sketchified in grays unless `sketch: false`. */
 export interface SceneImage {
   id?: string;
   /** Path relative to the storyboard file. */
   src: string;
-  /** Centre, in panel units (400 × 260). Default: the middle of the panel. */
+  /** Center, in panel units (400 × 260). Default: the middle of the panel. */
   x?: number;
   y?: number;
   /** Box the image fits inside, in panel units. Default 120 × 90. */
   w?: number;
   h?: number;
-  /** false = show the image as-is. Default true (grey marker sketch). */
+  /** false = show the image as-is. Default true (gray marker sketch). */
   sketch?: boolean;
 }
 
