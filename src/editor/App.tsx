@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { splitCrop } from "../sketch/crop";
 import { applyOps, type Op } from "../sketch/json";
 import { BoardSVG, pageSize, panelOrigin } from "../render/board";
 import type { Board, LayoutOverride, ScenePanel, Shape } from "../types";
@@ -110,7 +111,7 @@ export function App() {
 
   const shown = useMemo(() => (board && draft ? applyOps(board, draft) : board), [board, draft]);
   const size = shown ? pageSize(shown) : { width: 1, height: 1 };
-  const opts = useMemo(() => ({ asset: assetUrl(bust), raw: (p: string) => `/files/${p.replace(/^\.\//, "")}?v=${bust}`, sketch: (p: string) => `${assetUrl(bust)(p)}&mode=grey`, wobble: !draft, editing: true }), [bust, draft]);
+  const opts = useMemo(() => ({ asset: assetUrl(bust), raw: (p: string) => (splitCrop(p).crop ? `${assetUrl(bust)(p)}&raw=1` : `/files/${p.replace(/^\.\//, "")}?v=${bust}`), sketch: (p: string) => `${assetUrl(bust)(p)}&mode=grey`, wobble: !draft, editing: true }), [bust, draft]);
 
   // ------------------------------------------------------------ selection geometry
   const measure = useCallback((s: Sel | null): Box | null => {
@@ -436,6 +437,15 @@ export function App() {
       e.clipboardData?.setData("text/plain", JSON.stringify(clip));
       flash(`Copied ${clip.kind}. Paste it into any panel or board.`);
     };
+    // cut = copy, then delete what was copied
+    const onCut = (e: ClipboardEvent) => {
+      if (typing() || !board || !sel) return;
+      const d = deleteOps(board, sel);
+      if (!d || !clipFor(board, sel)) return;
+      onCopy(e);
+      void commit(d.ops, "Cut. Paste it anywhere, or Cmd+Z to undo");
+      setSel(null);
+    };
     const onPaste = (e: ClipboardEvent) => {
       if (typing() || !board) return;
       let clip: unknown;
@@ -454,8 +464,10 @@ export function App() {
       })();
     };
     document.addEventListener("copy", onCopy);
+    document.addEventListener("cut", onCut);
     document.addEventListener("paste", onPaste);
-    return () => { document.removeEventListener("copy", onCopy); document.removeEventListener("paste", onPaste); };
+    return () => { document.removeEventListener("copy", onCopy);
+      document.removeEventListener("cut", onCut); document.removeEventListener("paste", onPaste); };
   });
 
   // ------------------------------------------------------------ play mode

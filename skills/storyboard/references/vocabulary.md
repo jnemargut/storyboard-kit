@@ -251,6 +251,7 @@ Field: `shapes[].fill`
 - `light`: Light gray.
 - `mid`: Mid gray.
 - `dark`: Dark gray.
+- `white`: Solid white: cover up part of a scene or picture.
 
 ## colors
 

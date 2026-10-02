@@ -1,8 +1,9 @@
 import { useLayoutEffect, useRef, useState } from "react";
+import { CropDialog } from "../sketch/crop-dialog";
 import type { Op } from "../sketch/json";
 import type { Board, CharacterInPanel, Panel, ScenePanel } from "../types";
 import { isScene } from "../types";
-import { ANGLES, BUBBLES, DEVICES, DIRECTIONS, GESTURES, HANDHELD, MOODS, POSES, SCENES, SHAPE_FILLS, SHAPES, SHOTS, TIME_ICONS, ids } from "../vocab";
+import { ANGLES, BUBBLES, DEVICES, DIRECTIONS, GESTURES, HANDHELD, MOODS, POSES, SCENES, SHAPE_FILLS, SHAPES, SHOTS, SHAPE_WEIGHTS, TIME_ICONS, ids } from "../vocab";
 import { heldDeviceOf } from "../render/layout";
 import { CastEditor } from "./Drawer";
 import { handToOps, putDownOps, swapWhoOps, locate, movePanelOps, panelIndex, removeOps, resetLayoutOps, setFieldOps, layoutOps, type Sel } from "./model";
@@ -59,6 +60,7 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
   const [left, setLeft] = useState(box.x);
   const [open, setOpen] = useState(false);
   const [look, setLook] = useState(false);
+  const [cropping, setCropping] = useState(false);
   // keep the toolbar inside the board: shift left when it would overflow the right edge
   useLayoutEffect(() => {
     const el = bar.current, host = el?.parentElement;
@@ -353,6 +355,19 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
         <button className={sketched ? "on" : ""} aria-pressed={sketched} onClick={() => set("sketch", sketched ? false : undefined)}
           title="Sketchify: gray marker drawing that matches the storyboard. Off: the original picture.">{sketched ? "Sketchified" : "Original"}</button>
         <button onClick={() => input.current?.click()} title="Swap in a different picture, keeping its place and size">Replace…</button>
+        <button onClick={() => setCropping(true)} title="Show only part of the picture">{im.crop ? "Change crop…" : "Crop…"}</button>
+        {cropping ? <CropDialog src={`/files/${im.src.replace(/^\.\//, "")}`} crop={im.crop} onCancel={() => setCropping(false)} onDone={(c) => {
+          setCropping(false);
+          // keep the picture's width and make its box match the new shape, so nothing gets squashed
+          const pic = new Image();
+          pic.onload = () => {
+            const box = c ?? [0, 0, 1, 1];
+            const aspect = ((box[2] - box[0]) * pic.naturalWidth) / Math.max(1, (box[3] - box[1]) * pic.naturalHeight);
+            const w = im.w ?? 120;
+            void commit([{ path: ["panels", pi, "images", loc!.index, "crop"], value: c, ...(c ? {} : { delete: true }) }, { path: ["panels", pi, "images", loc!.index, "h"], value: Math.round(w / aspect) }], c ? "Cropped" : "Uncropped");
+          };
+          pic.src = `/files/${im.src.replace(/^\.\//, "")}`;
+        }} /> : null}
         <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={async (e) => {
           const f = e.target.files?.[0]; e.target.value = "";
           if (!f) return;
@@ -389,7 +404,8 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
       <>
         <Pick title="Shape" value={sh.type} options={ids(SHAPES).filter((x) => x !== "text")} labels={{ rect: "box", ellipse: "oval", path: "freehand" }} onChange={(v) => set("type", v)} />
         <Swatches value={sh.color ?? "ink"} onChange={(c) => set("color", c === "ink" ? undefined : c)} />
-        {!open && <Pick title="Fill" value={sh.fill ?? "none"} options={ids(SHAPE_FILLS)} labels={{ none: "no fill", light: "light fill", mid: "mid fill", dark: "dark fill" }} onChange={(v) => set("fill", v === "none" ? undefined : v)} />}
+        {!open && <Pick title="Fill" value={sh.fill ?? "none"} options={ids(SHAPE_FILLS)} labels={{ none: "no fill", light: "light fill", mid: "mid fill", dark: "dark fill", white: "white fill" }} onChange={(v) => set("fill", v === "none" ? undefined : v)} />}
+        <Pick title="Line" value={sh.color === "none" ? "none" : sh.weight ?? "normal"} options={[...ids(SHAPE_WEIGHTS), ...(open ? [] : ["none"])]} labels={{ thin: "thin line", normal: "normal line", thick: "thick line", none: "no line" }} onChange={(v) => { if (v === "none") set("color", "none"); else { if (sh.color === "none") set("color", undefined); set("weight", v === "normal" ? undefined : v); } }} />
         <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: ((ov.rotate ?? 0) + 15) % 360 }))} title="Rotate 15°">⟳</button>
         {remove}
       </>,

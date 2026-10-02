@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { croppedImage, isCrop } from "../sketch/bake";
 import { existsSync, mkdirSync, readFileSync, statSync, watch, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -87,7 +88,10 @@ export async function dev(file: string, o: DevOptions) {
       if (url.pathname.startsWith("/baked/")) {
         const p = safePath(url.pathname.slice("/baked/".length));
         if (!p || !existsSync(p.replace(/#.*$/, ""))) { res.writeHead(404); return res.end(); }
-        const png = bakeScreen(p, cache, Number(url.searchParams.get("r") ?? 1), url.searchParams.get("mode") === "grey" ? "grey" : "teal");
+        const c = url.searchParams.get("crop")?.split(",").map(Number);
+        const crop = isCrop(c) ? c : undefined;
+        if (url.searchParams.get("raw") === "1") { const pic = croppedImage(p, cache, crop); res.writeHead(200, { "content-type": pic.mime, "cache-control": "no-cache" }); return res.end(pic.buf); }
+        const png = bakeScreen(p, cache, Number(url.searchParams.get("r") ?? 1), url.searchParams.get("mode") === "grey" ? "grey" : "teal", crop);
         res.writeHead(200, { "content-type": "image/png", "cache-control": "no-cache" });
         return res.end(png);
       }

@@ -1,4 +1,5 @@
 import type { Op } from "../sketch/json";
+import { splitCrop } from "../sketch/crop";
 import type { Board } from "../types";
 import type { Result } from "../validate";
 
@@ -19,4 +20,7 @@ export const api = {
     fetch(`/api/upload?name=${encodeURIComponent(file.name)}&dir=${dir}`, { method: "POST", headers: { "x-storyboard": "1" }, body: file }).then((r) => ok<{ path: string }>(r)),
 };
 
-export const assetUrl = (bust: number) => (p: string) => `/baked/${p.replace(/^\.\//, "").split("/").map(encodeURIComponent).join("/")}?v=${bust}`;
+export const assetUrl = (bust: number) => (p0: string) => {
+  const { path: p, crop } = splitCrop(p0);
+  return `/baked/${p.replace(/^\.\//, "").split("/").map(encodeURIComponent).join("/")}?v=${bust}${crop ? `&crop=${crop.join(",")}` : ""}`;
+};

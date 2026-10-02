@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import { croppedImage, splitCrop, type Crop } from "./sketch/bake";
 import { plainText } from "./sketch/rich";
 import { dirname, extname, join, resolve } from "node:path";
 import { initRenderer, renderPNG } from "./sketch/resvg";
@@ -20,10 +21,10 @@ export { FONT_DIR };
  * A screen in a storyboard: an image file, or a Wireframe Kit screen ("./app.wireframe.json#checkout"),
  * which resolves to the PNG Wireframe Kit renders next to it. Baked to the teal duotone and cached.
  */
-export function bakeScreen(absPath: string, cacheDir: string, roughness = 1, mode: BakeMode = "teal"): Buffer {
+export function bakeScreen(absPath: string, cacheDir: string, roughness = 1, mode: BakeMode = "teal", crop?: Crop): Buffer {
   const img = isWireframeRef(absPath) ? wireframePNG(absPath) : absPath;
   if (!img) throw new Error(`No rendered wireframe for ${absPath}`);
-  return isWireframeRef(absPath) ? bakeImage(img, cacheDir, 0.4, mode === "teal" ? "wire" : mode) : bakeImage(img, cacheDir, roughness, mode);
+  return isWireframeRef(absPath) ? bakeImage(img, cacheDir, 0.4, mode === "teal" ? "wire" : mode, crop) : bakeImage(img, cacheDir, roughness, mode, crop);
 }
 
 export const cacheDirFor = (boardFile: string) => join(dirname(resolve(boardFile)), ".storyboard-cache");
@@ -33,14 +34,15 @@ export function exportAssetResolver(boardFile: string, mode: BakeMode = "teal") 
   const base = dirname(resolve(boardFile));
   const cache = cacheDirFor(boardFile);
   const memo = new Map<string, string | undefined>();
-  return (p: string) => {
-    if (memo.has(p)) return memo.get(p);
+  return (p0: string) => {
+    if (memo.has(p0)) return memo.get(p0);
+    const { path: p, crop } = splitCrop(p0);
     const abs = resolve(base, p);
     let uri: string | undefined;
     if (existsSync(abs.replace(/#.*$/, ""))) {
-      try { uri = `data:image/png;base64,${bakeScreen(abs, cache, 1, mode).toString("base64")}`; } catch { uri = undefined; }
+      try { uri = `data:image/png;base64,${bakeScreen(abs, cache, 1, mode, crop).toString("base64")}`; } catch { uri = undefined; }
     }
-    memo.set(p, uri);
+    memo.set(p0, uri);
     return uri;
   };
 }
@@ -52,9 +54,11 @@ export function fontFaceCss(embed: boolean): string {
 /** Unprocessed images (brand logos) as data URIs. */
 export function rawAssetResolver(boardFile: string) {
   const base = dirname(resolve(boardFile));
-  return (p: string) => {
+  return (p0: string) => {
+    const { path: p, crop } = splitCrop(p0);
     const abs = resolve(base, p);
     if (!existsSync(abs)) return undefined;
+    if (crop) { const pic = croppedImage(abs, cacheDirFor(boardFile), crop); return `data:${pic.mime};base64,${pic.buf.toString("base64")}`; }
     return `data:${MIME[extname(abs).toLowerCase()] ?? "image/png"};base64,${readFileSync(abs).toString("base64")}`;
   };
 }

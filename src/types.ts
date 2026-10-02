@@ -91,8 +91,12 @@ export interface Shape {
   fill?: ShapeFill;
   /** The words, for a "text" shape. */
   text?: string;
-  /** Marker color; default ink. */
-  color?: MarkerColor;
+  /** Marker color; default ink. "none" leaves the outline off (a white box covering something up). */
+  color?: MarkerColor | "none";
+  /** Line weight: thin, normal (default), thick. */
+  weight?: "thin" | "normal" | "thick";
+  /** Text size for a "text" shape: s, m (default), l, xl. */
+  size?: "s" | "m" | "l" | "xl";
 }
 
 /** Any picture placed in a scene (a found photo, a product shot, a prop). Sketchified in grays unless `sketch: false`. */
@@ -108,6 +112,8 @@ export interface SceneImage {
   h?: number;
   /** false = show the image as-is. Default true (gray marker sketch). */
   sketch?: boolean;
+  /** Show only part of the picture: [left, top, right, bottom] as fractions (the editor's Crop button writes it). */
+  crop?: [number, number, number, number];
 }
 
 /** A sharpie stroke drawn over a panel while presenting (crit markup). Panel units. */

@@ -7,6 +7,11 @@ describe("rich text", () => {
       { text: "a " }, { text: "bold", b: true }, { text: " " }, { text: "it", i: true }, { text: " " }, { text: "also", i: true }, { text: " " }, { text: "gone", s: true }, { text: " b" },
     ]);
   });
+  it("underlines", () => {
+    expect(parseRich("an __underlined__ word")).toEqual([{ text: "an " }, { text: "underlined", u: true }, { text: " word" }]);
+    expect(plainText("__init__ and my__var")).toBe("__init__ and my__var".replace(/^__init__/, "init"));
+    expect(toggleMark("say hi", 4, 6, "__").value).toBe("say __hi__");
+  });
   it("nests", () => expect(parseRich("**bold *and italic***")).toEqual([{ text: "bold ", b: true }, { text: "and italic", b: true, i: true }]));
   it("leaves stray markers, math and snake_case alone", () => {
     expect(plainText("2 * 3 * 4")).toBe("2 * 3 * 4");

@@ -242,9 +242,10 @@
                     "none",
                     "light",
                     "mid",
-                    "dark"
+                    "dark",
+                    "white"
                   ],
-                  "description": "none: Outline only (default for lines).\nlight: Light gray.\nmid: Mid gray.\ndark: Dark gray."
+                  "description": "none: Outline only (default for lines).\nlight: Light gray.\nmid: Mid gray.\ndark: Dark gray.\nwhite: Solid white: cover up part of a scene or picture."
                 },
                 "points": {
                   "type": "array",
@@ -263,15 +264,40 @@
                   "description": "The words, for a text shape."
                 },
                 "color": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "ink",
+                        "grey",
+                        "red",
+                        "blue",
+                        "green",
+                        "yellow"
+                      ],
+                      "description": "ink: Black marker (default).\ngrey: Grey marker.\nred: Red marker: problems, pain points.\nblue: Blue marker: notes, flows.\ngreen: Green marker: what works.\nyellow: Yellow highlighter."
+                    },
+                    {
+                      "const": "none",
+                      "description": "No outline."
+                    }
+                  ]
+                },
+                "weight": {
                   "enum": [
-                    "ink",
-                    "grey",
-                    "red",
-                    "blue",
-                    "green",
-                    "yellow"
+                    "thin",
+                    "normal",
+                    "thick"
                   ],
-                  "description": "ink: Black marker (default).\ngrey: Grey marker.\nred: Red marker: problems, pain points.\nblue: Blue marker: notes, flows.\ngreen: Green marker: what works.\nyellow: Yellow highlighter."
+                  "description": "thin: A fine line.\nnormal: Marker (default).\nthick: A fat marker."
+                },
+                "size": {
+                  "enum": [
+                    "s",
+                    "m",
+                    "l",
+                    "xl"
+                  ],
+                  "description": "Text size for a text shape."
                 }
               }
             },
@@ -306,9 +332,10 @@
                     "none",
                     "light",
                     "mid",
-                    "dark"
+                    "dark",
+                    "white"
                   ],
-                  "description": "none: Outline only (default for lines).\nlight: Light gray.\nmid: Mid gray.\ndark: Dark gray."
+                  "description": "none: Outline only (default for lines).\nlight: Light gray.\nmid: Mid gray.\ndark: Dark gray.\nwhite: Solid white: cover up part of a scene or picture."
                 },
                 "points": {
                   "type": "array",
@@ -327,15 +354,40 @@
                   "description": "The words, for a text shape."
                 },
                 "color": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "ink",
+                        "grey",
+                        "red",
+                        "blue",
+                        "green",
+                        "yellow"
+                      ],
+                      "description": "ink: Black marker (default).\ngrey: Grey marker.\nred: Red marker: problems, pain points.\nblue: Blue marker: notes, flows.\ngreen: Green marker: what works.\nyellow: Yellow highlighter."
+                    },
+                    {
+                      "const": "none",
+                      "description": "No outline."
+                    }
+                  ]
+                },
+                "weight": {
                   "enum": [
-                    "ink",
-                    "grey",
-                    "red",
-                    "blue",
-                    "green",
-                    "yellow"
+                    "thin",
+                    "normal",
+                    "thick"
                   ],
-                  "description": "ink: Black marker (default).\ngrey: Grey marker.\nred: Red marker: problems, pain points.\nblue: Blue marker: notes, flows.\ngreen: Green marker: what works.\nyellow: Yellow highlighter."
+                  "description": "thin: A fine line.\nnormal: Marker (default).\nthick: A fat marker."
+                },
+                "size": {
+                  "enum": [
+                    "s",
+                    "m",
+                    "l",
+                    "xl"
+                  ],
+                  "description": "Text size for a text shape."
                 }
               }
             },
@@ -1099,6 +1151,17 @@
                     "sketch": {
                       "type": "boolean",
                       "description": "false = show the image as-is. Default true."
+                    },
+                    "crop": {
+                      "type": "array",
+                      "items": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "minItems": 4,
+                      "maxItems": 4,
+                      "description": "Show only part of the picture: [left, top, right, bottom] as fractions."
                     }
                   }
                 }
@@ -1133,9 +1196,10 @@
                         "none",
                         "light",
                         "mid",
-                        "dark"
+                        "dark",
+                        "white"
                       ],
-                      "description": "none: Outline only (default for lines).\nlight: Light gray.\nmid: Mid gray.\ndark: Dark gray."
+                      "description": "none: Outline only (default for lines).\nlight: Light gray.\nmid: Mid gray.\ndark: Dark gray.\nwhite: Solid white: cover up part of a scene or picture."
                     },
                     "points": {
                       "type": "array",
@@ -1154,15 +1218,40 @@
                       "description": "The words, for a text shape."
                     },
                     "color": {
+                      "anyOf": [
+                        {
+                          "enum": [
+                            "ink",
+                            "grey",
+                            "red",
+                            "blue",
+                            "green",
+                            "yellow"
+                          ],
+                          "description": "ink: Black marker (default).\ngrey: Grey marker.\nred: Red marker: problems, pain points.\nblue: Blue marker: notes, flows.\ngreen: Green marker: what works.\nyellow: Yellow highlighter."
+                        },
+                        {
+                          "const": "none",
+                          "description": "No outline."
+                        }
+                      ]
+                    },
+                    "weight": {
                       "enum": [
-                        "ink",
-                        "grey",
-                        "red",
-                        "blue",
-                        "green",
-                        "yellow"
+                        "thin",
+                        "normal",
+                        "thick"
                       ],
-                      "description": "ink: Black marker (default).\ngrey: Grey marker.\nred: Red marker: problems, pain points.\nblue: Blue marker: notes, flows.\ngreen: Green marker: what works.\nyellow: Yellow highlighter."
+                      "description": "thin: A fine line.\nnormal: Marker (default).\nthick: A fat marker."
+                    },
+                    "size": {
+                      "enum": [
+                        "s",
+                        "m",
+                        "l",
+                        "xl"
+                      ],
+                      "description": "Text size for a text shape."
                     }
                   }
                 }

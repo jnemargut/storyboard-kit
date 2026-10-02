@@ -78,9 +78,10 @@ The point is to see the product from inside the customer's life, not to illustra
 - **End on the outcome for the person**, not on a UI state. A callout can name the consequence
   ("Trust lost: he'll skip ordering ahead").
 - 5–9 panels is typical. Keep bubbles under ~12 words.
-- Text anywhere (bubbles, captions, callouts, labels, cards) can use \`**bold**\`, \`*italic*\` and
-  \`~~struck out~~\`: bold the word someone stresses, strike the ETA that turned out wrong. Designers get Cmd+B and
-  Cmd+I in the editor.
+- Text anywhere (bubbles, captions, callouts, labels, cards) can use \`**bold**\`, \`*italic*\`,
+  \`__underline__\` and \`~~struck out~~\`: bold the word someone stresses, strike the ETA that turned out wrong.
+  Designers get Cmd+B, Cmd+I and Cmd+U in the editor. A picture can be cropped with \`"crop": [left, top, right, bottom]\`
+  (fractions of the picture).
 - Build a varied, realistic cast (skin, age, body, hair, accessories such as glasses, cane, wheelchair,
   hijab) that fits the story. Don't default everyone to the same look. Dress staff for their job: \`outfit\`
   (\`uniform\`, \`hi-vis\`, \`lab-coat\`, \`chef\`, \`scrubs\`, \`apron\`, \`overalls\`…) and \`hat\` (\`sb vocab hats\`).

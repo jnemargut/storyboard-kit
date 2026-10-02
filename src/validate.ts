@@ -1,7 +1,8 @@
 import {
   ACCESSORIES, AGES, ANGLES, BODY, BUBBLES, DEVICES, DIRECTIONS, FACING, GESTURES, HAIR, HAIR_SHADE, HATS, MOODS,
-  OUTFITS, PANEL_TYPES, POSES, SCENES, SCENE_MARKS, MARKER_COLORS, SHAPE_FILLS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
+  OUTFITS, PANEL_TYPES, POSES, SCENES, SCENE_MARKS, MARKER_COLORS, SHAPE_FILLS, SHAPE_WEIGHTS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
 } from "./vocab";
+import { isCrop } from "./sketch/crop";
 import { SCHEMA_VERSION } from "./types";
 import { HANDHELD } from "./vocab";
 
@@ -52,8 +53,10 @@ export function validate(input: unknown): Result {
     shapes.forEach((s, j) => {
       const sp = `${path}[${j}]`;
       if (!isObj(s)) { err(sp, "must be an object."); return; }
-      known(sp, s, ["id", "type", "points", "fill", "text", "color"]);
-      oneOf(`${sp}.color`, s.color, MARKER_COLORS, "color");
+      known(sp, s, ["id", "type", "points", "fill", "text", "color", "weight", "size"]);
+      if (s.color !== "none") oneOf(`${sp}.color`, s.color, MARKER_COLORS, "color");
+      oneOf(`${sp}.weight`, s.weight, SHAPE_WEIGHTS, "weight");
+      if (s.size !== undefined && !["s", "m", "l", "xl"].includes(String(s.size))) err(`${sp}.size`, `"${String(s.size)}" isn't a text size.`, "Use s, m, l or xl.");
       oneOf(`${sp}.type`, s.type, SHAPES, "shape");
       if (s.type === undefined) err(`${sp}.type`, "is required.", `One of: ${ids(SHAPES).join(", ")}`);
       oneOf(`${sp}.fill`, s.fill, SHAPE_FILLS, "shape-fill");
@@ -329,7 +332,8 @@ export function validate(input: unknown): Result {
     else images.forEach((im, j) => {
       const ip = `${p}.images[${j}]`;
       if (!isObj(im)) { err(ip, "must be an object."); return; }
-      known(ip, im, ["id", "src", "x", "y", "w", "h", "sketch"]);
+      known(ip, im, ["id", "src", "x", "y", "w", "h", "sketch", "crop"]);
+      if (im.crop !== undefined && !isCrop(im.crop)) err(`${ip}.crop`, "must be [left, top, right, bottom], fractions from 0 to 1.", "e.g. [0, 0.1, 1, 0.6]");
       str(`${ip}.src`, im.src, true);
       for (const k of ["x", "y", "w", "h"]) if (im[k] !== undefined && (typeof im[k] !== "number" || !Number.isFinite(im[k] as number))) err(`${ip}.${k}`, "must be a number in panel units (400 wide, 260 tall).");
       for (const k of ["w", "h"]) if (typeof im[k] === "number" && (im[k] as number) <= 0) err(`${ip}.${k}`, "must be greater than 0.");

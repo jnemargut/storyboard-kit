@@ -115,9 +115,9 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 - **Wireframes, too.** Point a phone at a [Wireframe Kit](https://github.com/jnemargut/wireframe-kit) screen and
   it shows up in teal, and stays in sync when the wireframe changes.
 - **Any picture at all.** Drag in or paste a photo you found and it gets sketchified in grays to match (or not,
-  your call).
-- **Bold, italic and strikethrough** anywhere there's text: `**bold**`, `*italic*`, `~~struck~~`, or Cmd+B and
-  Cmd+I in the editor. Strike the "4 min" that turned out to be twelve.
+  your call). **Crop…** shows just the part you want.
+- **Bold, italic, underline and strikethrough** anywhere there's text: `**bold**`, `*italic*`, `__underline__`,
+  `~~struck~~`, or Cmd+B, Cmd+I and Cmd+U in the editor. Strike the "4 min" that turned out to be twelve.
 - **A pen, some shapes and free text** for anything I forgot to draw, in six marker colors (teal stays
   reserved for your product).
 
@@ -148,7 +148,8 @@ here, paste it onto a board, and it stays a live card that follows this file.
 
 - Click anything to get its toolbar. Drag to move, pull the corner to resize, grab the round handle to rotate.
 - Double-click any text to edit it. Click "+ name this step" under a panel to name it.
-- Cmd+C / Cmd+V / Cmd+D copy, paste and duplicate. Cmd+] and Cmd+[ move things up and down the layers.
+- Cmd+C / Cmd+X / Cmd+V / Cmd+D copy, cut, paste and duplicate. Cmd+] and Cmd+[ move things up and down the
+  layers (add Shift for all the way). Drawings come in three line weights, with a white fill for covering things up.
 - Copy a whole panel and paste it into Figma, Slack or a doc as an image, or onto a Flowchart Kit board as a live
   card. Paste it back into a board and it's a normal, editable panel again. Paste any other image in and it becomes a picture in the panel.
 - Delete deletes, Cmd+Z undoes, arrow keys nudge.

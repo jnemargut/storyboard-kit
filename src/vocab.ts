@@ -156,7 +156,8 @@ export const MARKER_COLORS = [
   e("green", "Green marker: what works."),
   e("yellow", "Yellow highlighter."),
 ] as const;
-export const SHAPE_FILLS = [e("none", "Outline only (default for lines)."), e("light", "Light gray."), e("mid", "Mid gray."), e("dark", "Dark gray.")] as const;
+export const SHAPE_FILLS = [e("none", "Outline only (default for lines)."), e("light", "Light gray."), e("mid", "Mid gray."), e("dark", "Dark gray."), e("white", "Solid white: cover up part of a scene or picture.")] as const;
+export const SHAPE_WEIGHTS = [e("thin", "A fine line."), e("normal", "Marker (default)."), e("thick", "A fat marker.")] as const;
 
 export const SKIN = [
   e("tone-1", "Lightest skin tone."),

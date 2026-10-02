@@ -1,6 +1,6 @@
 import {
   ACCESSORIES, AGES, ANGLES, BODY, BUBBLES, DEVICES, DIRECTIONS, FACING, GESTURES, HAIR, HAIR_SHADE, HATS, MOODS,
-  OUTFITS, POSES, SCENES, MARKER_COLORS, SHAPE_FILLS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
+  OUTFITS, POSES, SCENES, MARKER_COLORS, SHAPE_FILLS, SHAPE_WEIGHTS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
 } from "./vocab";
 
 const oneOf = (list: readonly Entry[]) => ({ enum: ids(list), description: list.map((x) => `${x.id}: ${x.desc}`).join("\n") });
@@ -37,7 +37,9 @@ const shapeItem = {
     id: { type: "string" }, type: oneOf(SHAPES), fill: oneOf(SHAPE_FILLS),
     points: { type: "array", minItems: 1, items: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2 } },
     text: { type: "string", description: "The words, for a text shape." },
-    color: oneOf(MARKER_COLORS),
+    color: { anyOf: [oneOf(MARKER_COLORS), { const: "none", description: "No outline." }] },
+    weight: oneOf(SHAPE_WEIGHTS),
+    size: { enum: ["s", "m", "l", "xl"], description: "Text size for a text shape." },
   },
 };
 
@@ -173,6 +175,7 @@ export function buildSchema() {
                       id: { type: "string" }, src: { type: "string", description: "Path relative to the storyboard file." },
                       x: { type: "number" }, y: { type: "number" }, w: { type: "number", exclusiveMinimum: 0 }, h: { type: "number", exclusiveMinimum: 0 },
                       sketch: { type: "boolean", description: "false = show the image as-is. Default true." },
+                      crop: { type: "array", items: { type: "number", minimum: 0, maximum: 1 }, minItems: 4, maxItems: 4, description: "Show only part of the picture: [left, top, right, bottom] as fractions." },
                     },
                   },
                 },
