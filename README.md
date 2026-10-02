@@ -6,7 +6,7 @@ You tell Claude Code (or Codex) what someone's day looks like. It sketches a sto
 little editor until it feels true. Then you drop it in your deck and the room starts talking about the person's
 whole day, not just the screens.
 
-![Storyboard Kit sizzle reel](docs/sizzle-f18c309.gif)
+![Storyboard Kit sizzle reel](docs/sizzle-11f7cdb.gif)
 
 ## Why though
 
@@ -173,7 +173,7 @@ or off (`"page": { "legend": { "cast": false } }`, or `"legend": false` to hide 
 
 **Play mode**
 
-![Play mode with sharpie markup](docs/play-70d6043.png)
+![Play mode with sharpie markup](docs/play-0382654.png)
 
 Hit **▶ Play** (or P) to present the board one step at a time, with a big pointer the room can follow.
 
