@@ -1,7 +1,7 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { spawn, spawnSync } from "node:child_process";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { VOCAB, SCENE_MARKS, type VocabCategory } from "../vocab";
 import { validate, formatResult } from "../validate";
@@ -96,13 +96,27 @@ function upsertBlock(path: string, block: string) {
 }
 
 /** Copy the whole skill folder (docs, bundled script, editor, fonts, examples). */
-function installTo(dst: string): string {
+function installTo(dst: string, bake?: (dir: string) => string): string {
   if (resolve(dst) === resolve(SKILL_ROOT)) return dst;
   rmSync(dst, { recursive: true, force: true });
   mkdirSync(dirname(dst), { recursive: true });
   cpSync(SKILL_ROOT, dst, { recursive: true, filter: (src) => !src.includes(".storyboard-cache") });
+  if (bake) bakeSkillDir(dst, bake(dst));
   return dst;
 }
+
+/**
+ * Agents other than Claude Code don't fill in ${CLAUDE_SKILL_DIR}, so copies made for them get the folder's real
+ * path written into their docs (absolute for a home install, relative to the project for a project install).
+ */
+function bakeSkillDir(dir: string, path: string) {
+  for (const f of readdirSync(dir, { recursive: true, encoding: "utf8" })) {
+    if (!f.endsWith(".md")) continue;
+    const file = join(dir, f), text = readFileSync(file, "utf8");
+    if (text.includes("${CLAUDE_SKILL_DIR}")) writeFileSync(file, text.replaceAll("${CLAUDE_SKILL_DIR}", path));
+  }
+}
+
 
 const STARTER = (title: string): Board => ({
   schemaVersion: 1,
@@ -267,12 +281,12 @@ async function main() {
     case "install": {
       const done: string[] = [];
       if (flags.project) {
-        done.push(installTo(resolve(".claude/skills/storyboard")), installTo(resolve(".agents/skills/storyboard")));
+        done.push(installTo(resolve(".claude/skills/storyboard")), installTo(resolve(".agents/skills/storyboard"), (d) => relative(process.cwd(), d)));
         upsertBlock("AGENTS.md", agentsBlock(".agents/skills/storyboard"));
         done.push("AGENTS.md (pointer for agents that don't load skills on their own)");
       } else {
         done.push(installTo(join(homedir(), ".claude/skills/storyboard")));
-        if (flags.codex) done.push(installTo(join(homedir(), ".codex/skills/storyboard")));
+        if (flags.codex) done.push(installTo(join(homedir(), ".codex/skills/storyboard"), (d) => d));
       }
       console.log(`✓ storyboard skill installed:\n  ${done.join("\n  ")}\n\nRestart your agent, then type: /storyboard <someone> doing <something>…`);
       return;
