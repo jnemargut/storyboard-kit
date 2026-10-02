@@ -1,13 +1,14 @@
 /**
- * Deterministic, diff-friendly JSON for storyboard files.
+ * Deterministic, diff-friendly JSON for agent-written files (storyboards, wireframes).
  * Short objects/arrays stay on one line (like a hand-written file); long ones break across lines.
  * The editor always writes through this, so a nudge changes one line, not the whole file.
  */
 const MAX_INLINE = 108;
 
-export function formatStoryboard(value: unknown): string {
+export function formatJSON(value: unknown): string {
   return fmt(value, 0) + "\n";
 }
+export const formatStoryboard = formatJSON;
 
 function inlineOf(v: unknown): string {
   if (v === null || typeof v !== "object") return JSON.stringify(v) ?? "null";

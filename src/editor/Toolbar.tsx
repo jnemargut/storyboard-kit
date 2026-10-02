@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import type { Op } from "../json";
+import type { Op } from "../sketch/json";
 import type { Board, CharacterInPanel, Panel, ScenePanel } from "../types";
 import { isScene } from "../types";
 import { ANGLES, BUBBLES, DEVICES, DIRECTIONS, GESTURES, HANDHELD, MOODS, POSES, SCENES, SHAPE_FILLS, SHAPES, SHOTS, TIME_ICONS, ids } from "../vocab";

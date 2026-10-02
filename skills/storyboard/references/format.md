@@ -24,7 +24,7 @@
       "characters": [{
         "who": "maya", "pose": "holding-phone", "mood": "frustrated",
         "angle": "three-quarter", "facing": "right", "at": "counter",   // at = a scene mark
-        "device": { "type": "phone", "screen": "./screens/order-status.png" }  // product: false = personal device, grey
+        "device": { "type": "phone", "screen": "./screens/order-status.png" }  // or "./app.wireframe.json#status"; product: false = grey
       }],
       "devices": [{ "id": "menu", "type": "kiosk", "at": "queue" }],   // devices placed in the scene
       "bubbles": [{ "type": "thought", "from": "maya", "text": "It said 4 minutes…" }],

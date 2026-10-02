@@ -1,3 +1,4 @@
+import { WobbleFilter } from "../sketch/wobble";
 import type { Board, Panel } from "../types";
 import { isScene } from "../types";
 import { PanelArt, panelHasProduct, type RenderOptions } from "./panel";
@@ -179,14 +180,8 @@ export function panelOrigin(board: Board, i: number): [number, number] {
  */
 export const WOBBLE_FILTER = (
   <>
-    <filter id="sb-wobble" filterUnits="userSpaceOnUse" x={-8} y={-8} width={PANEL_W + 16} height={PANEL_H + 16}>
-      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves={2} seed={7} result="n" />
-      <feDisplacementMap in="SourceGraphic" in2="n" scale={1.6} xChannelSelector="R" yChannelSelector="G" />
-    </filter>
-    <filter id="sb-wobble-page" x="-2%" y="-10%" width="104%" height="120%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves={2} seed={7} result="n" />
-      <feDisplacementMap in="SourceGraphic" in2="n" scale={1.6} xChannelSelector="R" yChannelSelector="G" />
-    </filter>
+    <WobbleFilter id="sb-wobble" region={{ x: -8, y: -8, width: PANEL_W + 16, height: PANEL_H + 16 }} />
+    <WobbleFilter id="sb-wobble-page" region="page" />
   </>
 );
 

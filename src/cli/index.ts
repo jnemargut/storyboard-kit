@@ -5,7 +5,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { VOCAB, SCENE_MARKS, type VocabCategory } from "../vocab";
 import { validate, formatResult } from "../validate";
-import { formatStoryboard } from "../json";
+import { formatStoryboard } from "../sketch/json";
 import { toScript } from "../script";
 import { agentsBlock } from "../skill";
 import { boardToSVG, initRenderer, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";

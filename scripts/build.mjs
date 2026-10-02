@@ -40,7 +40,7 @@ execFileSync("node", ["dist/gen.mjs"], { stdio: "inherit" });
 // fonts used by export (the editor bundles its own copies)
 mkdirSync(`${OUT}/assets/fonts`, { recursive: true });
 for (const f of ["PermanentMarker-Regular.ttf", "PatrickHand-Regular.ttf", "LICENSE-Apache-PermanentMarker.txt", "OFL-PatrickHand.txt"])
-  cpSync(`assets/fonts/${f}`, `${OUT}/assets/fonts/${f}`);
+  cpSync(`src/sketch/fonts/${f}`, `${OUT}/assets/fonts/${f}`);
 
 // example board (+ its screen)
 mkdirSync(`${OUT}/examples/screens`, { recursive: true });

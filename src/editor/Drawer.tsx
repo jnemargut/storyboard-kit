@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Op } from "../json";
+import type { Op } from "../sketch/json";
 import type { Board, CastMember, Panel, ScenePanel } from "../types";
 import { isScene } from "../types";
 import { ACCESSORIES, AGES, BODY, BUBBLES, DEVICES, GESTURES, HAIR, HAIR_SHADE, HATS, OUTFITS, POSES, SCENES, SKIN, ids, type DeviceType, type Pose, type SceneId, type ShapeType, type MarkerColor } from "../vocab";

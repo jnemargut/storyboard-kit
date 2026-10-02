@@ -3,7 +3,7 @@
  * step name, a strip of every step, and optional speaker notes.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Op } from "../json";
+import type { Op } from "../sketch/json";
 import type { Board } from "../types";
 import type { MarkerColor } from "../vocab";
 import { smooth } from "../render/shapes";

@@ -1,8 +1,9 @@
-import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { basename, dirname, extname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { initRenderer, renderPNG } from "./resvg";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, extname, join, resolve } from "node:path";
+import { initRenderer, renderPNG } from "./sketch/resvg";
+import { bakeImage, MIME, type BakeMode } from "./sketch/bake";
+import { drawingFonts, FONT_DIR, fontFaceCss as inlineFonts } from "./sketch/fonts";
+import { isWireframeRef, wireframePNG } from "./wireframes";
 
 export { initRenderer };
 import { PDFDocument } from "pdf-lib";
@@ -11,75 +12,17 @@ import { pageSize, panelRect, renderBoardSVG } from "./render";
 import { isScene } from "./types";
 import { toScript } from "./script";
 
-export const FONT_DIR = fileURLToPath(new URL("../assets/fonts/", import.meta.url));
-let fontBuffers: Uint8Array[] | undefined;
-const boardFonts = () => (fontBuffers ??= ["PermanentMarker-Regular.ttf", "PatrickHand-Regular.ttf"].map((f) => readFileSync(join(FONT_DIR, f))));
-
-const MIME: Record<string, string> = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif" };
-
-/** Width/height of a PNG or JPEG without decoding it. */
-export function imageSize(buf: Buffer): { w: number; h: number } | undefined {
-  if (buf.length > 24 && buf.readUInt32BE(0) === 0x89504e47) return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
-  if (buf[0] === 0xff && buf[1] === 0xd8) {
-    let i = 2;
-    while (i < buf.length) {
-      if (buf[i] !== 0xff) { i++; continue; }
-      const marker = buf[i + 1];
-      const len = buf.readUInt16BE(i + 2);
-      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) return { h: buf.readUInt16BE(i + 5), w: buf.readUInt16BE(i + 7) };
-      i += 2 + len;
-    }
-  }
-  return undefined;
-}
+export { imageSize, duotoneSVG, type BakeMode } from "./sketch/bake";
+export { FONT_DIR };
 
 /**
- * The teal duotone "sketchify" pass from decision 7: grayscale → 4 teal tones → faint ink edges → slight wobble.
- * Runs once per screen and is cached, so the editor and export always show the same pixels.
+ * A screen in a storyboard: an image file, or a Wireframe Kit screen ("./app.wireframe.json#checkout"),
+ * which resolves to the PNG Wireframe Kit renders next to it. Baked to the teal duotone and cached.
  */
-export type BakeMode = "teal" | "grey";
-/** Tone tables: teal for the product's screens; greys (ink → paper) for any other image, matching the marker style. */
-const TONES: Record<BakeMode, [string, string, string]> = {
-  teal: ["0.11 0.05 0.56 0.98", "0.11 0.60 0.84 0.98", "0.12 0.65 0.86 0.97"],
-  grey: ["0.11 0.45 0.76 0.98", "0.11 0.48 0.78 0.98", "0.12 0.51 0.80 0.97"],
-};
-
-export function duotoneSVG(dataUri: string, w: number, h: number, roughness = 1, mode: BakeMode = "teal"): string {
-  const k = w / 180;
-  const [tr, tg, tb] = TONES[mode];
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-<filter id="d" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-<feColorMatrix type="saturate" values="0" result="g"/>
-<feComponentTransfer in="g" result="post"><feFuncR type="discrete" tableValues="${tr}"/><feFuncG type="discrete" tableValues="${tg}"/><feFuncB type="discrete" tableValues="${tb}"/></feComponentTransfer>
-<feConvolveMatrix in="g" order="3" kernelMatrix="-1 -1 -1 -1 8 -1 -1 -1 -1" preserveAlpha="true" result="e"/>
-<feColorMatrix in="e" type="matrix" values="0 0 0 0 0.11  0 0 0 0 0.11  0 0 0 0 0.12  0.3 0.3 0.3 0 0" result="lines"/>
-<feMerge result="m"><feMergeNode in="post"/><feMergeNode in="lines"/></feMerge>
-<feTurbulence type="fractalNoise" baseFrequency="${(0.04 / k).toFixed(4)}" numOctaves="2" seed="7" result="n"/>
-<feDisplacementMap in="m" in2="n" scale="${(1.1 * k * roughness).toFixed(2)}"/>
-</filter>
-${mode === "teal" ? `<rect width="100%" height="100%" fill="#fbfaf7"/>` : ""}
-<image href="${dataUri}" width="${w}" height="${h}" filter="url(#d)"/>
-</svg>`;
-}
-
-const MAX_BAKE_W = 720;
-
-/** Bake (or fetch from cache) the teal duotone version of a screen image. Returns PNG bytes. */
 export function bakeScreen(absPath: string, cacheDir: string, roughness = 1, mode: BakeMode = "teal"): Buffer {
-  const st = statSync(absPath);
-  const key = createHash("sha1").update(`${absPath}:${st.mtimeMs}:${st.size}:${roughness}:${mode === "teal" ? "v1" : `${mode}-v1`}`).digest("hex").slice(0, 12);
-  const out = join(cacheDir, `${basename(absPath, extname(absPath))}-${key}.png`);
-  if (existsSync(out)) return readFileSync(out);
-  const buf = readFileSync(absPath);
-  const size = imageSize(buf) ?? { w: 390, h: 844 };
-  const scale = Math.min(1, MAX_BAKE_W / size.w);
-  const w = Math.round(size.w * scale), h = Math.round(size.h * scale);
-  const mime = MIME[extname(absPath).toLowerCase()] ?? "image/png";
-  const svg = duotoneSVG(`data:${mime};base64,${buf.toString("base64")}`, w, h, roughness, mode);
-  const png = renderPNG(svg);
-  mkdirSync(cacheDir, { recursive: true });
-  writeFileSync(out, png);
-  return png;
+  const img = isWireframeRef(absPath) ? wireframePNG(absPath) : absPath;
+  if (!img) throw new Error(`No rendered wireframe for ${absPath}`);
+  return isWireframeRef(absPath) ? bakeImage(img, cacheDir, 0.4, mode === "teal" ? "wire" : mode) : bakeImage(img, cacheDir, roughness, mode);
 }
 
 export const cacheDirFor = (boardFile: string) => join(dirname(resolve(boardFile)), ".storyboard-cache");
@@ -93,7 +36,7 @@ export function exportAssetResolver(boardFile: string, mode: BakeMode = "teal") 
     if (memo.has(p)) return memo.get(p);
     const abs = resolve(base, p);
     let uri: string | undefined;
-    if (existsSync(abs)) {
+    if (existsSync(abs.replace(/#.*$/, ""))) {
       try { uri = `data:image/png;base64,${bakeScreen(abs, cache, 1, mode).toString("base64")}`; } catch { uri = undefined; }
     }
     memo.set(p, uri);
@@ -102,9 +45,7 @@ export function exportAssetResolver(boardFile: string, mode: BakeMode = "teal") 
 }
 
 export function fontFaceCss(embed: boolean): string {
-  const face = (family: string, file: string) =>
-    `@font-face{font-family:"${family}";src:url(data:font/ttf;base64,${readFileSync(join(FONT_DIR, file)).toString("base64")}) format("truetype");}`;
-  return embed ? face("Permanent Marker", "PermanentMarker-Regular.ttf") + face("Patrick Hand", "PatrickHand-Regular.ttf") : "";
+  return embed ? inlineFonts() : "";
 }
 
 /** Unprocessed images (brand logos) as data URIs. */
@@ -230,7 +171,7 @@ document.getElementById("copy").onclick=async()=>{const md=[...document.querySel
 }
 
 export function svgToPNG(svg: string, scale = 2): Buffer {
-  return renderPNG(svg, { scale, fonts: boardFonts() });
+  return renderPNG(svg, { scale, fonts: drawingFonts() });
 }
 
 export async function pngToPDF(png: Buffer, widthPx: number, heightPx: number): Promise<Uint8Array> {

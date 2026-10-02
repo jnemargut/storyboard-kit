@@ -1,4 +1,4 @@
-import type { Op } from "../json";
+import type { Op } from "../sketch/json";
 import type { Board } from "../types";
 import type { Result } from "../validate";
 

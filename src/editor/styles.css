@@ -1,7 +1,7 @@
-@font-face { font-family: "Permanent Marker"; src: url("../../assets/fonts/PermanentMarker-Regular.ttf") format("truetype"); font-display: block; }
-@font-face { font-family: "Patrick Hand"; src: url("../../assets/fonts/PatrickHand-Regular.ttf") format("truetype"); font-display: block; }
-@font-face { font-family: "Work Sans"; src: url("../../assets/fonts/WorkSans-Variable.ttf") format("truetype"); font-weight: 100 900; }
-@font-face { font-family: "IBM Plex Mono"; src: url("../../assets/fonts/IBMPlexMono-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Permanent Marker"; src: url("../sketch/fonts/PermanentMarker-Regular.ttf") format("truetype"); font-display: block; }
+@font-face { font-family: "Patrick Hand"; src: url("../sketch/fonts/PatrickHand-Regular.ttf") format("truetype"); font-display: block; }
+@font-face { font-family: "Work Sans"; src: url("../sketch/fonts/WorkSans-Variable.ttf") format("truetype"); font-weight: 100 900; }
+@font-face { font-family: "IBM Plex Mono"; src: url("../sketch/fonts/IBMPlexMono-Regular.ttf") format("truetype"); }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; }

@@ -112,9 +112,25 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 - **Bubbles, captions, callouts** and title, "12 minutes later" and narration cards.
 - **Taps, swipes, clicks and buzzes** in orange so they pop.
 - **Your own screens.** Drop a Figma export on a phone and it turns into a teal sketch that fits the device.
+- **Wireframes, too.** Point a phone at a [Wireframe Kit](https://github.com/jnemargut/wireframe-kit) screen and
+  it shows up in teal, and stays in sync when the wireframe changes.
 - **Any picture at all.** Drag in a photo you found and it gets sketchified in greys to match (or not, your call).
 - **A pen, some shapes and free text** for anything I forgot to draw, in six marker colours (teal stays
   reserved for your product).
+
+## Real screens from Wireframe Kit
+
+Generic teal squiggles are fine for a first pass. When you want the actual screens, sketch them with my other
+kit, [Wireframe Kit](https://github.com/jnemargut/wireframe-kit) (`/wireframe`), and point a device at one:
+
+```json
+"device": { "type": "phone", "screen": "./order-ahead.wireframe.json#status" }
+```
+
+![A storyboard using real wireframe screens](docs/in-a-storyboard-d5e4b1f.png)
+
+Change the wireframe and the storyboard catches up on its own. No Wireframe Kit installed? The screen PNG it
+renders next to the file still works.
 
 ## The editor bits
 
@@ -177,6 +193,9 @@ npm run e2e       # clicks around the real editor in Chrome
 `src/vocab.ts` is the single source of truth for everything the tool can draw. The schema, the validator, the
 docs and the renderer all read from it. `skills/storyboard/` is generated from `src/`, and it's checked in so
 you can install straight from a clone.
+
+`src/sketch/` is the marker drawing kit (tokens, fonts, the wobble, sketchify, PNG rendering) shared with
+Wireframe Kit, which keeps an exact copy of it. Change it here, then sync it over there.
 
 ## License
 

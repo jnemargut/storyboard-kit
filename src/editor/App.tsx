@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { applyOps, type Op } from "../json";
+import { applyOps, type Op } from "../sketch/json";
 import { BoardSVG, pageSize, panelOrigin } from "../render/board";
 import type { Board, LayoutOverride, ScenePanel, Shape } from "../types";
 import type { MarkerColor, ShapeType } from "../vocab";

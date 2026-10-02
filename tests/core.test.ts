@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { validate, suggest } from "../src/validate";
-import { applyOps, formatStoryboard } from "../src/json";
+import { applyOps, formatStoryboard } from "../src/sketch/json";
 import { renderBoardSVG } from "../src/render";
 import { SCENE_DEFS } from "../src/render/scenes";
 import { POSE_DEFS } from "../src/render/rig";
@@ -17,6 +17,8 @@ import { critique } from "../src/critique";
 import { productShare, feelingOf } from "../src/render";
 import { arrangeOps, clipFor, deleteOps, pasteOps, swapWhoOps } from "../src/editor/model";
 import type { Board, ScenePanel } from "../src/types";
+import { isWireframeRef, pngFor, splitRef, screenOf } from "../src/wireframes";
+import { copyFileSync, writeFileSync } from "node:fs";
 import { layoutPanel } from "../src/render/layout";
 
 const example: Board = JSON.parse(readFileSync("tests/fixtures/late-latte.storyboard.json", "utf8"));
@@ -495,5 +497,27 @@ describe("script + screens", () => {
     const png = bakeScreen("examples/screens/order-status.png", cache);
     expect(imageSize(png)).toBeDefined();
     expect(bakeScreen("examples/screens/order-status.png", cache).equals(png)).toBe(true);
+  });
+});
+
+describe("Wireframe Kit screens", () => {
+  it("recognises wireframe references and where their PNGs live", () => {
+    expect(isWireframeRef("./app.wireframe.json#pay")).toBe(true);
+    expect(isWireframeRef("./app.wireframe.json")).toBe(true);
+    expect(isWireframeRef("./screens/pay.png")).toBe(false);
+    expect(splitRef("/x/app.wireframe.json#pay")).toEqual({ file: "/x/app.wireframe.json", screen: "pay" });
+    expect(pngFor("/x/app.wireframe.json", "pay")).toBe("/x/app.pay.png");
+  });
+  it("bakes the rendered wireframe PNG next to the file, defaulting to the start screen", () => {
+    const dir = mkdtempSync(join(tmpdir(), "sb-wf-"));
+    const wf = join(dir, "app.wireframe.json");
+    writeFileSync(wf, JSON.stringify({ title: "x", start: "home", screens: { pay: { children: [] }, home: { children: [] } } }));
+    expect(screenOf(wf)).toBe("home");
+    copyFileSync("examples/screens/order-status.png", join(dir, "app.home.png"));
+    copyFileSync("examples/screens/order-status.png", join(dir, "app.pay.png"));
+    const cache = join(dir, ".cache");
+    expect(imageSize(bakeScreen(`${wf}#pay`, cache))).toBeDefined();
+    expect(imageSize(bakeScreen(wf, cache))).toBeDefined();
+    expect(() => bakeScreen(`${wf}#nope`, cache)).toThrow();
   });
 });

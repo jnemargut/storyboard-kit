@@ -96,6 +96,11 @@ The point is to see the product from inside the customer's life, not to illustra
 - Leave text sizes alone. Designers set \`page.textScale\` and per-element \`layout.scale\` in the editor.
 - If the designer gives you screen designs, reference them by path (\`"screen": "./screens/x.png"\`). The tool
   sketchifies them automatically. Otherwise leave \`screen\` out and a generic teal UI is drawn.
+- **Wireframe Kit screens** work too: \`"screen": "./checkout.wireframe.json#pay"\` shows that screen of a
+  wireframe (no \`#screen\` = its start screen), in teal like any product screen. If Wireframe Kit is installed it
+  re-renders the screen whenever the wireframe changes; otherwise it uses the PNG rendered next to the file
+  (\`checkout.pay.png\`). When the designer wants real screens and there are none yet, sketching them with the
+  \`/wireframe\` skill first makes the storyboard much more concrete.
 `;
 
 function table(list: readonly Entry[], marks = false): string {
@@ -143,7 +148,7 @@ export const FORMAT_MD = `# storyboard.json format
       "characters": [{
         "who": "maya", "pose": "holding-phone", "mood": "frustrated",
         "angle": "three-quarter", "facing": "right", "at": "counter",   // at = a scene mark
-        "device": { "type": "phone", "screen": "./screens/order-status.png" }  // product: false = personal device, grey
+        "device": { "type": "phone", "screen": "./screens/order-status.png" }  // or "./app.wireframe.json#status"; product: false = grey
       }],
       "devices": [{ "id": "menu", "type": "kiosk", "at": "queue" }],   // devices placed in the scene
       "bubbles": [{ "type": "thought", "from": "maya", "text": "It said 4 minutes…" }],

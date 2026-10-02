@@ -1,20 +1,15 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { createServer } from "node:http";
 import { existsSync, mkdirSync, readFileSync, statSync, watch, writeFileSync } from "node:fs";
-import { basename, dirname, extname, join, normalize, relative, resolve, sep } from "node:path";
+import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn } from "node:child_process";
-import { applyOps, formatStoryboard, type Op } from "../json";
+import { applyOps, formatStoryboard, type Op } from "../sketch/json";
+import { eventHub, listenFree, openBrowser, readBody, safePathUnder, sendJSON, serveStatic, TYPES } from "../sketch/server";
 import { validate } from "../validate";
 import { bakeScreen, boardToSVG, cacheDirFor, panelPNGs, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";
 import { pageSize } from "../render";
 import type { Board } from "../types";
 
 const EDITOR_DIR = fileURLToPath(new URL("./editor/", import.meta.url));
-const TYPES: Record<string, string> = {
-  ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml",
-  ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".ttf": "font/ttf", ".json": "application/json",
-};
-
 export interface DevOptions { port: number; open: boolean }
 
 export async function dev(file: string, o: DevOptions) {
@@ -26,14 +21,14 @@ export async function dev(file: string, o: DevOptions) {
 
   let lastWritten = "";
   let version = 0;
-  const clients = new Set<ServerResponse>();
+  const events = eventHub();
   const read = (): Board => JSON.parse(readFileSync(abs, "utf8"));
   const write = (b: Board) => {
     lastWritten = formatStoryboard(b);
     writeFileSync(abs, lastWritten);
     version++;
   };
-  const broadcast = (msg: object) => { for (const c of clients) c.write(`data: ${JSON.stringify(msg)}\n\n`); };
+  const broadcast = events.broadcast;
 
   // Agent (or anyone) edited the file: tell the editor to reload.
   let t: NodeJS.Timeout | undefined;
@@ -49,15 +44,19 @@ export async function dev(file: string, o: DevOptions) {
     }, 120);
   });
 
-  const body = (req: IncomingMessage): Promise<Buffer> => new Promise((ok, fail) => {
-    const chunks: Buffer[] = [];
-    req.on("data", (c) => chunks.push(c)); req.on("end", () => ok(Buffer.concat(chunks))); req.on("error", fail);
-  });
-  const json = (res: ServerResponse, code: number, obj: unknown) => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(obj)); };
-  const safePath = (p: string) => {
-    const full = normalize(resolve(base, decodeURIComponent(p)));
-    return full.startsWith(base + sep) || full === base ? full : undefined;
-  };
+  // A Wireframe Kit screen next to the board changed: bump so the editor re-fetches (and re-renders) it.
+  let tw: NodeJS.Timeout | undefined;
+  try {
+    watch(base, (_e, name) => {
+      if (!name || !/\.wireframe\.json$/.test(String(name))) return;
+      clearTimeout(tw);
+      tw = setTimeout(() => { version++; broadcast({ type: "change", version, source: "file" }); }, 200);
+    });
+  } catch { /* directory watching unsupported: edits still show on reload */ }
+
+  const body = readBody;
+  const json = sendJSON;
+  const safePath = (p: string) => safePathUnder(base, p);
 
   const server = createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", "http://x");
@@ -82,15 +81,11 @@ export async function dev(file: string, o: DevOptions) {
         return json(res, 200, { board: next, version, result: validate(next) });
       }
       if (url.pathname === "/api/events") {
-        res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-cache", connection: "keep-alive" });
-        res.write(`data: ${JSON.stringify({ type: "hello", version })}\n\n`);
-        clients.add(res);
-        req.on("close", () => clients.delete(res));
-        return;
+        return events.attach(req, res, { type: "hello", version });
       }
       if (url.pathname.startsWith("/baked/")) {
         const p = safePath(url.pathname.slice("/baked/".length));
-        if (!p || !existsSync(p)) { res.writeHead(404); return res.end(); }
+        if (!p || !existsSync(p.replace(/#.*$/, ""))) { res.writeHead(404); return res.end(); }
         const png = bakeScreen(p, cache, Number(url.searchParams.get("r") ?? 1), url.searchParams.get("mode") === "grey" ? "grey" : "teal");
         res.writeHead(200, { "content-type": "image/png", "cache-control": "no-cache" });
         return res.end(png);
@@ -147,31 +142,15 @@ export async function dev(file: string, o: DevOptions) {
         res.writeHead(200, { "content-type": "image/png", "content-disposition": `attachment; filename="${stem}.png"` });
         return res.end(png);
       }
-      // static editor
-      const rel = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
-      const p = normalize(join(EDITOR_DIR, rel));
-      if (p.startsWith(EDITOR_DIR) && existsSync(p) && statSync(p).isFile()) {
-        res.writeHead(200, { "content-type": TYPES[extname(p)] ?? "application/octet-stream" });
-        return res.end(readFileSync(p));
-      }
+      if (serveStatic(EDITOR_DIR, url.pathname, res)) return;
       res.writeHead(404); res.end("not found");
     } catch (e) {
       json(res, 500, { error: (e as Error).message });
     }
   });
 
-  const port = await new Promise<number>((ok, fail) => {
-    const tryPort = (n: number) => {
-      server.once("error", (err: NodeJS.ErrnoException) => (err.code === "EADDRINUSE" && n < o.port + 20 ? tryPort(n + 1) : fail(err)));
-      server.listen(n, "127.0.0.1", () => ok(n));
-    };
-    tryPort(o.port);
-  });
+  const port = await listenFree(server, o.port);
   const link = `http://localhost:${port}/`;
   console.log(`storyboard editor → ${link}\n  editing ${relative(process.cwd(), abs)} (changes save to the file; agent edits reload live)\n  Ctrl+C to stop`);
-  if (o.open) {
-    const cmd = process.platform === "darwin" ? "open" : process.platform === "win32" ? "cmd" : "xdg-open";
-    const args = process.platform === "win32" ? ["/c", "start", link] : [link];
-    spawn(cmd, args, { stdio: "ignore", detached: true }).unref();
-  }
+  if (o.open) openBrowser(link);
 }

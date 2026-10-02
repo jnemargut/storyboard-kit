@@ -1,5 +1,5 @@
 /** Editor actions → field-level ops (see src/json.ts). Paths are resolved against the current board at send time. */
-import type { Op } from "../json";
+import type { Op } from "../sketch/json";
 import type { Board, Bubble, CharacterInPanel, Gesture, LayoutOverride, Panel, ScenePanel, SceneDevice } from "../types";
 import { isScene } from "../types";
 import type { DeviceType } from "../vocab";
