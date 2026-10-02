@@ -24,7 +24,7 @@ export function validate(input: unknown): Result {
     const opts = (list as readonly (Entry | string)[]).map((x) => (typeof x === "string" ? x : x.id));
     if (typeof value !== "string" || !opts.includes(value)) {
       const s = typeof value === "string" ? suggest(value, opts) : undefined;
-      err(path, `"${String(value)}" is not a ${what}.`, s ? `Did you mean "${s}"?` : `Run \`storyboard vocab ${what}s\` to see options: ${opts.slice(0, 8).join(", ")}${opts.length > 8 ? ", …" : ""}`);
+      err(path, `"${String(value)}" isn't ${/^[aeiou]/.test(what) ? "an" : "a"} ${what}.`, s ? `Did you mean "${s}"?` : `Run \`storyboard vocab ${what}s\` to see options: ${opts.slice(0, 8).join(", ")}${opts.length > 8 ? ", …" : ""}`);
     }
   };
   const str = (path: string, v: unknown, required = false) => {
@@ -131,7 +131,10 @@ export function validate(input: unknown): Result {
   if (b.page !== undefined) {
     if (!isObj(b.page)) err("$.page", "must be an object.");
     else {
-      known("$.page", b.page, ["columns", "textScale", "lanes", "brand"]);
+      known("$.page", b.page, ["columns", "textScale", "lanes", "brand", "legend"]);
+      const lg = (b.page as Record<string, unknown>).legend;
+      if (lg !== undefined && lg !== false && !(isObj(lg) && Object.keys(lg).every((k) => (k === "product" || k === "cast") && typeof lg[k] === "boolean")))
+        err("$.page.legend", 'must be false, or { "product": true|false, "cast": true|false }.', 'e.g. "legend": { "cast": true } or "legend": false');
       if (b.page.lanes !== undefined && typeof b.page.lanes !== "boolean") err("$.page.lanes", "must be true or false.");
       if (b.page.brand !== undefined) {
         if (!isObj(b.page.brand)) err("$.page.brand", "must be an object like { \"name\": \"Acme\" }.");

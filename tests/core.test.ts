@@ -371,11 +371,11 @@ describe("custom scenes", () => {
         front: [{ type: "rect", points: [[240, 190], [400, 234]] }],
         marks: { washers: { x: 210, facing: "left" }, folding: { x: 300, behind: true } },
       },
-      pharmacy: { base: "store" },
+      "corner-shop": { base: "store" },
     },
     panels: [
       { id: "a", scene: "laundromat", characters: [{ who: "n", at: "folding" }] },
-      { id: "b", scene: "pharmacy", characters: [{ who: "n", at: "checkout" }] },
+      { id: "b", scene: "corner-shop", characters: [{ who: "n", at: "checkout" }] },
     ],
   };
   it("validates, draws the scene and places people at its marks", () => {

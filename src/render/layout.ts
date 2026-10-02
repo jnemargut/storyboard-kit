@@ -76,6 +76,23 @@ const PLACED_SCALE: Partial<Record<DeviceType, number>> = {
 
 export type AssetResolver = (path: string) => string | undefined;
 
+/** How far a spot may be off its surface and still snap onto it (further than that is a scene bug: see tests/scenes.test.ts). */
+export const SNAP = 14;
+
+/**
+ * Where a device placed at a scene spot actually goes: its bottom resting on the nearest surface just below
+ * (a mark's tabletop, one of the scene's \`surfaces\`, or the floor). Wall-mounted spots stay put.
+ * Returns the device's center y, and the surface it landed on (undefined = nothing near enough).
+ */
+export function restingY(scene: { marks: Record<string, { surface?: number }>; surfaces?: number[] }, type: DeviceType, spot: { y: number; scale?: number; wall?: boolean }): { y: number; on?: number } {
+  const h = DEVICE_DEFS[type].h * (spot.scale ?? PLACED_SCALE[type] ?? 0.4);
+  if (spot.wall) return { y: spot.y, on: spot.y + h / 2 };
+  const bottom = spot.y + h / 2;
+  const tops = [FLOOR_Y, ...Object.values(scene.marks).map((m) => m.surface).filter((v): v is number => typeof v === "number"), ...(scene.surfaces ?? [])];
+  const near = tops.map((t) => ({ t, d: Math.abs(t - bottom) })).filter((x) => x.d <= SNAP).sort((a, b) => a.d - b.d)[0];
+  return near ? { y: near.t - h / 2, on: near.t } : { y: spot.y };
+}
+
 const ovOf = (panel: ScenePanel, id: string): LayoutOverride => panel.layout?.[id] ?? {};
 
 export function heldDeviceOf(c: CharacterInPanel): { type: DeviceType; screen?: string; product?: boolean } | undefined {
@@ -197,7 +214,8 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     const onSurface = mark?.surface !== undefined;
     // at a spot with no tabletop: a kiosk stands on the floor; anything smaller sits at hand height, not in the floor
     const h = def.h * s;
-    const y = onSurface ? spot.y - h / 2 : mark ? (d.type === "kiosk" ? FLOOR_Y - h / 2 : FLOOR_Y - 96) : spot.y;
+    // a mark up in the air (a wall screen's place) is the device's center; a mark on the floor means "near this spot"
+    const y = onSurface ? spot.y - h / 2 : mark ? (mark.y < FLOOR_Y - 1 ? mark.y : d.type === "kiosk" ? FLOOR_Y - h / 2 : FLOOR_Y - 96) : restingY(scene, d.type, { ...spot, scale: s }).y;
     devices.push({ id, type: d.type, product: d.product !== false, href: d.screen ? asset(d.screen) : undefined, x: spot.x, y, s, rot: 0, behind: !!(spot as { behind?: boolean }).behind, ov: ovOf(panel, id), tilt: d.tilt });
   });
   const proxy: Record<string, string> = {};

@@ -22,14 +22,14 @@ const T = ({ x, y, s, children, fill = ink }: { x: number; y: number; s: number;
   <text x={x} y={y} textAnchor="middle" fontFamily="Permanent Marker" fontSize={s} fill={fill}>{children}</text>
 );
 /** A little potted plant standing on y. */
-const Plant = ({ x, y, s = 1 }: { x: number; y: number; s?: number }) => (
+export const Plant = ({ x, y, s = 1 }: { x: number; y: number; s?: number }) => (
   <g transform={`translate(${x} ${y}) scale(${s})`}>
     <path d="M-7 -30 Q-16 -44 -12 -56 Q-4 -46 -3 -30 M0 -30 Q2 -52 10 -60 Q12 -44 4 -30 M5 -30 Q16 -38 20 -48 Q20 -34 8 -28" fill={C.g5} stroke={ink} strokeWidth={1.5} strokeLinejoin="round" />
     <Sh d="M-10 -30 h20 l-3 30 h-14 Z" fill={C.g4} />
   </g>
 );
 /** A mug with a wisp of steam, sitting on y. */
-const Mug = ({ x, y, steam = true }: { x: number; y: number; steam?: boolean }) => (
+export const Mug = ({ x, y, steam = true }: { x: number; y: number; steam?: boolean }) => (
   <g>
     <Sh d={rect(x - 5, y - 9, 10, 9)} fill={C.paper} sw={1.4} />
     <L d={`M${x + 5} ${y - 7} q4 0 4 3 q0 3 -4 3`} sw={1.3} />
@@ -37,14 +37,14 @@ const Mug = ({ x, y, steam = true }: { x: number; y: number; steam?: boolean }) 
   </g>
 );
 /** A wall clock. */
-const Clock = ({ x, y, r = 11 }: { x: number; y: number; r?: number }) => (
+export const Clock = ({ x, y, r = 11 }: { x: number; y: number; r?: number }) => (
   <g>
     <circle cx={x} cy={y} r={r} fill={C.paper} stroke={ink} strokeWidth={1.8} />
     <L d={`M${x} ${y} V${y - r * 0.62} M${x} ${y} L${x + r * 0.45} ${y + r * 0.2}`} sw={1.5} />
   </g>
 );
 /** A framed picture. */
-const Frame = ({ x, y, w, h, kind = "hills" }: { x: number; y: number; w: number; h: number; kind?: "hills" | "sun" | "lines" }) => (
+export const Frame = ({ x, y, w, h, kind = "hills" }: { x: number; y: number; w: number; h: number; kind?: "hills" | "sun" | "lines" }) => (
   <g>
     <Sh d={rect(x, y, w, h)} fill={C.paper} sw={1.6} />
     {kind === "hills" && <L d={`M${x + 3} ${y + h - 4} Q${x + w * 0.3} ${y + h * 0.35} ${x + w * 0.55} ${y + h - 6} Q${x + w * 0.75} ${y + h * 0.5} ${x + w - 3} ${y + h - 5}`} sw={1.2} />}
@@ -113,30 +113,6 @@ export const SCENE_DECOR: Record<string, () => ReactNode> = {
       {[204, 212, 220, 229].map((x, i) => <Sh key={x} d={rect(x, 58 - [22, 18, 24, 16][i], 7, [22, 18, 24, 16][i])} fill={[C.g4, C.g5, C.g2, C.g7][i]} sw={1.2} />)}
       <Frame x={244} y={30} w={22} h={24} kind="sun" />
       <ellipse cx={250} cy={239} rx={70} ry={5} fill={C.g2} stroke={ink} strokeWidth={1.3} />
-    </g>
-  ),
-  office: () => (
-    <g>
-      {/* door, clock, cork board, desk lamp, papers and a mug */}
-      <Sh d={rect(158, 92, 44, 142)} fill={C.g1} /><circle cx={194} cy={166} r={2.2} fill={ink} />
-      <Clock x={180} y={48} />
-      <Sh d={rect(222, 30, 62, 42)} fill={C.g4} />
-      <Sh d={rect(228, 36, 14, 12)} fill={C.paper} sw={1.1} /><Sh d={rect(248, 40, 14, 12)} fill={C.paper} sw={1.1} /><Sh d={rect(266, 34, 12, 12)} fill={C.paper} sw={1.1} /><Sh d={rect(236, 54, 16, 12)} fill={C.paper} sw={1.1} />
-      <L d="M382 174 v-28 l-12 -10" sw={2} /><Sh d="M362 132 l14 -6 l4 10 Z" fill={C.g5} sw={1.4} />
-      <Sh d="M246 174 l2 -6 h22 l2 6 Z" fill={C.paper} sw={1.2} /><L d="M250 170 h18" sw={1} />
-      <Mug x={296} y={174} />
-    </g>
-  ),
-  "meeting-room": () => (
-    <g>
-      {/* chair backs along the far side, water and cups on the table, sticky notes, a window, a plant */}
-      {[150, 190, 230, 270].map((x) => <Sh key={x} d={`M${x - 11} 180 v-26 q0 -7 7 -7 h8 q7 0 7 7 v26 Z`} fill={C.g5} sw={1.5} />)}
-      <Sh d="M196 176 v-14 q4 -4 8 0 v14 Z" fill={C.g1} sw={1.2} />
-      <Sh d={rect(222, 170, 8, 6)} fill={C.paper} sw={1.1} /><Sh d={rect(252, 170, 8, 6)} fill={C.paper} sw={1.1} />
-      {[[92, 44], [104, 44], [92, 58], [108, 60]].map(([x, y]) => <Sh key={`${x}${y}`} d={rect(x, y, 10, 10)} fill={C.caption} sw={1.1} />)}
-      <Sh d={rect(146, 24, 100, 58)} fill={C.g1} /><L d="M196 24 v58 M146 53 h100" sw={1.2} />
-      <Clock x={356} y={34} r={10} />
-      <Plant x={388} y={234} s={1} />
     </g>
   ),
   street: () => (
@@ -224,16 +200,6 @@ export const SCENE_DECOR: Record<string, () => ReactNode> = {
       <Sh d="M168 234 l2 -22 h14 l2 22 Z" fill={C.g5} sw={1.4} />
       {[70, 80, 290, 300].map((x, i) => <g key={x}><L d={`M${x} 234 v-8`} sw={1.2} /><circle cx={x} cy={224} r={2.8} fill={[C.g2, C.paper, C.paper, C.g2][i]} stroke={ink} strokeWidth={1} /></g>)}
       <L d="M240 52 q5 -5 10 0 q5 -5 10 0 M272 38 q4 -4 8 0 q4 -4 8 0" sw={1.4} />
-    </g>
-  ),
-  "home-office": () => (
-    <g>
-      {/* plant on the sill, pinned notes, a desk lamp, headphones, a rug and a framed photo */}
-      <Plant x={126} y={110} s={0.6} />
-      {[[168, 34], [184, 40], [200, 32], [176, 56], [196, 54]].map(([x, y]) => <Sh key={`${x}${y}`} d={rect(x, y, 13, 13)} fill={C.caption} sw={1.1} />)}
-      <L d="M252 174 v-26 l12 -12" sw={2} /><Sh d="M262 132 l12 2 l-4 10 Z" fill={C.g5} sw={1.4} />
-      <path d="M176 172 q0 -12 10 -12 q10 0 10 12" fill="none" stroke={ink} strokeWidth={2} /><Sh d={rect(173, 168, 6, 7)} fill={C.g7} sw={1} /><Sh d={rect(193, 168, 6, 7)} fill={C.g7} sw={1} />
-      <ellipse cx={200} cy={238} rx={90} ry={5} fill={C.g2} stroke={ink} strokeWidth={1.3} />
     </g>
   ),
   hotel: () => (

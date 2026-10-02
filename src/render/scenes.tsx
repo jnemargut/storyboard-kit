@@ -3,6 +3,8 @@ import type { DeviceType, SceneId } from "../vocab";
 import { C, FLOOR_Y, OFFSET } from "./tokens";
 import { MORE_SCENES } from "./scenes-more";
 import { REDRAWN_SCENES } from "./scenes-redrawn";
+import { PLACE_SCENES } from "./scenes-places";
+import { WORK_SCENES } from "./scenes-work";
 import { SCENE_DECOR, SCENE_UNDER } from "./scene-decor";
 import { ShapeMark } from "./shapes";
 import type { Board, CustomScene, Shape } from "../types";
@@ -26,7 +28,10 @@ export interface SceneDef {
   /** Where characters go, in order, when `at` isn't given. */
   order: string[];
   /** Natural spot per device type when a placed device has no `at`. */
-  spots: Partial<Record<DeviceType, { x: number; y: number; behind?: boolean; scale?: number }>>;
+  /** Natural spot per device type. A spot rests on a surface (a mark's \`surface\`, one of \`surfaces\`, or the floor), or says \`wall\` (a mounted screen). */
+  spots: Partial<Record<DeviceType, { x: number; y: number; behind?: boolean; scale?: number; wall?: boolean }>>;
+  /** Other tops things can sit on (shelves, cabinets), besides marks' surfaces and the floor. */
+  surfaces?: number[];
   defaultSpot: { x: number; y: number };
   /** Where the brand name/logo goes (storefronts, signs). */
   sign?: { x: number; y: number; w: number; h: number };
@@ -101,7 +106,8 @@ const BASE_SCENES: Record<string, SceneDef> = {
       table: { x: 150, y: FLOOR_Y, facing: "right", seated: true, surface: 186 },
     },
     order: ["counter", "table", "fridge"],
-    spots: { phone: { x: 200, y: 181 }, tablet: { x: 200, y: 172 }, "smart-speaker": { x: 330, y: 158 }, laptop: { x: 196, y: 184 } },
+    spots: { phone: { x: 200, y: 181 }, tablet: { x: 200, y: 172 }, "smart-speaker": { x: 330, y: 158 }, laptop: { x: 193, y: 166 } },
+    surfaces: [170],
     defaultSpot: { x: 320, y: 160 },
   },
   "living-room": {
@@ -124,7 +130,8 @@ const BASE_SCENES: Record<string, SceneDef> = {
       tv: { x: 336, y: 96 },
     },
     order: ["sofa", "floor"],
-    spots: { tv: { x: 336, y: 96 }, "smart-speaker": { x: 380, y: 210 }, phone: { x: 150, y: 190 } },
+    spots: { tv: { x: 336, y: 96, wall: true }, "smart-speaker": { x: 380, y: 210 }, phone: { x: 150, y: 190 } },
+    surfaces: [196],
     defaultSpot: { x: 336, y: 96 },
   },
   bedroom: {
@@ -147,50 +154,6 @@ const BASE_SCENES: Record<string, SceneDef> = {
     order: ["bed", "door"],
     spots: { phone: { x: 356, y: 181 }, "smart-speaker": { x: 372, y: 170 }, tablet: { x: 350, y: 178 } },
     defaultSpot: { x: 356, y: 181 },
-  },
-  office: {
-    back: () => (
-      <g>
-        <Sh d={rect(50, 36, 96, 92)} fill={C.paper} /><L d="M50 50 H146 M50 64 H146 M50 78 H146 M50 92 H146 M50 106 H146" sw={1} />
-        <Sh d="M14 234 L20 200 H44 L50 234 Z" fill={C.g5} /><L d="M32 200 q-14 -20 -4 -40 M32 200 q10 -24 20 -30 M32 200 q-2 -30 6 -50" sw={2} />
-        <Sh d="M226 234 V164 Q226 150 238 150 H244 V234" fill={C.g5} />
-      </g>
-    ),
-    front: () => (
-      <g>
-        <Sh d={rect(236, 176, 158, 10)} fill={C.g4} /><L d="M246 186 V234 M384 186 V234" sw={2.4} />
-      </g>
-    ),
-    marks: {
-      chair: { x: 250, y: FLOOR_Y, facing: "right", seated: true, behind: true, surface: 176 },
-      desk: { x: 330, y: FLOOR_Y, surface: 176 },
-      window: { x: 110, y: FLOOR_Y, facing: "right" },
-      door: { x: 180, y: FLOOR_Y, facing: "right" },
-    },
-    order: ["chair", "window", "door"],
-    spots: { desktop: { x: 326, y: 116 }, laptop: { x: 320, y: 172 }, phone: { x: 370, y: 171 }, tablet: { x: 366, y: 166 } },
-    defaultSpot: { x: 326, y: 116 },
-  },
-  "meeting-room": {
-    back: () => (
-      <g>
-        <Sh d={rect(20, 46, 112, 82)} fill={C.paper} /><L d="M34 64 h40 M34 76 l20 10 l20 -14 M86 96 h32" sw={1.4} />
-      </g>
-    ),
-    front: () => (
-      <g>
-        <Sh d={rect(120, 180, 190, 12)} fill={C.g4} /><L d="M140 192 V234 M290 192 V234" sw={2.4} />
-      </g>
-    ),
-    marks: {
-      "table-left": { x: 120, y: FLOOR_Y, facing: "right", seated: true, behind: true, surface: 180 },
-      "table-right": { x: 318, y: FLOOR_Y, facing: "left", seated: true, behind: true, surface: 180 },
-      whiteboard: { x: 76, y: FLOOR_Y, facing: "right" },
-      screen: { x: 300, y: 80 },
-    },
-    order: ["table-left", "table-right", "whiteboard"],
-    spots: { tv: { x: 300, y: 80 }, laptop: { x: 200, y: 176 }, phone: { x: 230, y: 175 }, "smart-speaker": { x: 214, y: 166 } },
-    defaultSpot: { x: 300, y: 80 },
   },
   street: {
     back: () => (
@@ -256,6 +219,7 @@ const BASE_SCENES: Record<string, SceneDef> = {
     },
     order: ["checkout", "cashier", "aisle", "entrance"],
     spots: { "payment-terminal": { x: 232, y: 165 }, kiosk: { x: 250, y: 164 } },
+    surfaces: [176],
     defaultSpot: { x: 232, y: 165 },
     sign: { x: 170, y: 24, w: 170, h: 24 },
   },
@@ -284,7 +248,7 @@ const BASE_SCENES: Record<string, SceneDef> = {
       station: { x: 336, y: FLOOR_Y, facing: "left", behind: true, surface: 164 },
     },
     order: ["bedside", "bed", "station", "corridor"],
-    spots: { desktop: { x: 350, y: 110, behind: true }, tablet: { x: 300, y: 150 }, phone: { x: 290, y: 158 } },
+    spots: { desktop: { x: 350, y: 134, behind: true }, tablet: { x: 300, y: 150 }, phone: { x: 290, y: 158 } },
     defaultSpot: { x: 350, y: 110 },
   },
   blank: {
@@ -300,7 +264,7 @@ const BASE_SCENES: Record<string, SceneDef> = {
   },
 };
 
-export const SCENE_DEFS = { ...BASE_SCENES, ...MORE_SCENES, ...REDRAWN_SCENES } as Record<SceneId, SceneDef>;
+export const SCENE_DEFS = { ...BASE_SCENES, ...MORE_SCENES, ...REDRAWN_SCENES, ...WORK_SCENES, ...PLACE_SCENES } as Record<SceneId, SceneDef>;
 
 export interface Brand { name?: string; logoHref?: string }
 

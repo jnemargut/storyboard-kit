@@ -58,7 +58,7 @@ export const MORE_SCENES: Record<string, SceneDef> = {
       door: { x: 20, y: FLOOR_Y, facing: "right" },
     },
     order: ["waiting", "reception", "receptionist", "door"],
-    spots: { kiosk: { x: 196, y: 164 }, tablet: { x: 260, y: 158 }, tv: { x: 130, y: 90 }, "payment-terminal": { x: 262, y: 159 } },
+    spots: { kiosk: { x: 196, y: 164 }, tablet: { x: 260, y: 158 }, tv: { x: 130, y: 90, wall: true }, "payment-terminal": { x: 262, y: 159 } },
     defaultSpot: { x: 196, y: 164 },
     sign: { x: 238, y: 42, w: 146, h: 17 },
   },
@@ -80,7 +80,7 @@ export const MORE_SCENES: Record<string, SceneDef> = {
       sidewalk: { x: 50, y: FLOOR_Y, facing: "right" },
     },
     order: ["bench", "shelter", "sidewalk", "curb"],
-    spots: { tv: { x: 180, y: 90 }, kiosk: { x: 70, y: 164 } },
+    spots: { tv: { x: 180, y: 90, wall: true }, kiosk: { x: 70, y: 164 } },
     defaultSpot: { x: 180, y: 90 },
   },
   park: {
@@ -102,27 +102,6 @@ export const MORE_SCENES: Record<string, SceneDef> = {
     order: ["bench", "path", "tree"],
     spots: {},
     defaultSpot: { x: 300, y: 160 },
-  },
-  "home-office": {
-    back: () => (
-      <g>
-        <Sh d={rect(40, 36, 110, 90)} fill={C.paper} /><L d="M95 36 V126 M40 81 H150" sw={1.3} />
-        <Sh d={rect(300, 30, 86, 204)} fill={C.g2} />
-        {[70, 120, 170].map((y) => <L key={y} d={`M300 ${y} H386`} sw={1.6} />)}
-        {[308, 318, 330, 346, 358].map((x, i) => <rect key={x} x={x} y={42 + (i % 2) * 4} width={8} height={24 - (i % 2) * 4} fill={i % 2 ? C.g5 : C.g4} stroke={ink} strokeWidth={1} />)}
-        <path d="M322 164 q6 -14 12 0 z" fill={C.g5} stroke={ink} strokeWidth={1.2} />
-        <Sh d="M126 234 V164 Q126 150 138 150 H146 V234" fill={C.g5} />
-      </g>
-    ),
-    front: () => <g>{table(136, 290, 176)}<path d="M252 176 v-12 h10 v12 M262 168 q6 0 6 4 q0 4 -6 4" fill={C.paper} stroke={ink} strokeWidth={1.3} /></g>,
-    marks: {
-      "desk-chair": { x: 150, y: FLOOR_Y, facing: "right", seated: true, behind: true, surface: 176 },
-      bookshelf: { x: 276, y: FLOOR_Y, facing: "right" },
-      door: { x: 30, y: FLOOR_Y, facing: "right" },
-    },
-    order: ["desk-chair", "bookshelf", "door"],
-    spots: { laptop: { x: 212, y: 172 }, desktop: { x: 216, y: 116 }, phone: { x: 236, y: 171 }, "smart-speaker": { x: 280, y: 164 }, tablet: { x: 236, y: 166 } },
-    defaultSpot: { x: 212, y: 172 },
   },
   hotel: {
     back: () => (
@@ -162,7 +141,7 @@ export const MORE_SCENES: Record<string, SceneDef> = {
       board: { x: 90, y: FLOOR_Y, facing: "left" },
     },
     order: ["desk", "teacher", "back-row", "board"],
-    spots: { tv: { x: 160, y: 78 }, laptop: { x: 186, y: 184 }, tablet: { x: 190, y: 178 }, phone: { x: 196, y: 183 } },
+    spots: { tv: { x: 160, y: 78, wall: true }, laptop: { x: 186, y: 184 }, tablet: { x: 190, y: 178 }, phone: { x: 196, y: 183 } },
     defaultSpot: { x: 160, y: 78 },
   },
 };

@@ -86,6 +86,7 @@ critique on it, and opens the editor in your browser. Then keep talking to it:
 - *"make it messier"*
 - *"add a panel where she gives up and calls someone"*
 - *"turn on journey lanes"*
+- *"hide the cast legend"*
 - *"export slides for my crit"*
 
 Or just click around yourself. Your edits and the agent's edits land in the same file, live.
@@ -94,12 +95,12 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 
 ![Meet the cast](docs/cast-f841dde.png)
 
-![A few of the scenes](docs/scenes-e79b389.png)
+![A few of the scenes](docs/scenes-49a1709.png)
 
 - **A cast you build from parts.** 4 skin tones, 9 hair styles, 4 body types,
   3 ages, 16 outfits (scrubs, hi-vis, chef whites, lab coat, uniform, overalls and friends), 7 hats, plus
   glasses, canes, wheelchairs, backpacks and beards.
-- **23 places.** Home, office, coffee shop, car, bus stop, gym, airport, clinic, school, parking garage, and more.
+- **33 places.** Home, a desk in an office, open-plan, meeting room, break room, coworking, coffee shop, car, train platform, pharmacy, exam room, warehouse, a table for four, and more. Desks, counters and tables are real tops: devices sit on them, never float.
   Each one can wear your brand on its signs, or another store's name, or nothing at all.
 - **Any place you need.** Laundromat, pharmacy drive-through, warehouse dock? Ask your agent and it draws a new
   scene from simple shapes, checks a preview of it, and uses it like any other. Or draw on a panel in the editor
@@ -163,6 +164,12 @@ which of the three kits the thinking needs, then builds the storyboard, the scre
 A strip under each panel: how the person feels, a teal tag where your product shows up, and the workaround
 they used when something didn't work.
 A feeling line with every step named runs across the bottom of the page.
+
+**Legend**
+
+Under the board, a key says what teal and orange mean. When two or more people appear, it adds a face and name
+for each one, so you can tell who's who even when the board is small. **Legend** in the toolbar turns each on
+or off (`"page": { "legend": { "cast": false } }`, or `"legend": false` to hide both).
 
 **Play mode**
 

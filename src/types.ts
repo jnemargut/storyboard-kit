@@ -183,7 +183,15 @@ export interface Board {
    * lanes: show service-design lanes (feeling, product, workaround) under each panel.
    * brand: your company's name/logo on storefronts and signs in the scenes.
    */
-  page?: { columns?: number; textScale?: number; lanes?: boolean; brand?: { name?: string; logo?: string } };
+  page?: {
+    columns?: number; textScale?: number; lanes?: boolean; brand?: { name?: string; logo?: string };
+    /**
+     * The keys in the page footer, each on or off: \`product\` (teal = the product, orange = what people do) and
+     * \`cast\` (each person, small, with their name). \`false\` hides them all. Default: product on when the product
+     * shows up, cast on when two or more people appear.
+     */
+    legend?: false | { product?: boolean; cast?: boolean };
+  };
   cast: Record<string, CastMember>;
   /** Places the board draws for itself, when none of the built-in scenes fit. Keyed by scene id. */
   scenes?: Record<string, CustomScene>;

@@ -10,8 +10,19 @@ Field: panel `scene`
 - `kitchen`: Home kitchen with counter, fridge, window. Marks: counter, fridge, table. Marks: `counter`, `fridge`, `table`.
 - `living-room`: Sofa, lamp, TV on the wall. Marks: sofa, tv, floor. Marks: `sofa`, `tv`, `floor`.
 - `bedroom`: Bed, nightstand, window at night or morning. Marks: bed, nightstand, door. Marks: `bed`, `nightstand`, `door`.
-- `office`: Desk with monitor, chair, plant, window. Marks: desk, chair, window, door. Marks: `desk`, `chair`, `window`, `door`.
-- `meeting-room`: Table, whiteboard, wall screen. Marks: table-left, table-right, whiteboard, screen. Marks: `table-left`, `table-right`, `whiteboard`, `screen`.
+- `office`: A desk in an office: cubicle divider with notes, office chair, the city through the window, the next row of desks behind. A desktop or laptop sits on the desk. Marks: chair (seated at the desk), desk (standing by it), window, door. Marks: `desk`, `chair`, `window`, `door`.
+- `open-office`: Open-plan office: two desks in a row, coworkers' monitors over a divider behind, big windows. Marks: desk, desk-2 (both seated), aisle, window. Marks: `desk`, `desk-2`, `aisle`, `window`.
+- `meeting-room`: Long table with chairs, whiteboard, a screen on the wall (dark until the product shows on it). Marks: table-left, table-right (seated), whiteboard, screen. Marks: `table-left`, `table-right`, `whiteboard`, `screen`.
+- `break-room`: Office kitchen: coffee machine, microwave, fridge, notice board, a high table. Marks: counter, coffee, table (seated), fridge. Marks: `counter`, `coffee`, `table`, `fridge`.
+- `reception`: Office reception: front desk with the company name on the wall, visitor sofa, entry gates. Marks: desk, receptionist (behind the desk), waiting (seated), gates. Marks: `desk`, `receptionist`, `waiting`, `gates`.
+- `front-door`: A house's front door from the porch: doorbell, a parcel on the step, a porch light. Marks: porch, doorway, path, parcel. Marks: `porch`, `doorway`, `path`, `parcel`.
+- `pharmacy`: Pharmacy pickup counter: shelves of boxes behind, a waiting line rope. Marks: counter, pharmacist (behind the counter), queue, shelves. Marks: `counter`, `pharmacist`, `queue`, `shelves`.
+- `exam-room`: Doctor's exam room: exam table with paper, a rolling stool, a desk with the computer. Marks: exam-table (seated, feet on the step), doctor (seated on the stool), standing, door. Marks: `exam-table`, `doctor`, `standing`, `door`.
+- `warehouse`: Warehouse aisle: tall racks of boxes, a pallet, a packing table. Marks: aisle, rack, packing, dock. Marks: `aisle`, `rack`, `packing`, `dock`.
+- `train-platform`: Train platform: the train with open doors, a departures board, a bench. Marks: platform, doors, bench (seated), edge. Marks: `platform`, `doors`, `bench`, `edge`.
+- `elevator`: Inside an elevator: back wall with a handrail, the button panel and floor display. Marks: left, center, right, panel. A screen on the wall is a tablet or tv. Marks: `left`, `center`, `right`, `panel`.
+- `restaurant-group`: Restaurant table for four: two at the ends, two on the booth behind. Marks: end-left, end-right, back-left, back-right (all seated), waiter. Marks: `end-left`, `end-right`, `back-left`, `back-right`, `waiter`.
+- `coworking`: Coworking space: shared table, brick wall, pendant lights, a phone booth. Marks: table-left, table-right (seated), standing, booth. Marks: `table-left`, `table-right`, `standing`, `booth`.
 - `car`: Car interior from the side: seat, wheel, dashboard display. Marks: driver-seat, passenger-seat, dashboard. Marks: `driver-seat`, `passenger-seat`, `dashboard`.
 - `street`: Sidewalk, storefronts, lamp post, curb. Marks: sidewalk, curb, storefront, crossing. Marks: `sidewalk`, `curb`, `storefront`, `crossing`.
 - `transit`: Bus or train interior: seats, pole, windows. Marks: seat, standing, door. Marks: `seat`, `standing`, `door`.
@@ -25,7 +36,7 @@ Field: panel `scene`
 - `parking`: Parking garage: parked car, EV charger, pillar. Marks: car-door, charger, walkway. Marks: `car-door`, `charger`, `walkway`.
 - `bus-stop`: Bus shelter with bench, schedule and sign. Marks: bench, shelter, sidewalk, curb. Marks: `bench`, `shelter`, `sidewalk`, `curb`.
 - `park`: Trees, a bench and a path. Marks: bench, path, tree. Marks: `bench`, `path`, `tree`.
-- `home-office`: Desk at home by a window, bookshelf. Marks: desk-chair, bookshelf, door. Marks: `desk-chair`, `bookshelf`, `door`.
+- `home-office`: Working from home: a desk by the window, shelves with books and a plant, a low cabinet. Marks: desk-chair (seated), bookshelf, door. Marks: `desk-chair`, `bookshelf`, `door`.
 - `hotel`: Front desk with bell, elevator, luggage cart. Marks: desk, clerk (behind the desk), lobby, elevator. Marks: `desk`, `clerk`, `lobby`, `elevator`.
 - `classroom`: Whiteboard, desks, clock. Marks: desk, back-row, teacher, board. Marks: `desk`, `back-row`, `teacher`, `board`.
 - `blank`: Empty panel with a floor line. Marks: left, center, right. Marks: `left`, `center`, `right`.

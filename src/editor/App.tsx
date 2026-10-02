@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { splitCrop } from "../sketch/crop";
 import { applyOps, type Op } from "../sketch/json";
-import { BoardSVG, pageSize, panelOrigin } from "../render/board";
+import { BoardSVG, legendOf, pageSize, panelOrigin } from "../render/board";
 import type { Board, LayoutOverride, ScenePanel, Shape } from "../types";
 import type { MarkerColor, ShapeType } from "../vocab";
 import { isScene } from "../types";
@@ -653,7 +653,7 @@ function TopBar(props: {
   board: Board; commit: (ops: Op[], label?: string) => Promise<void>;
   zoom: "fit" | number; setZoom: (z: "fit" | number) => void; flash: (m: string) => void; bumpAssets: () => void; play: () => void;
 }) {
-  const [menu, setMenu] = useState<null | "export" | "layout" | "issues" | "view" | "brand">(null);
+  const [menu, setMenu] = useState<null | "export" | "layout" | "issues" | "view" | "brand" | "legend">(null);
   const lanes = !!props.board.page?.lanes;
   const brand = props.board.page?.brand ?? {};
   const setBrand = (k: "name" | "logo", v: string | undefined) => props.commit([v ? { path: ["page", "brand", k], value: v } : { path: ["page", "brand", k], delete: true }]);
@@ -686,6 +686,23 @@ function TopBar(props: {
       <button className="btn" onClick={props.redo} disabled={!props.canRedo} title="Redo (Shift+Cmd+Z)">Redo</button>
       <button className={`btn${lanes ? " on" : ""}`} onClick={() => props.commit(lanes ? [{ path: ["page", "lanes"], delete: true }] : [{ path: ["page", "lanes"], value: true }], lanes ? "Journey lanes hidden" : "Journey lanes on: how they feel, where the product shows up, and their workarounds")}
         title="Show service-design lanes under each panel: how they feel, where the product shows up, and how they work around gaps">Journey lanes</button>
+      <div className="menu">
+        <button className="btn" onClick={() => toggle("legend")} title="The keys under the board: what teal and orange mean, and who's who">Legend</button>
+        {menu === "legend" && (() => {
+          const lg = legendOf(props.board);
+          const set = (k: "product" | "cast", on: boolean) => {
+            const cur = props.board.page?.legend === false ? { product: false, cast: false } : { ...(props.board.page?.legend ?? {}) };
+            const next = { ...cur, [k]: on };
+            props.commit([{ path: ["page", "legend"], value: next }], on ? "Shown" : "Hidden");
+          };
+          return (
+            <div className="menu-list form">
+              <label className="check"><input type="checkbox" checked={lg.product} onChange={(e) => set("product", e.target.checked)} /> What teal and orange mean</label>
+              <label className="check"><input type="checkbox" checked={lg.cast.length > 0} onChange={(e) => set("cast", e.target.checked)} /> Who's who (the cast)</label>
+            </div>
+          );
+        })()}
+      </div>
       <div className="menu">
         <button className="btn" onClick={() => toggle("brand")} title="Your company's name/logo on storefronts and signs">Brand</button>
         {menu === "brand" && (

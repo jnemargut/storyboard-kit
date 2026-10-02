@@ -5,8 +5,54 @@ import { isScene } from "../types";
 import { PanelArt, panelHasProduct, type RenderOptions } from "./panel";
 import { C, FONT, PANEL_H, PANEL_W } from "./tokens";
 import { ADV_TITLE, textWidth, wrap } from "./layout";
+import { Character } from "./character";
+import { figure } from "./rig";
 
 export const PAGE = { margin: 44, gapX: 28, gapY: 50, header: 96, footer: 56 };
+
+/** Which keys the footer shows (see Board.page.legend). */
+export function legendOf(board: Board): { product: boolean; gesture: boolean; cast: string[] } {
+  const l = board.page?.legend;
+  const anyProduct = board.panels.some(panelHasProduct);
+  const anyGesture = board.panels.some((p) => isScene(p) && (p.gestures?.length ?? 0) > 0);
+  const seen: string[] = [];
+  for (const p of board.panels) if (isScene(p)) for (const c of p.characters ?? []) if (board.cast[c.who] && !seen.includes(c.who)) seen.push(c.who);
+  if (l === false) return { product: false, gesture: false, cast: [] };
+  const product = anyProduct && l?.product !== false;
+  const cast = l?.cast === true || (l?.cast !== false && seen.length >= 2) ? seen : [];
+  return { product, gesture: product && anyGesture, cast };
+}
+const CAST_ROW = 86;
+/** Footer height: the product key, then the cast row. */
+const footerH = (b: Board) => { const g = legendOf(b); return (g.product ? PAGE.footer : 16) + (g.cast.length ? CAST_ROW : 0); };
+
+/** The cast legend: each person, small and standing, with their name. */
+/** Who's who: a face per cast member (with a bit of shoulder, so outfits help too), sized to read when the board is small. */
+function CastLegend({ board, ids, width }: { board: Board; ids: string[]; width: number }) {
+  const per = Math.max(72, Math.min(110, (width - PAGE.margin * 2) / Math.max(1, ids.length)));
+  const R = 26;
+  return (
+    <g>
+      {ids.map((id, i) => {
+        const cast = board.cast[id];
+        const f = figure("standing", "front", "right", cast);
+        const [hx, hy] = f.j.head;
+        const x = i * per + per / 2;
+        const clip = `cast-face-${id}`;
+        return (
+          <g key={id} data-cast={id}>
+            <clipPath id={clip}><circle cx={x} cy={R + 2} r={R} /></clipPath>
+            <g clipPath={`url(#${clip})`}>
+              <g transform={`translate(${x} ${R + 9}) scale(1.25) translate(${-hx} ${-hy})`}><Character f={f} cast={cast} mood="neutral" /></g>
+            </g>
+            <circle cx={x} cy={R + 2} r={R} fill="none" stroke={C.g5} strokeWidth={1.5} />
+            <text x={x} y={R * 2 + 22} textAnchor="middle" fontFamily={FONT.hand} fontSize={16} fill={C.g8}>{cast.name ?? id}</text>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
 const ts = (b: Board) => b.page?.textScale ?? 1;
 /** Header and label space grow with the board's text size. */
 export const LANE_H = 50;
@@ -164,7 +210,7 @@ export function pageSize(board: Board) {
   return {
     cols, rows,
     width: PAGE.margin * 2 + cols * PANEL_W + (cols - 1) * PAGE.gapX,
-    height: geo(board).header + rows * (PANEL_H + geo(board).gapY) + geo(board).journey + PAGE.footer,
+    height: geo(board).header + rows * (PANEL_H + geo(board).gapY) + geo(board).journey + footerH(board),
   };
 }
 
@@ -199,8 +245,10 @@ export interface BoardOptions extends RenderOptions {
 export function BoardSVG({ board, opts }: { board: Board; opts: BoardOptions }) {
   const { width, height } = pageSize(board);
   const sub = [board.persona && `Persona: ${board.persona}`, board.subtitle].filter(Boolean).join(" · ");
-  const anyProduct = board.panels.some(panelHasProduct);
-  const anyGesture = board.panels.some((p) => isScene(p) && (p.gestures?.length ?? 0) > 0);
+  const legend = legendOf(board);
+  const anyProduct = legend.product;
+  const anyGesture = legend.gesture;
+  const foot = footerH(board);
   const k = ts(board);
   const hd = headerLayout(board);
   return (
@@ -225,14 +273,15 @@ export function BoardSVG({ board, opts }: { board: Board; opts: BoardOptions }) 
           </g>
         );
       })}
-      {board.page?.lanes && <Journey board={board} y={height - PAGE.footer - geo(board).journey} width={width} />}
+      {board.page?.lanes && <Journey board={board} y={height - foot - geo(board).journey} width={width} />}
       {anyProduct && (
-        <g transform={`translate(${PAGE.margin} ${height - PAGE.footer + 18})`}>
+        <g data-legend="product" transform={`translate(${PAGE.margin} ${height - foot + 18})`}>
           <rect x={0} y={0} width={16} height={16} fill={C.teal} stroke={C.ink} strokeWidth={1.6} />
           <text x={26} y={13} fontFamily={FONT.hand} fontSize={16 * Math.min(k, 1.3)} fill={C.g8}>= where the product shows up in {board.persona ? board.persona.split(",")[0] + "'s" : "their"} day</text>
           {anyGesture && <g transform="translate(420 0)"><circle cx={8} cy={8} r={6} fill="none" stroke={C.paper} strokeWidth={5} /><circle cx={8} cy={8} r={6} fill="none" stroke={C.action} strokeWidth={2.4} /><text x={24} y={13} fontFamily={FONT.hand} fontSize={16 * Math.min(k, 1.3)} fill={C.g8}>= what they do (tap, swipe, click)</text></g>}
         </g>
       )}
+      {legend.cast.length ? <g data-legend="cast" transform={`translate(${PAGE.margin} ${height - CAST_ROW - 4})`}><CastLegend board={board} ids={legend.cast} width={width} /></g> : null}
     </svg>
   );
 }

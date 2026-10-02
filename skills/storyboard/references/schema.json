@@ -49,6 +49,26 @@
           "type": "boolean",
           "description": "Show journey lanes (feeling, product, workaround) under each panel."
         },
+        "legend": {
+          "description": "The keys under the board. false hides them all; otherwise switch each one: product (what teal and orange mean) and cast (a face and name per person, on by default when 2+ people appear).",
+          "anyOf": [
+            {
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "product": {
+                  "type": "boolean"
+                },
+                "cast": {
+                  "type": "boolean"
+                }
+              }
+            }
+          ]
+        },
         "brand": {
           "type": "object",
           "additionalProperties": false,
@@ -192,7 +212,18 @@
               "living-room",
               "bedroom",
               "office",
+              "open-office",
               "meeting-room",
+              "break-room",
+              "reception",
+              "front-door",
+              "pharmacy",
+              "exam-room",
+              "warehouse",
+              "train-platform",
+              "elevator",
+              "restaurant-group",
+              "coworking",
               "car",
               "street",
               "transit",
@@ -844,7 +875,7 @@
               },
               "scene": {
                 "type": "string",
-                "description": "A built-in scene (coffee-shop, kitchen, living-room, bedroom, office, meeting-room, car, street, transit, store, hospital, school, airport, restaurant, gym, clinic, parking, bus-stop, park, home-office, hotel, classroom, blank) or the id of one of the board's own \"scenes\"."
+                "description": "A built-in scene (coffee-shop, kitchen, living-room, bedroom, office, open-office, meeting-room, break-room, reception, front-door, pharmacy, exam-room, warehouse, train-platform, elevator, restaurant-group, coworking, car, street, transit, store, hospital, school, airport, restaurant, gym, clinic, parking, bus-stop, park, home-office, hotel, classroom, blank) or the id of one of the board's own \"scenes\"."
               },
               "shot": {
                 "enum": [

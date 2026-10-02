@@ -100,6 +100,9 @@ The point is to see the product from inside the customer's life, not to illustra
   a feeling line across the whole journey, with teal marking the steps where the product shows up.
 - Crowds: people in the same pose get automatic small variations. Set \`variant\` (1–3) only if asked.
 - A screen seen from the side (car dashboard, a TV across the room) can use \`"tilt": "left"\` or \`"right"\`.
+- **Give everyone a \`name\`** in \`cast\`. When two or more people appear, a who's-who row (face and name) shows
+  under the board. \`page.legend\` switches the keys: \`{ "product": false }\` hides the teal/orange key,
+  \`{ "cast": false }\` hides the faces, \`false\` hides both. Leave it alone unless the designer asks.
 - Leave text sizes alone. Designers set \`page.textScale\` and per-element \`layout.scale\` in the editor.
 - If the designer gives you screen designs, reference them by path (\`"screen": "./screens/x.png"\`). The tool
   sketchifies them automatically. Otherwise leave \`screen\` out and a generic teal UI is drawn.
