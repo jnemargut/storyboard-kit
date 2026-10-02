@@ -74,7 +74,7 @@ const BASE_SCENES: Record<string, SceneDef> = {
     front: () => (
       <g>
         <Sh d={rect(300, 146, 48, 30)} fill={C.g7} /><L d="M312 176 v-6 M336 176 v-6" sw={1.6} />
-        <Sh d={rect(240, 176, 168, 58)} fill={C.g2} />
+        <Sh d={rect(240, 176, 168, 61)} fill={C.g2} />
         <L d="M240 192 H400" sw={1.2} />
       </g>
     ),

@@ -23,12 +23,14 @@ export interface CharacterProps {
   held?: ReactNode;
   /** Draw a chair under someone seated where the scene has no seat. */
   chair?: boolean;
+  /** Draw the held device over both arms (a laptop lid seen from behind hides the typing hands). */
+  heldFront?: boolean;
   /** Skip one arm (e.g. over-the-shoulder shots redraw it reaching for the device). */
   hideArm?: "left" | "right";
 }
 
 /** Draws a character in local space (feet at 0,0). */
-export function Character({ f, cast, mood, held, chair, hideArm }: CharacterProps) {
+export function Character({ f, cast, mood, held, chair, hideArm, heldFront }: CharacterProps) {
   const j = f.j;
   const skin = SKIN[cast.skin ?? "tone-2"];
   const outfit = cast.outfit ?? "jacket";
@@ -164,8 +166,9 @@ export function Character({ f, cast, mood, held, chair, hideArm }: CharacterProp
         // hand busy (waving, shrugging, seated): the cane leans against the leg
         : (() => { const cx = Math.min(j.ftL[0], j.ftR[0]) - 9; return <path d={`M${cx} 0 L${cx + 6} ${hipY + 6} q2 -6 8 -3`} stroke={ink} strokeWidth={2.4} fill="none" strokeLinecap="round" />; })())}
       {!farFirst && <>{armL}</>}
-      {held}
+      {heldFront ? null : held}
       {!farFirst && <>{armR}</>}
+      {heldFront ? held : null}
       {nearArmOverHead && armR}
       {farFirst && held && <circle cx={j.hdR[0]} cy={j.hdR[1]} r={3.4} fill={skin} stroke={ink} strokeWidth={1.4} />}
     </g>

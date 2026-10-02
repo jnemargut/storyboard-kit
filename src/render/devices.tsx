@@ -78,10 +78,74 @@ export interface DeviceProps {
   clipId: string;
   /** false = someone's personal device, not the product: drawn gray instead of teal. */
   product?: boolean;
+  /**
+   * Which side we see. "screen" faces us. "back": the person faces us, so we see the back (teal-tinted when it's
+   * the product). "side": seen edge-on from the side, the screen a sliver facing the person (who is on the left;
+   * mirror with scale(-1 1) for someone facing left).
+   */
+  face?: "screen" | "back" | "side";
+}
+
+/** A held device seen from behind: its back, tinted when it's the product, with a camera or a logo. */
+function DeviceBack({ type, product }: { type: DeviceType; product: boolean }) {
+  const def = DEVICE_DEFS[type];
+  const B = def.body;
+  const tint = product ? C.tealTint : C.g2;
+  const mark = product ? C.teal : C.g5;
+  if (type === "laptop") {
+    // the lid's back hides the keyboard; only the front lip of the base shows under it
+    return (
+      <g>
+        <g transform={`translate(${OFFSET.x} ${OFFSET.y})`}><rect x={-62} y={-88} width={124} height={86} rx={6} fill={C.g7} /></g>
+        <rect x={-62} y={-88} width={124} height={86} rx={6} fill={tint} stroke={ink} strokeWidth={2.4} />
+        <circle cx={0} cy={-46} r={9} fill={mark} stroke={ink} strokeWidth={1.4} />
+        <path d="M-70 -2 H70 L66 6 H-66 Z" fill={C.g4} stroke={ink} strokeWidth={2.2} strokeLinejoin="round" />
+      </g>
+    );
+  }
+  return (
+    <g>
+      <B outline={false} />
+      {(type === "phone" || type === "tablet") && (
+        <g>
+          <rect x={-def.w / 2 + 3} y={-def.h / 2 + 3} width={def.w - 6} height={def.h - 6} rx={8} fill={tint} />
+          <circle cx={-def.w / 2 + 14} cy={-def.h / 2 + 14} r={6} fill={C.g7} stroke={ink} strokeWidth={1.4} />
+          <circle cx={0} cy={0} r={def.w * 0.12} fill={mark} stroke={ink} strokeWidth={1.2} />
+        </g>
+      )}
+      <B outline />
+    </g>
+  );
+}
+
+/** A held device seen edge-on from the side, its screen facing left (toward the person). */
+function DeviceSide({ type, product }: { type: DeviceType; product: boolean }) {
+  const glow = product ? C.teal : C.g4;
+  if (type === "laptop") {
+    // base flat on the lap or table, lid open and leaning away, screen facing back toward the person
+    return (
+      <g>
+        <path d="M-66 -1 L 66 -1 L 62 8 L -62 8 Z" fill={C.g4} stroke={ink} strokeWidth={2.4} strokeLinejoin="round" />
+        <path d="M58 -1 L76 -88 L86 -86 L68 -1 Z" fill={C.g7} stroke={ink} strokeWidth={2.4} strokeLinejoin="round" />
+        <path d="M60 -6 L76 -82" stroke={glow} strokeWidth={6} strokeLinecap="round" />
+        <path d="M-50 -1 h80" stroke={C.g5} strokeWidth={3} strokeLinecap="round" />
+      </g>
+    );
+  }
+  const def = DEVICE_DEFS[type];
+  const t = type === "tablet" ? 14 : 12;
+  return (
+    <g>
+      <rect x={-t / 2} y={-def.h / 2} width={t} height={def.h} rx={t / 2} fill={C.g7} stroke={ink} strokeWidth={2.4} />
+      <path d={`M${-t / 2 - 1} ${-def.h / 2 + 10} V${def.h / 2 - 10}`} stroke={glow} strokeWidth={6} strokeLinecap="round" />
+    </g>
+  );
 }
 
 /** Draws a device centered at the origin in device units. Wrap in a transform to place/scale it. */
-export function Device({ type, href, clipId, product = true }: DeviceProps) {
+export function Device({ type, href, clipId, product = true, face = "screen" }: DeviceProps) {
+  if (face === "back" && ["laptop", "phone", "tablet"].includes(type)) return <DeviceBack type={type} product={product} />;
+  if (face === "side" && ["laptop", "phone", "tablet"].includes(type)) return <DeviceSide type={type} product={product} />;
   const def = DEVICE_DEFS[type];
   const s = def.screen;
   const B = def.body;

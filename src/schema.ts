@@ -13,7 +13,7 @@ const layoutOverride = {
     additionalProperties: false,
     properties: {
       dx: { type: "number" }, dy: { type: "number" }, scale: { type: "number", exclusiveMinimum: 0 },
-      rotate: { type: "number" }, hidden: { type: "boolean" }, z: { type: "number" },
+      rotate: { type: "number" }, hidden: { type: "boolean" }, z: { type: "number" }, layer: { enum: ["front", "back"] },
     },
   },
 };

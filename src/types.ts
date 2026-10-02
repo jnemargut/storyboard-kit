@@ -26,6 +26,8 @@ export interface LayoutOverride {
   hidden?: boolean;
   /** Layer order among people, devices and shapes (higher = in front). Set by the editor's Arrange buttons. */
   z?: number;
+  /** In front of the scene's furniture (a counter, a table) or behind it, whatever the place's default. */
+  layer?: "front" | "back";
 }
 
 export interface HeldDevice {

@@ -303,18 +303,27 @@ export function arrangeOps(b: Board, sel: Sel, to: Arrange): Op[] | undefined {
   const all = stackOrder(layoutPanel(b, p, () => undefined), p);
   const me = all.find((it) => it.id === id);
   if (!me) return undefined;
+  const zOp = (z: number): Op => ({ path: ["panels", pi, "layout", id, "z"], value: Math.round(z * 1000) / 1000 });
   const group = all.filter((it) => it.behind === me.behind);
   const i = group.indexOf(me);
   const zs = group.map((it) => it.z);
-  let z: number;
-  if (to === "front") { if (i === group.length - 1) return undefined; z = Math.max(...zs) + 1; }
-  else if (to === "back") { if (i === 0) return undefined; z = Math.min(...zs) - 1; }
-  else if (to === "forward") {
-    if (i === group.length - 1) return undefined;
-    z = i + 2 < group.length ? (zs[i + 1] + zs[i + 2]) / 2 : zs[i + 1] + 1;
-  } else {
-    if (i === 0) return undefined;
-    z = i - 2 >= 0 ? (zs[i - 1] + zs[i - 2]) / 2 : zs[i - 1] - 1;
+  const up = to === "front" || to === "forward";
+  const atEdge = up ? i === group.length - 1 : i === 0;
+  // "to front" means in front of everything, furniture included (and "to back" behind it)
+  const allTheWay = (to === "front" && me.behind) || (to === "back" && !me.behind);
+  if (atEdge || allTheWay) {
+    // already the top (or bottom) of its layer: people and devices can cross the scene's furniture (a seated
+    // person behind a table comes in front of it and of the laptop on it; a device goes behind the counter)
+    const crosses = (me.kind === "character" || me.kind === "device") && me.behind === up;
+    if (!crosses) return undefined;
+    const other = all.filter((it) => it.behind !== me.behind).map((it) => it.z);
+    const z = !other.length ? 0 : to === "front" ? Math.max(...other) + 1 : to === "back" ? Math.min(...other) - 1 : up ? Math.min(...other) - 1 : Math.max(...other) + 1;
+    return [{ path: ["panels", pi, "layout", id, "layer"], value: up ? "front" : "back" }, zOp(z)];
   }
-  return [{ path: ["panels", pi, "layout", id, "z"], value: Math.round(z * 1000) / 1000 }];
+  let z: number;
+  if (to === "front") z = Math.max(...zs) + 1;
+  else if (to === "back") z = Math.min(...zs) - 1;
+  else if (to === "forward") z = i + 2 < group.length ? (zs[i + 1] + zs[i + 2]) / 2 : zs[i + 1] + 1;
+  else z = i - 2 >= 0 ? (zs[i - 1] + zs[i - 2]) / 2 : zs[i - 1] - 1;
+  return [zOp(z)];
 }

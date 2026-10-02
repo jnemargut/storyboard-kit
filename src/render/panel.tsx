@@ -40,13 +40,13 @@ function CharEl({ c, pid, cam, layout }: { c: CharPlaced; pid: string; cam: { s:
   const hk = cam.s * k;
   const held = c.held && !hov.hidden ? (
     <g data-el={`${c.id}.device`} data-kind="device" data-drop={`char:${c.id}`}
-      transform={`translate(${c.held.cx + (hov.dx ?? 0) / hk} ${c.held.cy + (hov.dy ?? 0) / hk}) rotate(${c.held.rot + (hov.rotate ?? 0)}) scale(${c.held.scale * (hov.scale ?? 1)})`}>
-      <Device type={c.held.type} href={c.held.href} product={c.held.product} clipId={clip(pid, `${c.id}-held`)} />
+      transform={`translate(${c.held.cx + (hov.dx ?? 0) / hk} ${c.held.cy + (hov.dy ?? 0) / hk}) rotate(${c.held.rot + (hov.rotate ?? 0)}) scale(${c.held.scale * (hov.scale ?? 1) * (c.held.flip ? -1 : 1)} ${c.held.scale * (hov.scale ?? 1)})`}>
+      <Device type={c.held.type} href={c.held.href} product={c.held.product} face={c.held.face} clipId={clip(pid, `${c.id}-held`)} />
     </g>
   ) : undefined;
   return (
     <g data-el={c.id} data-kind="character" transform={`translate(${c.x + dx} ${c.y + dy}) rotate(${c.ov.rotate ?? 0}) scale(${k})`}>
-      <Character f={c.fig} cast={c.cast} mood={c.mood} held={held} chair={c.chair} />
+      <Character f={c.fig} cast={c.cast} mood={c.mood} held={held} heldFront={!!c.held?.front} chair={c.chair} />
     </g>
   );
 }
