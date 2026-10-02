@@ -346,8 +346,8 @@ export const PLACE_SCENES: Record<string, SceneDef> = {
     marks: {
       "end-left": { x: 60, y: FLOOR_Y, facing: "right", seated: true, behind: true, surface: 180 },
       "end-right": { x: 340, y: FLOOR_Y, facing: "left", seated: true, behind: true, surface: 180 },
-      "back-left": { x: 150, y: FLOOR_Y, facing: "right", seated: true, behind: true, surface: 180 },
-      "back-right": { x: 250, y: FLOOR_Y, facing: "left", seated: true, behind: true, surface: 180 },
+      "back-left": { x: 160, y: FLOOR_Y, facing: "right", seated: true, behind: true, surface: 180, angle: "front" },
+      "back-right": { x: 240, y: FLOOR_Y, facing: "left", seated: true, behind: true, surface: 180, angle: "front" },
       waiter: { x: 384, y: FLOOR_Y, facing: "left" },
     },
     order: ["end-left", "end-right", "back-left", "back-right", "waiter"],

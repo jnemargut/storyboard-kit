@@ -98,6 +98,9 @@ The point is to see the product from inside the customer's life, not to illustra
 - **Fill the journey lanes.** For each scene panel set \`feeling\` (-2 awful … 2 great) and, where people route
   around a gap, \`workaround\` ("asks the barista"). The designer can switch on \`page.lanes\` to show them, plus
   a feeling line across the whole journey, with teal marking the steps where the product shows up.
+- **Around a table**, people at the ends sit in profile and people across the table face you (marks like
+  \`table-back\`, \`back-left\`). To turn anyone seated toward the viewer, give them \`"angle": "front"\`. Chairs
+  are drawn for you wherever the scene has none.
 - Crowds: people in the same pose get automatic small variations. Set \`variant\` (1–3) only if asked.
 - A screen seen from the side (car dashboard, a TV across the room) can use \`"tilt": "left"\` or \`"right"\`.
 - **Give everyone a \`name\`** in \`cast\`. When two or more people appear, a who's-who row (face and name) shows

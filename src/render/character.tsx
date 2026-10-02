@@ -21,14 +21,14 @@ export interface CharacterProps {
   cast: CastMember;
   mood: Mood;
   held?: ReactNode;
-  /** Draw a simple stool when seated somewhere without furniture. */
-  stool?: boolean;
+  /** Draw a chair under someone seated where the scene has no seat. */
+  chair?: boolean;
   /** Skip one arm (e.g. over-the-shoulder shots redraw it reaching for the device). */
   hideArm?: "left" | "right";
 }
 
 /** Draws a character in local space (feet at 0,0). */
-export function Character({ f, cast, mood, held, stool, hideArm }: CharacterProps) {
+export function Character({ f, cast, mood, held, chair, hideArm }: CharacterProps) {
   const j = f.j;
   const skin = SKIN[cast.skin ?? "tone-2"];
   const outfit = cast.outfit ?? "jacket";
@@ -90,12 +90,27 @@ export function Character({ f, cast, mood, held, stool, hideArm }: CharacterProp
   const seatX = (j.hipL[0] + j.hipR[0]) / 2 + (side ? -2 * f.dir : 0);
   return (
     <g>
-      {stool && !acc.has("wheelchair") && (
-        <g>
-          <path d={`M${seatX - 15} ${hipY + 4} h30 v5 h-30 Z`} fill={C.g4} stroke={ink} strokeWidth={1.8} />
-          <path d={`M${seatX - 11} ${hipY + 9} L${seatX - 14} 0 M${seatX + 11} ${hipY + 9} L${seatX + 14} 0 M${seatX - 12} ${hipY / 2} h24`} stroke={ink} strokeWidth={1.8} fill="none" strokeLinecap="round" />
-        </g>
-      )}
+      {chair && !acc.has("wheelchair") && (() => {
+        // a plain chair: backrest behind the back, seat under the thighs, legs to the floor
+        const d = side ? f.dir : 1, back = seatX - d * 15, front = seatX + d * (side ? 19 : 15), top = hipY + 3;
+        if (!side) {
+          // from the front: the backrest shows behind the shoulders, the seat and four legs below
+          return (
+            <g>
+              <path d={`M${seatX - 17} ${top} V${top - 46} q0 -5 5 -5 h24 q5 0 5 5 V${top} Z`} fill={C.g4} stroke={ink} strokeWidth={1.8} strokeLinejoin="round" />
+              <path d={`M${seatX - 19} ${top} h38 v6 h-38 Z`} fill={C.g4} stroke={ink} strokeWidth={1.8} strokeLinejoin="round" />
+              <path d={`M${seatX - 16} ${top + 6} V0 M${seatX + 16} ${top + 6} V0`} stroke={ink} strokeWidth={2} fill="none" strokeLinecap="round" />
+            </g>
+          );
+        }
+        return (
+          <g>
+            <path d={`M${back - d * 4} ${top + 4} V${top - 40} q0 -4 ${d * 4} -4 V${top + 4} Z`} fill={C.g4} stroke={ink} strokeWidth={1.8} strokeLinejoin="round" />
+            <path d={`M${Math.min(back, front) - 2} ${top} H${Math.max(back, front) + 2} v6 H${Math.min(back, front) - 2} Z`} fill={C.g4} stroke={ink} strokeWidth={1.8} strokeLinejoin="round" />
+            <path d={`M${back - d * 1} ${top + 6} V0 M${front - d * 2} ${top + 6} V0`} stroke={ink} strokeWidth={2} fill="none" strokeLinecap="round" />
+          </g>
+        );
+      })()}
       {acc.has("wheelchair") && (side ? (
         <g>
           <circle cx={j.hipL[0] - 4 * f.dir} cy={-20} r={20} fill="none" stroke={ink} strokeWidth={2.4} />

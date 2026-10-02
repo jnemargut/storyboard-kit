@@ -223,8 +223,15 @@ export const SCENE_DECOR: Record<string, () => ReactNode> = {
       {[360, 367, 374, 382].map((x, i) => <Sh key={x} d={rect(x, 180 - [20, 16, 22, 18][i], 6, [20, 16, 22, 18][i])} fill={[C.g4, C.g5, C.g7, C.g2][i]} sw={1} />)}
       <circle cx={376} cy={138} r={10} fill={C.g1} stroke={ink} strokeWidth={1.5} /><L d="M366 138 h20 M376 128 q-6 10 0 20" sw={1} /><L d="M376 148 v2" sw={2} />
       <Frame x={296} y={92} w={32} h={38} kind="lines" />
-      <Sh d="M110 234 q-2 -16 10 -18 q12 2 10 18 Z" fill={C.g5} sw={1.4} />
-      <Sh d="M250 234 q-2 -14 9 -16 q11 2 9 16 Z" fill={C.g4} sw={1.4} />
+      {/* backpacks on the floor: body, front pocket, flap and a carry loop, so they don't read as rocks */}
+      {([[108, C.g5], [248, C.g4]] as const).map(([x, fill]) => (
+        <g key={x}>
+          <path d={`M${x + 6} 214 q5 -7 10 0`} fill="none" stroke={ink} strokeWidth={1.6} strokeLinecap="round" />
+          <Sh d={`M${x} 234 V220 q0 -7 7 -7 h8 q7 0 7 7 V234 Z`} fill={fill} sw={1.5} />
+          <Sh d={`M${x + 4} 234 v-8 h14 v8`} fill={C.g2} sw={1.2} />
+          <path d={`M${x} 222 q11 5 22 0`} fill="none" stroke={ink} strokeWidth={1.2} />
+        </g>
+      ))}
     </g>
   ),
 };

@@ -28,8 +28,8 @@ export interface CharPlaced {
   behind: boolean;
   held?: HeldPlacement;
   ov: LayoutOverride;
-  /** Seated pose at a mark with no furniture: draw a stool. */
-  stool: boolean;
+  /** Seated somewhere the scene draws no seat: draw a chair under them. */
+  chair: boolean;
 }
 
 export interface DevPlaced {
@@ -179,7 +179,9 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     // a seat mark sits people down only when no pose was chosen; an explicit "standing" stands
     if (mark.seated && !c.pose) pose = pose === "holding-phone" && heldDeviceOf(c)?.type !== "phone" ? "sitting-laptop" : "sitting";
     if (panel.scene === "car" && markName === "driver-seat" && !c.pose) pose = "driving";
-    const angle = c.angle ?? (pose === "walking" || pose === "driving" || mark.seated ? "side" : "three-quarter");
+    // sitting reads best in profile (from the front a seated body looks like a crouch)
+    const sits = pose === "sitting" || pose === "sitting-laptop" || pose === "driving";
+    const angle = c.angle ?? mark.angle ?? (pose === "walking" || sits || mark.seated ? "side" : "three-quarter");
     const facing = c.facing ?? mark.facing ?? "right";
     const fig = figure(pose, angle, facing, cast, c.variant ?? autoVariant(`${panel.id}:${id}`));
     const heldP = held ? holdPlacement(fig, held.type, pose, held.screen ? asset(held.screen) : undefined, held.product) : undefined;
@@ -194,7 +196,7 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
       id, who: c.who, cast, fig, mood: c.mood ?? "neutral", pose,
       x: mark.x, y: mark.y, s: CHAR_SCALE * (mark.scale ?? 1) * fig.scale, behind: !!mark.behind,
       held: heldP, ov: ovOf(panel, id),
-      stool: !!fig.j.seated && !mark.seated && panel.scene !== "car",
+      chair: !!fig.j.seated && (!mark.seated || !!mark.chair) && panel.scene !== "car",
     });
   });
 

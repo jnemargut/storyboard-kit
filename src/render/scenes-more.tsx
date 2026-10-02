@@ -135,8 +135,8 @@ export const MORE_SCENES: Record<string, SceneDef> = {
     ),
     front: () => <g>{table(120, 220, 188)}{table(260, 360, 196)}</g>,
     marks: {
-      desk: { x: 130, y: FLOOR_Y, facing: "right", seated: true, behind: true, surface: 188 },
-      "back-row": { x: 272, y: FLOOR_Y, facing: "right", seated: true, behind: true, surface: 196, scale: 0.96 },
+      desk: { x: 130, y: FLOOR_Y, facing: "right", seated: true, chair: true, behind: true, surface: 188 },
+      "back-row": { x: 272, y: FLOOR_Y, facing: "right", seated: true, chair: true, behind: true, surface: 196, scale: 0.96 },
       teacher: { x: 30, y: FLOOR_Y, facing: "right" },
       board: { x: 90, y: FLOOR_Y, facing: "left" },
     },

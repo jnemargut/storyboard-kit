@@ -46,7 +46,7 @@ function CharEl({ c, pid, cam, layout }: { c: CharPlaced; pid: string; cam: { s:
   ) : undefined;
   return (
     <g data-el={c.id} data-kind="character" transform={`translate(${c.x + dx} ${c.y + dy}) rotate(${c.ov.rotate ?? 0}) scale(${k})`}>
-      <Character f={c.fig} cast={c.cast} mood={c.mood} held={held} stool={c.stool} />
+      <Character f={c.fig} cast={c.cast} mood={c.mood} held={held} chair={c.chair} />
     </g>
   );
 }

@@ -19,6 +19,10 @@ export interface Mark {
   /** Top surface (tables/counters) where small devices sit. */
   surface?: number;
   scale?: number;
+  /** The scene draws no seat here: draw a chair under whoever sits at this mark. */
+  chair?: boolean;
+  /** Which way people here face by default: "front" for the far side of a table (the table hides their legs). */
+  angle?: "front" | "three-quarter" | "side";
 }
 
 export interface SceneDef {
@@ -103,7 +107,7 @@ const BASE_SCENES: Record<string, SceneDef> = {
     marks: {
       counter: { x: 232, y: FLOOR_Y, facing: "right" },
       fridge: { x: 96, y: FLOOR_Y, facing: "left" },
-      table: { x: 150, y: FLOOR_Y, facing: "right", seated: true, surface: 186 },
+      table: { x: 150, y: FLOOR_Y, facing: "right", seated: true, chair: true, surface: 186 },
     },
     order: ["counter", "table", "fridge"],
     spots: { phone: { x: 200, y: 181 }, tablet: { x: 200, y: 172 }, "smart-speaker": { x: 330, y: 158 }, laptop: { x: 193, y: 166 } },

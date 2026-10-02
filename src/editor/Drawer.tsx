@@ -187,7 +187,7 @@ function PoseThumb({ pose, cast }: { pose: Pose; cast: CastMember }) {
   const f = figure(pose, pose === "walking" || pose === "driving" ? "side" : "three-quarter", "right", cast);
   return (
     <svg width={56} height={72} viewBox="-40 -136 80 144">
-      <Character f={f} cast={cast} mood="neutral" stool={!!f.j.seated} />
+      <Character f={f} cast={cast} mood="neutral" chair={!!f.j.seated} />
     </svg>
   );
 }

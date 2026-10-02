@@ -12,7 +12,7 @@ Field: panel `scene`
 - `bedroom`: Bed, nightstand, window at night or morning. Marks: bed, nightstand, door. Marks: `bed`, `nightstand`, `door`.
 - `office`: A desk in an office: cubicle divider with notes, office chair, the city through the window, the next row of desks behind. A desktop or laptop sits on the desk. Marks: chair (seated at the desk), desk (standing by it), window, door. Marks: `desk`, `chair`, `window`, `door`.
 - `open-office`: Open-plan office: two desks in a row, coworkers' monitors over a divider behind, big windows. Marks: desk, desk-2 (both seated), aisle, window. Marks: `desk`, `desk-2`, `aisle`, `window`.
-- `meeting-room`: Long table with chairs, whiteboard, a screen on the wall (dark until the product shows on it). Marks: table-left, table-right (seated), whiteboard, screen. Marks: `table-left`, `table-right`, `whiteboard`, `screen`.
+- `meeting-room`: Long table with chairs, whiteboard, a screen on the wall (dark until the product shows on it). Marks: table-left, table-right (seated at the ends, in profile), table-back (seated across the table, facing you), whiteboard, screen. Marks: `table-left`, `table-right`, `table-back`, `whiteboard`, `screen`.
 - `break-room`: Office kitchen: coffee machine, microwave, fridge, notice board, a high table. Marks: counter, coffee, table (seated), fridge. Marks: `counter`, `coffee`, `table`, `fridge`.
 - `reception`: Office reception: front desk with the company name on the wall, visitor sofa, entry gates. Marks: desk, receptionist (behind the desk), waiting (seated), gates. Marks: `desk`, `receptionist`, `waiting`, `gates`.
 - `front-door`: A house's front door from the porch: doorbell, a parcel on the step, a porch light. Marks: porch, doorway, path, parcel. Marks: `porch`, `doorway`, `path`, `parcel`.
@@ -21,8 +21,8 @@ Field: panel `scene`
 - `warehouse`: Warehouse aisle: tall racks of boxes, a pallet, a packing table. Marks: aisle, rack, packing, dock. Marks: `aisle`, `rack`, `packing`, `dock`.
 - `train-platform`: Train platform: the train with open doors, a departures board, a bench. Marks: platform, doors, bench (seated), edge. Marks: `platform`, `doors`, `bench`, `edge`.
 - `elevator`: Inside an elevator: back wall with a handrail, the button panel and floor display. Marks: left, center, right, panel. A screen on the wall is a tablet or tv. Marks: `left`, `center`, `right`, `panel`.
-- `restaurant-group`: Restaurant table for four: two at the ends, two on the booth behind. Marks: end-left, end-right, back-left, back-right (all seated), waiter. Marks: `end-left`, `end-right`, `back-left`, `back-right`, `waiter`.
-- `coworking`: Coworking space: shared table, brick wall, pendant lights, a phone booth. Marks: table-left, table-right (seated), standing, booth. Marks: `table-left`, `table-right`, `standing`, `booth`.
+- `restaurant-group`: Restaurant table for four: two at the ends, two on the booth behind, facing you. Marks: end-left, end-right, back-left, back-right (all seated), waiter. Marks: `end-left`, `end-right`, `back-left`, `back-right`, `waiter`.
+- `coworking`: Coworking space: shared table, brick wall, pendant lights, a phone booth. Marks: table-left, table-right (seated at the ends, in profile), table-back (seated across the table, facing you), standing, booth. Marks: `table-left`, `table-right`, `table-back`, `standing`, `booth`.
 - `car`: Car interior from the side: seat, wheel, dashboard display. Marks: driver-seat, passenger-seat, dashboard. Marks: `driver-seat`, `passenger-seat`, `dashboard`.
 - `street`: Sidewalk, storefronts, lamp post, curb. Marks: sidewalk, curb, storefront, crossing. Marks: `sidewalk`, `curb`, `storefront`, `crossing`.
 - `transit`: Bus or train interior: seats, pole, windows. Marks: seat, standing, door. Marks: `seat`, `standing`, `door`.

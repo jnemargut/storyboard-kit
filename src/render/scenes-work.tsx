@@ -205,8 +205,6 @@ export const WORK_SCENES: Record<string, SceneDef> = {
         <Sh d={rect(250, 48, 100, 62)} fill={C.g7} />
         <L d="M300 110 v8 M290 118 h20" sw={2} />
         <Clock x={376} y={40} r={10} />
-        {/* chair backs on the far side of the table */}
-        {[150, 192, 234, 276].map((x) => <Sh key={x} d={`M${x - 12} 182 v-28 q0 -8 8 -8 h8 q8 0 8 8 v28 Z`} fill={C.g4} sw={1.5} />)}
       </g>
     ),
     front: () => (
@@ -220,12 +218,13 @@ export const WORK_SCENES: Record<string, SceneDef> = {
       </g>
     ),
     marks: {
-      "table-left": { x: 112, y: FLOOR_Y, facing: "right", seated: true, behind: true, surface: 182 },
-      "table-right": { x: 338, y: FLOOR_Y, facing: "left", seated: true, behind: true, surface: 182 },
+      "table-left": { x: 112, y: FLOOR_Y, facing: "right", seated: true, chair: true, behind: true, surface: 182 },
+      "table-right": { x: 338, y: FLOOR_Y, facing: "left", seated: true, chair: true, behind: true, surface: 182 },
+      "table-back": { x: 236, y: FLOOR_Y, facing: "right", seated: true, chair: true, behind: true, surface: 182, angle: "front" },
       whiteboard: { x: 44, y: FLOOR_Y, facing: "right" },
       screen: { x: 300, y: 79 },
     },
-    order: ["table-left", "table-right", "whiteboard"],
+    order: ["table-left", "table-right", "table-back", "whiteboard"],
     spots: {
       tv: { x: 300, y: 79, wall: true, scale: 0.56 },
       laptop: { x: 196, y: on(182, H.laptop) },
@@ -385,12 +384,13 @@ export const WORK_SCENES: Record<string, SceneDef> = {
       </g>
     ),
     marks: {
-      "table-left": { x: 52, y: FLOOR_Y, facing: "right", seated: true, behind: true, surface: 180 },
-      "table-right": { x: 292, y: FLOOR_Y, facing: "left", seated: true, behind: true, surface: 180 },
+      "table-left": { x: 52, y: FLOOR_Y, facing: "right", seated: true, chair: true, behind: true, surface: 180 },
+      "table-right": { x: 292, y: FLOOR_Y, facing: "left", seated: true, chair: true, behind: true, surface: 180 },
+      "table-back": { x: 196, y: FLOOR_Y, facing: "right", seated: true, chair: true, behind: true, surface: 180, angle: "front" },
       booth: { x: 348, y: FLOOR_Y, facing: "left" },
       standing: { x: 172, y: FLOOR_Y, facing: "right" },
     },
-    order: ["table-left", "table-right", "standing", "booth"],
+    order: ["table-left", "table-right", "table-back", "standing", "booth"],
     spots: {
       laptop: { x: 128, y: on(180, H.laptop) },
       phone: { x: 220, y: on(180, H.phone) },
