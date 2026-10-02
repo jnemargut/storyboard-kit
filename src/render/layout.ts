@@ -173,9 +173,23 @@ function placeHeld(fig: Figure, type: DeviceType, pose: string, href: string | u
     const h = DEVICE_DEFS[type].h * sc;
     return { type, href, product, cx: j.hdR[0] + (fig.view === "side" ? 3 * fig.dir : 2), cy: j.hdR[1] + h * 0.3, scale: sc, rot: 0, face: fig.view === "side" ? "back" : "side" };
   }
-  const rot = fig.view === "side" ? (type === "tablet" ? -28 : -18) * fig.dir : fig.view === "back" ? 4 : -8;
-  // from the side a tablet sits out in front of the hand, clear of the face
-  if (fig.view === "side" && type === "tablet") return { type, href, product, cx: j.hdR[0] + 9 * fig.dir, cy: j.hdR[1] - 3, scale: sc, rot };
+  const atChest = j.hdR[1] > j.shR[1] - 4;
+  // from the side, held at chest height, it tips away from the face (screen up toward the eyes) and its lower
+  // end sits in the hand, so it never hovers
+  if (fig.view === "side" && atChest && (type === "tablet" || type === "phone")) {
+    const tilt = (type === "tablet" ? 30 : 16) * fig.dir, a = (tilt * Math.PI) / 180;
+    const half = (DEVICE_DEFS[type].h * sc) / 2, grip = half * 0.72;
+    return { type, href, product, cx: j.hdR[0] + Math.sin(a) * grip + 1 * fig.dir, cy: j.hdR[1] - Math.cos(a) * grip, scale: sc, rot: tilt };
+  }
+  // facing us (or turned a little), a tablet is held low on the chest in both hands, clear of the face
+  if (fig.view !== "side" && fig.view !== "back" && type === "tablet" && atChest && Math.abs(j.hdR[0]) < 24) {
+    const cx = (j.shL[0] + j.shR[0]) / 2 + 1, cy = j.shR[1] + 27;
+    const half = (DEVICE_DEFS.tablet.h * sc) / 2;
+    j.hdL = [cx - 11, cy + half - 3]; j.hdR = [cx + 11, cy + half - 3];
+    j.elL = [j.shL[0] - 5, j.shL[1] + 21]; j.elR = [j.shR[0] + 5, j.shR[1] + 21];
+    return { type, href, product, cx, cy, scale: sc, rot: -3 };
+  }
+  const rot = fig.view === "side" ? -18 * fig.dir : fig.view === "back" ? 4 : -8;
   const up = type === "phone" ? 6 : 8;
   return { type, href, product, cx: j.hdR[0] + (fig.view === "side" ? 2 * fig.dir : 0), cy: j.hdR[1] - up, scale: sc, rot };
 }

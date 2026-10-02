@@ -6,7 +6,7 @@ You tell Claude Code (or Codex) what someone's day looks like. It sketches a sto
 little editor until it feels true. Then you drop it in your deck and the room starts talking about the person's
 whole day, not just the screens.
 
-![Storyboard Kit sizzle reel](docs/sizzle-c56c9e0.gif)
+![Storyboard Kit sizzle reel](docs/sizzle-9d88c89.gif)
 
 ## Why though
 
@@ -17,7 +17,7 @@ Storyboard Kit draws all of that in a scrappy marker style where **only your pro
 Everything else is gray, so your product sits inside the rest of someone's life instead of at the center of it.
 You see what comes before it, what happens around it, and where people quietly work around it.
 
-![The Late Latte, an example storyboard](docs/late-latte-32f745a.png)
+![The Late Latte, an example storyboard](docs/late-latte-caaacad.png)
 
 ## Why storyboard at all?
 
@@ -47,7 +47,7 @@ A storyboard helps you:
 I built this tool on a Mac, posted about it from the same Mac, and figured designers would love it. Then I
 storyboarded what actually happened next:
 
-![Posting the Tool and Hoping Folks Use It](docs/why-storyboard-338ad44.png)
+![Posting the Tool and Hoping Folks Use It](docs/why-storyboard-404bec5.png)
 
 Built on a big screen, read on a small one. People skimmed it on the train, couldn't try it from their phone,
 and quietly bookmarked it forever. The launch post showed features, but never the moment in someone's day
@@ -131,7 +131,7 @@ kit, [Wireframe Kit](https://github.com/jnemargut/wireframe-kit) (`/wireframe`),
 "device": { "type": "phone", "screen": "./order-ahead.wireframe.json#status" }
 ```
 
-![A storyboard using real wireframe screens](docs/in-a-storyboard-057c8d8.png)
+![A storyboard using real wireframe screens](docs/in-a-storyboard-0e262d3.png)
 
 Change the wireframe and the storyboard catches up on its own. No Wireframe Kit installed? The screen PNG it
 renders next to the file still works.
@@ -173,7 +173,7 @@ or off (`"page": { "legend": { "cast": false } }`, or `"legend": false` to hide 
 
 **Play mode**
 
-![Play mode with sharpie markup](docs/play-cd0becc.png)
+![Play mode with sharpie markup](docs/play-283ce4d.png)
 
 Hit **▶ Play** (or P) to present the board one step at a time, with a big pointer the room can follow.
 

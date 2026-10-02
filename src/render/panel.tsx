@@ -120,20 +120,30 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
     const ox = ov.dx ?? 0, oy = ov.dy ?? 0;
     const hx = g.head!.x + ox, hy = g.head!.y + oy, R = g.head!.r * k;
     const r0 = c.fig.headR;
-    // broad shoulders and the top of the back, running out of the frame (not the little rig torso, scaled up)
-    const top = hy + R * 0.82;
-    // sloping from the neck out to rounded shoulder tips, then straight down out of the frame
-    const shoulders = `M${hx - R * 2.9} ${PANEL_H + 20} L${hx - R * 2.75} ${top + R * 0.95} Q${hx - R * 2.55} ${top + R * 0.12} ${hx - R * 1.5} ${top + R * 0.02} Q${hx - R * 0.6} ${top - R * 0.12} ${hx} ${top - R * 0.12} Q${hx + R * 0.6} ${top - R * 0.12} ${hx + R * 1.5} ${top + R * 0.02} Q${hx + R * 2.55} ${top + R * 0.12} ${hx + R * 2.75} ${top + R * 0.95} L${hx + R * 2.9} ${PANEL_H + 20} Z`;
-    const neck = `M${hx - R * 0.38} ${hy + R * 0.5} V${top + 4} H${hx + R * 0.38} V${hy + R * 0.5} Z`;
-    // forearms come forward from the far side of the body, up to the device: one hand on a phone, both on keys
+    // shoulders slope down from the neck to rounded tips, then the upper arms fall straight out of the frame:
+    // a person seen from behind, not a wide flat slab (which reads as a chair back)
+    const top = hy + R * 0.86;
+    const W = R * 1.95;
+    const shoulders = `M${hx - W - 4} ${PANEL_H + 20} L${hx - W} ${top + R * 0.75} Q${hx - W} ${top + R * 0.32} ${hx - W * 0.62} ${top + R * 0.2} Q${hx - R * 0.42} ${top + R * 0.1} ${hx - R * 0.32} ${top - R * 0.02} H${hx + R * 0.32} Q${hx + R * 0.42} ${top + R * 0.1} ${hx + W * 0.62} ${top + R * 0.2} Q${hx + W} ${top + R * 0.32} ${hx + W} ${top + R * 0.75} L${hx + W + 4} ${PANEL_H + 20} Z`;
+    const neck = `M${hx - R * 0.34} ${hy + R * 0.5} V${top + 6} H${hx + R * 0.34} V${hy + R * 0.5} Z`;
+    // upper arm creases, so the shoulders read as shoulders
+    const creases = `M${hx - W * 0.7} ${top + R * 0.55} q-3 ${R * 0.5} -2 ${R}` + ` M${hx + W * 0.7} ${top + R * 0.55} q3 ${R * 0.5} 2 ${R}`;
+    // a phone is held up in one hand; at a laptop or desktop the hands are on the keys, below and in front of the screen
     const deskTop = g.deskTop;
-    const keys: Pt[] = deskTop === undefined ? [] : devType === "desktop" ? [[dcx - 34, deskTop + 14], [dcx + 30, deskTop + 14]] : [[dcx - 30 * ds, deskTop + 7], [dcx + 22 * ds, deskTop + 7]];
     const holdP: Pt = [dcx - dw * 0.42, dcy + dh * 0.86];
-    const forearm = (to: Pt, from: Pt) => arm(from, to, 22);
+    const forearm = (to: Pt, from: Pt) => arm(from, to, 20);
+    const mitt = (p: Pt) => <ellipse cx={p[0]} cy={p[1]} rx={11} ry={7} fill={skin} stroke={ink} strokeWidth={2} />;
+    // the keyboard deck of a laptop (or the keyboard in front of a monitor), seen from just behind and above
+    const deck = deskTop !== undefined && (devType === "laptop"
+      ? <path d={`M${dcx - 66 * ds} ${deskTop - 2} L${dcx + 66 * ds} ${deskTop - 2} L${dcx + 76 * ds} ${deskTop + 22} L${dcx - 76 * ds} ${deskTop + 22} Z`} fill={C.g4} stroke={ink} strokeWidth={2.2} strokeLinejoin="round" />
+      : devType === "desktop" ? <path d={`M${dcx - 64} ${deskTop + 24} l8 -14 h112 l8 14 Z`} fill={C.paper} stroke={ink} strokeWidth={2} strokeLinejoin="round" /> : null);
+    const keyY = deskTop === undefined ? 0 : devType === "laptop" ? deskTop + 13 : deskTop + 18;
+    const keys: Pt[] = deck ? [[dcx - 24, keyY], [dcx + 26, keyY]] : [];
+    const bodyR = hx + W - 6; // forearms come forward from the near side of the body
     const person = (
       <g data-el={c.id} data-kind="character">
         <path d={shoulders} fill={sleeve} stroke={ink} strokeWidth={2.4} strokeLinejoin="round" />
-        <path d={`M${hx - R * 0.6} ${top + 2} Q${hx} ${top + R * 0.35} ${hx + R * 0.6} ${top + 2}`} fill="none" stroke={ink} strokeWidth={1.6} strokeLinecap="round" opacity={0.6} />
+        <path d={creases} fill="none" stroke={ink} strokeWidth={1.5} strokeLinecap="round" opacity={0.55} />
         <path d={neck} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" />
         <g transform={`translate(${hx} ${hy}) scale(${R / r0}) translate(${-c.fig.j.head[0]} ${-c.fig.j.head[1]})`}>
           {hairBack(c.cast, c.fig, c.fig.j.head[0], c.fig.j.head[1], r0)}
@@ -141,17 +151,16 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
         </g>
       </g>
     );
-    const keyboard = devType === "desktop" && deskTop !== undefined && <path d={`M${dcx - 66} ${deskTop + 22} l8 -12 h116 l8 12 Z`} fill={C.paper} stroke={ink} strokeWidth={2} strokeLinejoin="round" />;
     return (
       <g>
         {desk}
         {device}
-        {keyboard}
+        {deck}
         {owner && (handheld || keys.length > 0) && (
           <g data-el={c.id} data-kind="character">
             {handheld
-              ? <>{forearm(holdP, [hx + R * 2.3, PANEL_H + 30])}<path d={`M${holdP[0] - 12} ${holdP[1] + 10} Q${holdP[0] - 14} ${holdP[1] - 8} ${holdP[0] - 2} ${holdP[1] - 12} Q${holdP[0] + 10} ${holdP[1] - 12} ${holdP[0] + 11} ${holdP[1] + 2} Q${holdP[0] + 8} ${holdP[1] + 14} ${holdP[0] - 12} ${holdP[1] + 10} Z`} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" /></>
-              : keys.map((p, i) => <g key={i}>{forearm(p, [hx + R * (i ? 2.5 : 1.7), PANEL_H + 30])}{hand(p, 10)}</g>)}
+              ? <>{forearm(holdP, [bodyR - 4, PANEL_H + 30])}<path d={`M${holdP[0] - 12} ${holdP[1] + 10} Q${holdP[0] - 14} ${holdP[1] - 8} ${holdP[0] - 2} ${holdP[1] - 12} Q${holdP[0] + 10} ${holdP[1] - 12} ${holdP[0] + 11} ${holdP[1] + 2} Q${holdP[0] + 8} ${holdP[1] + 14} ${holdP[0] - 12} ${holdP[1] + 10} Z`} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" /></>
+              : keys.map((p, i) => <g key={i}>{forearm(p, [i ? bodyR + 10 : hx + W * 0.35, PANEL_H + 30])}{mitt(p)}</g>)}
           </g>
         )}
         {person}
