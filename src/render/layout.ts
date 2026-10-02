@@ -481,9 +481,9 @@ export function specialGeometry(sp: NonNullable<Special>) {
     const deskTop = held ? undefined : 206;
     let ds: number, dcx: number, dcy: number;
     // a held phone or tablet is just past the near shoulder, its lower corner tucked behind it
-    if (held) { ds = Math.min((devType === "tablet" ? 160 : 136) / def.h, 140 / def.w); dcx = devType === "tablet" ? 236 : 222; dcy = devType === "tablet" ? 150 : 158; }
-    else if (devType === "laptop") { ds = 1.2; dcx = 262; dcy = deskTop! + 4 + 2 * ds; }
-    else if (devType === "desktop") { ds = 1.25; dcx = 268; dcy = deskTop! - 4 - 56 * ds; }
+    if (held) { ds = Math.min((devType === "tablet" ? 160 : 136) / def.h, 140 / def.w); dcx = devType === "tablet" ? 226 : 210; dcy = devType === "tablet" ? 160 : 172; }
+    else if (devType === "laptop") { ds = 1.2; dcx = 218; dcy = deskTop! + 1 + 2 * ds; }
+    else if (devType === "desktop") { ds = 1.25; dcx = 239; dcy = deskTop! - 56 * ds; }
     else { ds = Math.min(190 / def.w, 170 / def.h); dcx = 268; dcy = 112; }
     const screen = def.screen ? { x: dcx + def.screen.x * ds, y: dcy + def.screen.y * ds, w: def.screen.w * ds, h: def.screen.h * ds } : undefined;
     return {

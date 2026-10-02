@@ -100,7 +100,7 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
   );
   const hand = (p: Pt, r: number) => <circle cx={p[0]} cy={p[1]} r={r} fill={skin} stroke={ink} strokeWidth={2} />;
   const device = devType && (
-    <g data-el={`${devId}.screen`} data-kind="device" data-drop={owner ? `char:${owner.id}` : `device:${devId}`} transform={`translate(${dcx} ${dcy}) rotate(${devOv.rotate ?? (sp.kind === "ots" ? 4 : 0)}) scale(${ds})`}>
+    <g data-el={`${devId}.screen`} data-kind="device" data-drop={owner ? `char:${owner.id}` : `device:${devId}`} transform={`translate(${dcx} ${dcy}) rotate(${devOv.rotate ?? (sp.kind === "ots" && handheld ? 4 : 0)}) scale(${ds})`}>
       <Device type={devType} href={href} product={product} clipId={clip(pid, `${devId}-big`)} />
     </g>
   );
