@@ -398,7 +398,7 @@ function Headphones({ f, hx, hy, r, big }: { f: Figure; hx: number; hy: number; 
 }
 
 /** Head circle (or a face framed by a hijab), features, facial hair, hair, glasses, headphones, emanata. */
-export function HeadFront({ f, cast, mood, hx, hy, r, skin }: { f: Figure; cast: CastMember; mood: Mood; hx: number; hy: number; r: number; skin: string }) {
+export function HeadFront({ f, cast, mood, hx, hy, r, skin, markSide }: { f: Figure; cast: CastMember; mood: Mood; hx: number; hy: number; r: number; skin: string; /** Which side mood marks go (1 right, -1 left), when something sits on the usual side. */ markSide?: number }) {
   const acc = new Set(cast.accessories ?? []);
   const side = f.view === "side";
   const back = f.view === "back";
@@ -421,7 +421,7 @@ export function HeadFront({ f, cast, mood, hx, hy, r, skin }: { f: Figure; cast:
         : <g {...line(1.6)}>{[-1, 1].map((k) => <circle key={k} cx={hx + (f.angle === "three-quarter" ? 0.28 * r * f.dir : 0) + k * (f.angle === "three-quarter" ? 0.3 : 0.37) * r} cy={hy + 0.05 * r} r={0.3 * r} />)}</g>)}
       {acc.has("headphones") && <Headphones f={f} hx={hx} hy={hy} r={r} big={cast.hair === "afro" || cast.hair === "curly"} />}
       <Hat cast={cast} f={f} hx={hx} hy={hy} r={r} />
-      {emanata(mood, hx, hy, r, back ? 1 : d, headExtent(cast, f))}
+      {emanata(mood, hx, hy, r, markSide ?? (back ? 1 : d), headExtent(cast, f))}
     </g>
   );
 }

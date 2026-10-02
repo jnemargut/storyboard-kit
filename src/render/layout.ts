@@ -480,7 +480,8 @@ export function specialGeometry(sp: NonNullable<Special>) {
     // the desk's far edge; a laptop's hinge sits just in front of it, a monitor's stand on it
     const deskTop = held ? undefined : 206;
     let ds: number, dcx: number, dcy: number;
-    if (held) { ds = Math.min((devType === "tablet" ? 160 : 136) / def.h, 140 / def.w); dcx = 252; dcy = 124; }
+    // a held phone or tablet is just past the near shoulder, its lower corner tucked behind it
+    if (held) { ds = Math.min((devType === "tablet" ? 160 : 136) / def.h, 140 / def.w); dcx = devType === "tablet" ? 236 : 222; dcy = devType === "tablet" ? 150 : 158; }
     else if (devType === "laptop") { ds = 1.2; dcx = 262; dcy = deskTop! + 4 + 2 * ds; }
     else if (devType === "desktop") { ds = 1.25; dcx = 268; dcy = deskTop! - 4 - 56 * ds; }
     else { ds = Math.min(190 / def.w, 170 / def.h); dcx = 268; dcy = 112; }

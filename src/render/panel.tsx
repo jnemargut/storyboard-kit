@@ -128,13 +128,11 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
     const neck = `M${hx - R * 0.34} ${hy + R * 0.5} V${top + 6} H${hx + R * 0.34} V${hy + R * 0.5} Z`;
     // upper arm creases, so the shoulders read as shoulders
     const creases = `M${hx - W * 0.7} ${top + R * 0.55} q-3 ${R * 0.5} -2 ${R}` + ` M${hx + W * 0.7} ${top + R * 0.55} q3 ${R * 0.5} 2 ${R}`;
-    // forearms come out of the body at the shoulder (the upper arm is hidden behind it) and reach a short way
-    // forward: one hand on a phone, both on the keys of a laptop or keyboard
+    // seen from behind, the arms are hidden by the body: only a hand shows, on the device, tucked behind the shoulder
     const deskTop = g.deskTop;
-    const forearm = (from: Pt, to: Pt) => arm(from, to, 19);
     const mitt = (p: Pt) => <ellipse cx={p[0]} cy={p[1]} rx={10} ry={6.5} fill={skin} stroke={ink} strokeWidth={2} />;
-    const nearSh: Pt = [hx + W - 6, top + R * 0.62], farSh: Pt = [hx + W * 0.3, top + R * 0.5];
-    const holdP: Pt = [dcx - dw * 0.5 + 6, dcy + dh * 0.82];
+    // the hand on the phone's lower edge, half hidden by the shoulder in front of it
+    const holdP: Pt = [dcx - dw + 10, dcy + dh - 18];
     const otsDesk = deskTop !== undefined && (
       <g pointerEvents="none">
         <path d={`M-10 ${deskTop} H${PANEL_W + 10} V${PANEL_H + 10} H-10 Z`} fill={C.g2} stroke={ink} strokeWidth={2.2} strokeLinejoin="round" />
@@ -152,7 +150,8 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
       <path d={`M${dcx - 58} ${deskTop + 24} l7 -14 h102 l7 14 Z`} fill={C.paper} stroke={ink} strokeWidth={2} strokeLinejoin="round" />
     ) : null;
     const keyY = devType === "laptop" ? hinge + 16 : (deskTop ?? 0) + 18;
-    const keys: Pt[] = deck ? [[dcx - 26, keyY], [dcx + 24, keyY]] : [];
+    // one hand on the keys, right at the body's edge (the other is hidden behind it)
+    const keys: Pt[] = deck ? [[hx + W + 10, keyY]] : [];
     const person = (
       <g data-el={c.id} data-kind="character">
         <path d={shoulders} fill={sleeve} stroke={ink} strokeWidth={2.4} strokeLinejoin="round" />
@@ -160,7 +159,7 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
         <path d={neck} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" />
         <g transform={`translate(${hx} ${hy}) scale(${R / r0}) translate(${-c.fig.j.head[0]} ${-c.fig.j.head[1]})`}>
           {hairBack(c.cast, c.fig, c.fig.j.head[0], c.fig.j.head[1], r0)}
-          <HeadFront f={c.fig} cast={c.cast} mood={c.mood} hx={c.fig.j.head[0]} hy={c.fig.j.head[1]} r={r0} skin={skin} />
+          <HeadFront f={c.fig} cast={c.cast} mood={c.mood} hx={c.fig.j.head[0]} hy={c.fig.j.head[1]} r={r0} skin={skin} markSide={-1} />
         </g>
       </g>
     );
@@ -172,8 +171,8 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
         {owner && (handheld || keys.length > 0) && (
           <g data-el={c.id} data-kind="character">
             {handheld
-              ? <>{forearm(nearSh, holdP)}<path d={`M${holdP[0] - 12} ${holdP[1] + 10} Q${holdP[0] - 14} ${holdP[1] - 8} ${holdP[0] - 2} ${holdP[1] - 12} Q${holdP[0] + 10} ${holdP[1] - 12} ${holdP[0] + 11} ${holdP[1] + 2} Q${holdP[0] + 8} ${holdP[1] + 14} ${holdP[0] - 12} ${holdP[1] + 10} Z`} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" /></>
-              : keys.map((p, i) => <g key={i}>{forearm(i ? nearSh : farSh, p)}{mitt(p)}</g>)}
+              ? <><path d={`M${holdP[0] - 12} ${holdP[1] + 10} Q${holdP[0] - 14} ${holdP[1] - 8} ${holdP[0] - 2} ${holdP[1] - 12} Q${holdP[0] + 10} ${holdP[1] - 12} ${holdP[0] + 11} ${holdP[1] + 2} Q${holdP[0] + 8} ${holdP[1] + 14} ${holdP[0] - 12} ${holdP[1] + 10} Z`} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" /></>
+              : keys.map((p, i) => <g key={i}>{mitt(p)}</g>)}
           </g>
         )}
         {person}
