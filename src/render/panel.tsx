@@ -322,7 +322,7 @@ function CardBody({ panel, ts }: { panel: Panel; ts: number }) {
     const lines = wrap(panel.text.toUpperCase(), tsz, 350, ADV_TITLE);
     return (
       <>
-        <g data-el="icon" data-kind="text" transform={`${shift("icon")} translate(200 96) scale(${ov("icon").scale ?? 1}) translate(-200 -96)`}><TimeIcon icon={panel.icon} x={200} y={96} /></g>
+        {ov("icon").hidden ? null : <g data-el="icon" data-kind="text" transform={`${shift("icon")} translate(200 96) scale(${ov("icon").scale ?? 1}) translate(-200 -96)`}><TimeIcon icon={panel.icon} x={200} y={96} /></g>}
         <g data-el="text" data-kind="text" transform={shift("text")}>
           <text textAnchor="middle" fontFamily={FONT.title} fontSize={tsz} fill={ink}>{richLines(panel.text.toUpperCase(), lines, ink, tsz).map((l, i) => <tspan key={i} x={200} y={150 + tsz * 0.85 + i * tsz * 1.15}>{l}</tspan>)}</text>
         </g>

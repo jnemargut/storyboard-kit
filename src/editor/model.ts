@@ -57,7 +57,25 @@ export function removeOps(b: Board, sel: Sel): Op[] {
   if (sel.kind === "caption") return [{ path: ["panels", pi, "caption"], delete: true }, ...resetLayoutOps(pi, "caption")];
   const loc = locate(p, sel.el);
   if (!loc) return [];
-  return [...resetLayoutOps(pi, sel.el), { path: ["panels", pi, loc.key, loc.index], delete: true }];
+  return [...resetLayoutOps(pi, sel.el), ...dependentOps(p as ScenePanel, pi, loc, sel.el), { path: ["panels", pi, loc.key, loc.index], delete: true }];
+}
+
+/**
+ * When a person or a device goes, so does what points at them: that person's bubbles, gestures on them or on
+ * the device, and callout arrows aimed at them (the callout stays, without its arrow). Keeps the file valid.
+ */
+function dependentOps(p: ScenePanel, pi: number, loc: { key: ArrKey; index: number }, el: string): Op[] {
+  if (loc.key !== "characters" && loc.key !== "devices") return [];
+  const id = el.replace(/\.(device|screen)$/, "");
+  const ops: Op[] = [];
+  const drop = (key: "bubbles" | "gestures", hit: (x: Record<string, unknown>) => boolean) => {
+    const arr = (p[key] ?? []) as unknown as Record<string, unknown>[];
+    for (let i = arr.length - 1; i >= 0; i--) if (hit(arr[i])) ops.push({ path: ["panels", pi, key, i], delete: true });
+  };
+  if (loc.key === "characters") drop("bubbles", (b) => b.from === id);
+  drop("gestures", (g) => g.on === id);
+  (p.callouts ?? []).forEach((c, i) => { if (c.target === id) ops.push({ path: ["panels", pi, "callouts", i, "target"], delete: true }); });
+  return ops;
 }
 
 export function addToPanelOps(b: Board, pi: number, what: { key: ArrKey; item: CharacterInPanel | Bubble | Gesture | SceneDevice | { text: string } }): Op[] {
@@ -238,9 +256,30 @@ export function deleteOps(b: Board, sel: Sel): { ops: Op[]; keepSelection?: bool
     if (loc?.key === "callouts") ops.push({ path: ["panels", pi, "callouts", loc.index, "target"], delete: true });
     return { ops };
   }
+  // a title or time card's words: the subtitle and icon go; the main line is emptied (the card stays)
+  if (sel.kind === "text" && (p.type === "title" || p.type === "time")) {
+    const key = sel.el === "title" ? "title" : sel.el === "text" ? "text" : sel.el;
+    if (key === "subtitle") return p.type === "title" && p.subtitle ? { ops: [{ path: ["panels", pi, key], delete: true }, ...resetLayoutOps(pi, sel.el)] } : undefined;
+    // a time card always draws an icon (a clock by default), so deleting it hides it
+    if (key === "icon") return { ops: [...resetLayoutOps(pi, "icon"), { path: ["panels", pi, "layout", "icon", "hidden"], value: true }] };
+    if (key === "title" || key === "text") return { ops: [{ path: ["panels", pi, key], value: "" }] };
+    return undefined;
+  }
   if (/\.(device|screen)$/.test(sel.el)) {
     const loc = locate(p, sel.el);
-    if (loc?.key === "characters") return { ops: [{ path: ["panels", pi, "characters", loc.index, "device"], delete: true }, ...resetLayoutOps(pi, sel.el)] };
+    if (loc?.key === "characters") {
+      // a phone pose draws a phone even with no device listed, so the pose goes too (back to standing, or sitting at a seat)
+      const c = (p as ScenePanel).characters![loc.index];
+      const phonePose = c.pose === "holding-phone" || c.pose === "phone-to-ear";
+      // taps and swipes on that device go with it
+      const gs = ((p as ScenePanel).gestures ?? []).map((g, i) => (g.on === c.id || g.on === c.who ? i : -1)).filter((i) => i >= 0).reverse();
+      return { ops: [
+        ...gs.map((i): Op => ({ path: ["panels", pi, "gestures", i], delete: true })),
+        { path: ["panels", pi, "characters", loc.index, "device"], delete: true },
+        ...(phonePose ? [{ path: ["panels", pi, "characters", loc.index, "pose"], delete: true }] : []),
+        ...resetLayoutOps(pi, sel.el),
+      ] };
+    }
     if (loc?.key === "devices") return { ops: removeOps(b, { ...sel, el: sel.el.replace(/\.(device|screen)$/, "") }) };
     return undefined;
   }

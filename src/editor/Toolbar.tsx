@@ -6,8 +6,8 @@ import { isScene } from "../types";
 import { ANGLES, BUBBLES, DEVICES, DIRECTIONS, GESTURES, HANDHELD, MOODS, POSES, SCENES, SHAPE_FILLS, SHAPES, SHOTS, SHAPE_WEIGHTS, TIME_ICONS, ids } from "../vocab";
 import { heldDeviceOf } from "../render/layout";
 import { CastEditor } from "./Drawer";
-import { handToOps, putDownOps, swapWhoOps, locate, movePanelOps, panelIndex, removeOps, resetLayoutOps, setFieldOps, layoutOps, type Sel } from "./model";
-import { ARRANGEABLE, type Arrange } from "./model";
+import { handToOps, putDownOps, swapWhoOps, locate, movePanelOps, panelIndex, resetLayoutOps, setFieldOps, layoutOps, type Sel } from "./model";
+import { ARRANGEABLE, deleteOps, type Arrange } from "./model";
 import { api } from "./api";
 import { Swatches } from "./Swatches";
 import { layoutPanel } from "../render/layout";
@@ -142,7 +142,9 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
   const set = (field: string, value: unknown) => commit(setFieldOps(board, sel, field, value));
   const sep = <span className="sep" />;
   const reset = panel.layout?.[sel.el] ? <button onClick={() => commit(resetLayoutOps(pi, sel.el), "Position reset")} title="Undo manual moves for this element">Reset position</button> : null;
-  const remove = <button onClick={() => { void commit(removeOps(board, sel)); setSel(null); }} title="Delete">Delete</button>;
+  // the same as the Delete key: a held device goes (not its holder), and what points at a person goes with them
+  const del = deleteOps(board, sel);
+  const remove = del ? <button onClick={() => { void commit(del.ops, "Deleted. Cmd+Z to undo"); if (!del.keepSelection) setSel(null); }} title="Delete (or press Delete)">Delete</button> : null;
   const editText = <button onClick={() => startEdit()} title="Or double-click the text. Drag the corner handle to change its size.">Edit text</button>;
   const screenBtn = (
     <>
