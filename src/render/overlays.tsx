@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { richLines } from "../sketch/rich";
 import type { Gesture } from "../types";
 import type { Rect } from "./devices";
 import type { BubbleBox } from "./layout";
@@ -80,7 +81,7 @@ export function BubbleText({ b }: { b: BubbleBox }) {
   const shout = b.bubble.type === "shout";
   return (
     <text fontFamily={shout ? FONT.title : FONT.hand} fontSize={shout ? b.size - 1.5 : b.size} fill={ink} textAnchor="middle" fontStyle={b.bubble.type === "whisper" ? "italic" : undefined}>
-      {b.lines.map((l, i) => <tspan key={i} x={b.x + b.w / 2} y={top + i * lh}>{shout ? l.toUpperCase() : l}</tspan>)}
+      {richLines(shout ? b.bubble.text.toUpperCase() : b.bubble.text, b.lines.map((l) => (shout ? l.toUpperCase() : l)), ink, b.size).map((l, i) => <tspan key={i} x={b.x + b.w / 2} y={top + i * lh}>{l}</tspan>)}
     </text>
   );
 }
@@ -89,10 +90,10 @@ export function CaptionShape({ r }: { r: Rect }) {
   return <rect x={r.x} y={r.y} width={r.w} height={r.h} fill={C.caption} stroke={ink} strokeWidth={1.8} />;
 }
 
-export function CaptionText({ r, lines, size }: { r: Rect; lines: string[]; size: number }) {
+export function CaptionText({ r, lines, size, src }: { r: Rect; lines: string[]; size: number; src?: string }) {
   return (
     <text fontFamily={FONT.hand} fontSize={size} fill={ink}>
-      {lines.map((l, i) => <tspan key={i} x={r.x + 8} y={r.y + 5 + size * 0.9 + i * size * 1.18}>{l}</tspan>)}
+      {(src ? richLines(src, lines, ink, size) : lines).map((l, i) => <tspan key={i} x={r.x + 8} y={r.y + 5 + size * 0.9 + i * size * 1.18}>{l}</tspan>)}
     </text>
   );
 }
@@ -101,7 +102,7 @@ export function CaptionText({ r, lines, size }: { r: Rect; lines: string[]; size
 export const DIR_ANGLE: Record<string, number> = { right: 0, down: 90, left: 180, up: 270 };
 
 /** Callout box + leader line. The pointer dot is its own element (`pointId`) so it can be dragged anywhere. */
-export function Callout({ r, lines, size, to, pointId }: { r: Rect; lines: string[]; size: number; to?: Pt; pointId?: string }) {
+export function Callout({ r, lines, size, to, pointId, src }: { r: Rect; lines: string[]; size: number; to?: Pt; pointId?: string; src?: string }) {
   let lead: ReactNode = null;
   if (to) {
     const inside = to[0] >= r.x && to[0] <= r.x + r.w;
@@ -121,7 +122,7 @@ export function Callout({ r, lines, size, to, pointId }: { r: Rect; lines: strin
       <rect x={r.x} y={r.y} width={r.w} height={r.h} fill={C.paper} stroke={ink} strokeWidth={1.5} />
       <path d={`M${r.x} ${r.y + r.h + 2.5} h${r.w} M${r.x + r.w + 2.5} ${r.y + 2} v${r.h}`} stroke={ink} strokeWidth={1.2} opacity={0.5} />
       <text fontFamily={FONT.hand} fontSize={size} fill={ink}>
-        {lines.map((l, i) => <tspan key={i} x={r.x + 6} y={r.y + 4 + size * 0.9 + i * size * 1.15}>{l}</tspan>)}
+        {(src ? richLines(src, lines, ink, size) : lines).map((l, i) => <tspan key={i} x={r.x + 6} y={r.y + 4 + size * 0.9 + i * size * 1.15}>{l}</tspan>)}
       </text>
     </g>
   );

@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, watch, writeFileSync } f
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { applyOps, formatStoryboard, type Op } from "../sketch/json";
+import { embedMeta } from "../sketch/pngmeta";
 import { eventHub, listenFree, openBrowser, readBody, safePathUnder, sendJSON, serveStatic, TYPES } from "../sketch/server";
 import { validate } from "../validate";
 import { bakeScreen, boardToSVG, cacheDirFor, panelPNGs, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";
@@ -107,11 +108,12 @@ export async function dev(file: string, o: DevOptions) {
         return json(res, 200, { path: "./" + relative(base, join(dir, name)).split(sep).join("/") });
       }
       if (url.pathname === "/api/panel.png") {
-        // one panel as a PNG, for copying a frame into other tools (Miro, Figma, Slack…)
+        // one panel as a PNG, for copying a frame into other tools (Figma, Slack, a doc, a Flowchart Kit board…)
         const board = read();
         const i = board.panels.findIndex((p) => p.id === url.searchParams.get("id"));
         if (i < 0) { res.writeHead(404); return res.end(); }
-        const png = panelPNGs(board, abs, Math.min(4, Math.max(1, Number(url.searchParams.get("scale") ?? 2))))[i];
+        // tagged with where it came from, so pasting it into Flowchart Kit makes a live card, not a flat picture
+        const png = embedMeta(panelPNGs(board, abs, Math.min(4, Math.max(1, Number(url.searchParams.get("scale") ?? 2))))[i], "storyboard-kit", { file: basename(abs), panel: board.panels[i].id });
         res.writeHead(200, { "content-type": "image/png", "cache-control": "no-cache" });
         return res.end(png);
       }

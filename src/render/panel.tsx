@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { richLines } from "../sketch/rich";
 import type { Board, LayoutOverride, MarkupStroke, Panel, SceneImage, ScenePanel, TimePanel } from "../types";
 import { isScene } from "../types";
 import { Character } from "./character";
@@ -215,7 +216,7 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
     if (!to && pov) to = [r.x + r.w / 2, r.y + r.h + 36];
     if (to && pov) to = [to[0] + (pov.dx ?? 0), to[1] + (pov.dy ?? 0)];
     taken.push(r);
-    return { id, r, lines, size, to };
+    return { id, r, lines, size, to, src: co.text };
   });
   const gestures = (panel.gestures ?? []).map((gs, i) => {
     const id = gs.id ?? `gesture-${i}`;
@@ -264,9 +265,9 @@ function ScenePanelBody({ board, panel, opts }: { board: Board; panel: ScenePane
       {gestures.map(({ id, g, screen, ov, product }) => !ov.hidden && screen && (
         <g key={id} data-el={id} data-kind="gesture" transform={`translate(${ov.dx ?? 0} ${ov.dy ?? 0})`}><GestureMark g={g} screen={screen} product={product} /></g>
       ))}
-      {cap && !(panel.layout?.caption?.hidden) && <g data-el="caption" data-kind="caption"><CaptionText r={cap} lines={cap.lines} size={cap.size} /></g>}
+      {cap && !(panel.layout?.caption?.hidden) && <g data-el="caption" data-kind="caption"><CaptionText r={cap} lines={cap.lines} size={cap.size} src={panel.caption} /></g>}
       {bubbles.map((b) => !(panel.layout?.[b.id]?.hidden) && <g key={b.id} data-el={b.id} data-kind="bubble"><BubbleText b={b} /></g>)}
-      {callouts.map((c) => !(panel.layout?.[c.id]?.hidden) && <g key={c.id} data-el={c.id} data-kind="callout"><Callout r={c.r} lines={c.lines} size={c.size} to={c.to} pointId={`${c.id}.point`} /></g>)}
+      {callouts.map((c) => !(panel.layout?.[c.id]?.hidden) && <g key={c.id} data-el={c.id} data-kind="callout"><Callout r={c.r} lines={c.lines} size={c.size} to={c.to} pointId={`${c.id}.point`} src={c.src} /></g>)}
     </>
   );
 }
@@ -298,11 +299,11 @@ function CardBody({ panel, ts }: { panel: Panel; ts: number }) {
     return (
       <>
         <g data-el="title" data-kind="text" transform={shift("title")}>
-          <text textAnchor="middle" fontFamily={FONT.title} fontSize={tsz} fill={ink}>{lines.map((l, i) => <tspan key={i} x={200} y={top + i * lh}>{l}</tspan>)}</text>
+          <text textAnchor="middle" fontFamily={FONT.title} fontSize={tsz} fill={ink}>{richLines(panel.title.toUpperCase(), lines, ink, tsz).map((l, i) => <tspan key={i} x={200} y={top + i * lh}>{l}</tspan>)}</text>
         </g>
         {panel.subtitle && (
           <g data-el="subtitle" data-kind="text" transform={shift("subtitle")}>
-            <text textAnchor="middle" fontFamily={FONT.hand} fontSize={ssz} fill={C.g8}>{wrap(panel.subtitle, ssz, 340).map((l, i) => <tspan key={i} x={200} y={top + lines.length * lh + ssz * 0.4 + i * ssz * 1.2}>{l}</tspan>)}</text>
+            <text textAnchor="middle" fontFamily={FONT.hand} fontSize={ssz} fill={C.g8}>{richLines(panel.subtitle, wrap(panel.subtitle, ssz, 340), C.g8, ssz).map((l, i) => <tspan key={i} x={200} y={top + lines.length * lh + ssz * 0.4 + i * ssz * 1.2}>{l}</tspan>)}</text>
           </g>
         )}
       </>
@@ -315,7 +316,7 @@ function CardBody({ panel, ts }: { panel: Panel; ts: number }) {
       <>
         <g data-el="icon" data-kind="text" transform={`${shift("icon")} translate(200 96) scale(${ov("icon").scale ?? 1}) translate(-200 -96)`}><TimeIcon icon={panel.icon} x={200} y={96} /></g>
         <g data-el="text" data-kind="text" transform={shift("text")}>
-          <text textAnchor="middle" fontFamily={FONT.title} fontSize={tsz} fill={ink}>{lines.map((l, i) => <tspan key={i} x={200} y={150 + tsz * 0.85 + i * tsz * 1.15}>{l}</tspan>)}</text>
+          <text textAnchor="middle" fontFamily={FONT.title} fontSize={tsz} fill={ink}>{richLines(panel.text.toUpperCase(), lines, ink, tsz).map((l, i) => <tspan key={i} x={200} y={150 + tsz * 0.85 + i * tsz * 1.15}>{l}</tspan>)}</text>
         </g>
       </>
     );
@@ -326,7 +327,7 @@ function CardBody({ panel, ts }: { panel: Panel; ts: number }) {
     const top = 136 - ((lines.length - 1) * tsz * 1.2) / 2;
     return (
       <g data-el="text" data-kind="text" transform={shift("text")}>
-        <text textAnchor="middle" fontFamily={FONT.hand} fontSize={tsz} fill={ink}>{lines.map((l, i) => <tspan key={i} x={200} y={top + i * tsz * 1.2}>{l}</tspan>)}</text>
+        <text textAnchor="middle" fontFamily={FONT.hand} fontSize={tsz} fill={ink}>{richLines(panel.text, lines, ink, tsz).map((l, i) => <tspan key={i} x={200} y={top + i * tsz * 1.2}>{l}</tspan>)}</text>
       </g>
     );
   }

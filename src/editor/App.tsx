@@ -354,13 +354,14 @@ export function App() {
   /** Byte size of the last panel image we put on the clipboard, to recognize it when it's pasted back here. */
   const lastImageSize = useRef<number | null>(null);
   /**
-   * A copied panel goes on the system clipboard twice over: as a PNG, so Miro, Figma, Slack and friends paste
+   * A copied panel goes on the system clipboard twice over: as a PNG, so Figma, Slack, docs and Flowchart Kit paste
    * a picture, and as a storyboard clip in a private web format, so pasting back into an editor makes a real,
    * editable panel. Browsers without custom formats (Safari) get the PNG, and this tab remembers the clip.
    */
   const copyPanelEverywhere = (clip: Clip, panelId: string) => {
     const png = fetch(`/api/panel.png?id=${encodeURIComponent(panelId)}&scale=2`).then((r) => r.blob()).then((b) => { lastImageSize.current = b.size; return b; });
-    const json = new Blob([JSON.stringify(clip)], { type: CLIP_TYPE });
+    // `from` lets other kits (Flowchart Kit) paste it as a live card pointing back at this panel
+    const json = new Blob([JSON.stringify({ ...clip, from: { file, panel: panelId } })], { type: CLIP_TYPE });
     const custom = typeof ClipboardItem !== "undefined" && (ClipboardItem as unknown as { supports?: (t: string) => boolean }).supports?.(`web ${CLIP_TYPE}`);
     try {
       return navigator.clipboard.write([new ClipboardItem(custom ? { "image/png": png, [`web ${CLIP_TYPE}`]: json } : { "image/png": png })]);
@@ -390,7 +391,7 @@ export function App() {
       if (!clip) return flash("This can't be copied.");
       lastClip.current = clip;
       if (clip.kind === "panel") {
-        try { await copyPanelEverywhere(clip, clip.panel.id); flash("Copied panel. Paste it here as a panel, or into Miro, Figma or Slack as an image."); }
+        try { await copyPanelEverywhere(clip, clip.panel.id); flash("Copied panel. Paste it here as a panel, or into Figma, Slack or a Flowchart Kit board."); }
         catch { flash("Copied panel (paste it here). This browser wouldn't put an image on the clipboard."); }
         return;
       }
@@ -428,7 +429,7 @@ export function App() {
         // text now as a fallback; the image + clip replace it a moment later if the browser allows
         e.clipboardData?.setData("text/plain", JSON.stringify(clip));
         void copyPanelEverywhere(clip, clip.panel.id)
-          .then(() => flash("Copied panel. Paste it here as a panel, or into Miro, Figma or Slack as an image."))
+          .then(() => flash("Copied panel. Paste it here as a panel, or into Figma, Slack or a Flowchart Kit board."))
           .catch(() => flash("Copied panel. Paste it into any board."));
         return;
       }

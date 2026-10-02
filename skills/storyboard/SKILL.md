@@ -50,6 +50,9 @@ path. **Below, `sb` is short for that whole command.**
    `--pptx` for a slide per panel with speaker notes, `--html` for a share page with comment boxes).
 7. **The designer may paste a pointer** like `In x.storyboard.json: panel 3 (id "in-line"): the bubble "bubble-0" …`.
    That's exactly the element to change. Use the id and path it gives.
+8. **On a Flowchart Kit board**, a card can point at this board (`"ref": "./x.storyboard.json"`) or one panel
+   (`"./x.storyboard.json#in-line"`). `sb render <file>[#panel]` writes the PNG it shows; Flowchart Kit
+   runs it for you when the board changes.
 
 ## Craft: what makes a storyboard useful
 
@@ -70,6 +73,9 @@ The point is to see the product from inside the customer's life, not to illustra
 - **End on the outcome for the person**, not on a UI state. A callout can name the consequence
   ("Trust lost: he'll skip ordering ahead").
 - 5–9 panels is typical. Keep bubbles under ~12 words.
+- Text anywhere (bubbles, captions, callouts, labels, cards) can use `**bold**`, `*italic*` and
+  `~~struck out~~`: bold the word someone stresses, strike the ETA that turned out wrong. Designers get Cmd+B and
+  Cmd+I in the editor.
 - Build a varied, realistic cast (skin, age, body, hair, accessories such as glasses, cane, wheelchair,
   hijab) that fits the story. Don't default everyone to the same look. Dress staff for their job: `outfit`
   (`uniform`, `hi-vis`, `lab-coat`, `chef`, `scrubs`, `apron`, `overalls`…) and `hat` (`sb vocab hats`).

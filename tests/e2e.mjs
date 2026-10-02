@@ -148,7 +148,7 @@ try {
   for (let t = 0; t < 40 && read().panels.length === n0; t++) await sleep(150);
   check(read().panels.length === n0 + 1 && read().panels[6].id === "later-2", "copy/paste duplicates a panel with a fresh id");
 
-  // copying a panel puts a real PNG on the system clipboard (for Miro, Figma…) plus the storyboard clip
+  // copying a panel puts a real PNG on the system clipboard (for Figma, Slack…) plus the storyboard clip
   await page.locator('g[data-panel="walking"] rect[data-el="__panel"]').click({ position: { x: 12, y: 12 }, force: true });
   await page.keyboard.press("Meta+c");
   for (let t = 0; t < 40; t++) {

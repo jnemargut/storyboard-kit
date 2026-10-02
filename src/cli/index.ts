@@ -6,9 +6,10 @@ import { fileURLToPath } from "node:url";
 import { VOCAB, SCENE_MARKS, type VocabCategory } from "../vocab";
 import { validate, formatResult } from "../validate";
 import { formatStoryboard } from "../sketch/json";
+import { embedMeta } from "../sketch/pngmeta";
 import { toScript } from "../script";
 import { agentsBlock } from "../skill";
-import { boardToSVG, initRenderer, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";
+import { boardToSVG, initRenderer, panelPNGs, pngToPDF, svgToPNG, toPPTX, toShareHTML } from "../export";
 import { formatCritique } from "../critique";
 import { pageSize } from "../render";
 import { resolveScene } from "../render/scenes";
@@ -51,6 +52,9 @@ Usage: ${RUN} <command> [options]
   scene new <id> <file> [--base x] Add a scene of your own to the board (for places the library doesn't have)
   scene <file> [id]               Preview the board's own scenes with a grid and marks, as <file>.scenes.png
   dev [file] [--port 4321]        Open the editor (no file = the last one); edits save to the file live (--no-open)
+  render <file>[#panel] [--scale 2]
+                                  The board as <name>.png, or one panel as <name>.<panel>.png, next to the file
+                                  (what Flowchart Kit shows when a card points at "x.storyboard.json#panel")
   export <file> [--png] [--pdf] [--svg] [--pptx] [--html] [--scale 2] [--out dir]
                                   --pptx: a slide per panel with speaker notes · --html: a share page with comment boxes
   script <file>                   Print a readable screenplay version (Markdown)
@@ -116,7 +120,7 @@ const STARTER = (title: string): Board => ({
 async function main() {
   const [cmd, ...rest] = process.argv.slice(2);
   const { pos, flags } = args(rest);
-  if (cmd === "export" || cmd === "dev" || cmd === "draft" || cmd === "scene") await initRenderer();
+  if (cmd === "export" || cmd === "render" || cmd === "dev" || cmd === "draft" || cmd === "scene") await initRenderer();
   switch (cmd) {
     case "vocab": {
       const cat = pos[0] as VocabCategory | "marks" | undefined;
@@ -159,6 +163,28 @@ async function main() {
     case "script": {
       const { board } = load(pos[0]);
       console.log(toScript(board));
+      return;
+    }
+    case "render": {
+      const ref = pos[0] ?? "";
+      const hash = ref.indexOf("#");
+      const panel = hash >= 0 ? ref.slice(hash + 1) : "";
+      const { board, abs } = load(hash >= 0 ? ref.slice(0, hash) : ref);
+      const r = validate(board);
+      if (!r.ok) { console.error(formatResult(r, pos[0])); console.error("\nFix the errors above before rendering."); process.exit(1); }
+      const scale = Number(flags.scale ?? 2);
+      const stem = basename(abs).replace(/\.storyboard\.json$|\.json$/, "");
+      let out: string;
+      if (panel) {
+        const i = board.panels.findIndex((p) => p.id === panel);
+        if (i < 0) { console.error(`No panel "${panel}" in ${basename(abs)}. Panels: ${board.panels.map((p) => p.id).join(", ")}`); process.exit(1); }
+        out = join(dirname(abs), `${stem}.${panel}.png`);
+        writeFileSync(out, embedMeta(panelPNGs(board, abs, scale)[i], "storyboard-kit", { file: basename(abs), panel }));
+      } else {
+        out = join(dirname(abs), `${stem}.png`);
+        writeFileSync(out, embedMeta(svgToPNG(boardToSVG(board, abs), scale), "storyboard-kit", { file: basename(abs) }));
+      }
+      if (!flags.quiet) console.log(`✓ rendered ${basename(out)}`);
       return;
     }
     case "export": {

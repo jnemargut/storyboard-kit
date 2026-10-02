@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import { plainText } from "./sketch/rich";
 import { dirname, extname, join, resolve } from "node:path";
 import { initRenderer, renderPNG } from "./sketch/resvg";
 import { bakeImage, MIME, type BakeMode } from "./sketch/bake";
@@ -89,6 +90,9 @@ function cropPanels(board: Board, boardFile: string, scale: number): Buffer[] {
 
 /** What's said in a panel, as plain lines (speaker notes, share page, alt text). */
 function transcript(board: Board, i: number): string[] {
+  return rawTranscript(board, i).map(plainText);
+}
+function rawTranscript(board: Board, i: number): string[] {
   const p = board.panels[i];
   const name = (id: string) => board.cast[id]?.name ?? id;
   if (p.type === "title") return [p.title, p.subtitle ?? ""].filter(Boolean);

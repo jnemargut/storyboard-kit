@@ -1,3 +1,4 @@
+import { plainText } from "../sketch/rich";
 import type { Board, Bubble, CastMember, CharacterInPanel, LayoutOverride, ScenePanel } from "../types";
 import { HANDHELD, type DeviceType, type Mood, type Pose } from "../vocab";
 import { autoVariant, figure, type Figure, type Pt } from "./rig";
@@ -365,7 +366,9 @@ export function specialGeometry(sp: NonNullable<Special>) {
 const ADV = 0.43;
 /** Permanent Marker (titles, shouts, cards) is much wider, especially in capitals. */
 export const ADV_TITLE = 0.66;
-export function wrap(text: string, size: number, maxW: number, adv = ADV): string[] {
+/** Word wrap by estimated width. Measures the plain words: **bold** and *italic* markers take no room. */
+export function wrap(src: string, size: number, maxW: number, adv = ADV): string[] {
+  const text = plainText(src);
   const maxChars = Math.max(6, Math.floor(maxW / (size * adv)));
   const words = text.split(/\s+/).filter(Boolean);
   const lines: string[] = [];

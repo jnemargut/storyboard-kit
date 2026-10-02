@@ -1,4 +1,5 @@
 import { WobbleFilter } from "../sketch/wobble";
+import { richLines } from "../sketch/rich";
 import type { Board, Panel } from "../types";
 import { isScene } from "../types";
 import { PanelArt, panelHasProduct, type RenderOptions } from "./panel";
@@ -127,7 +128,7 @@ function Journey({ board, y, width }: { board: Board; y: number; width: number }
             const room = Math.min(Math.max(60, gap - 10), 2 * (cx(i) - PAGE.margin * 0.5), 2 * (width - PAGE.margin * 0.5 - cx(i)));
             const lines = wrap(stepName(p)!, 13, Math.max(50, room));
             const shown = lines.length > 2 ? [lines[0], `${lines[1]}…`] : lines;
-            return <text textAnchor="middle" fontFamily={FONT.hand} fontSize={13} fill={C.g8}>{shown.map((l, k) => <tspan key={k} x={cx(i)} y={y + 103 + k * 14}>{l}</tspan>)}</text>;
+            return <text textAnchor="middle" fontFamily={FONT.hand} fontSize={13} fill={C.g8}>{richLines(stepName(p)!, shown, C.g8, 13).map((l, k) => <tspan key={k} x={cx(i)} y={y + 103 + k * 14}>{l}</tspan>)}</text>;
           })()}
         </g>
       ))}
@@ -210,11 +211,12 @@ export function BoardSVG({ board, opts }: { board: Board; opts: BoardOptions }) 
         {opts.fontCss && <style>{opts.fontCss}</style>}
       </defs>
       <rect width={width} height={height} fill={C.paper} />
-      <g data-header="title"><text fontFamily={FONT.title} fontSize={hd.titleSize} fill={C.ink}>{hd.titleLines.map((l, i) => <tspan key={i} x={PAGE.margin} y={hd.titleTop + i * hd.titleSize * 1.1}>{l}</tspan>)}</text></g>
-      <g data-header="meta"><text fontFamily={FONT.hand} fontSize={hd.metaSize} fill={sub ? C.g8 : C.g4}>{sub ? hd.metaLines.map((l, i) => <tspan key={i} x={PAGE.margin} y={hd.metaTop + i * hd.metaSize * 1.2}>{l}</tspan>) : <tspan x={PAGE.margin} y={hd.metaTop}>{opts.editing ? "+ persona / subtitle" : ""}</tspan>}</text></g>
+      <g data-header="title"><text fontFamily={FONT.title} fontSize={hd.titleSize} fill={C.ink}>{richLines(board.title, hd.titleLines, C.ink, hd.titleSize).map((l, i) => <tspan key={i} x={PAGE.margin} y={hd.titleTop + i * hd.titleSize * 1.1}>{l}</tspan>)}</text></g>
+      <g data-header="meta"><text fontFamily={FONT.hand} fontSize={hd.metaSize} fill={sub ? C.g8 : C.g4}>{sub ? richLines(metaText(board), hd.metaLines, C.g8, hd.metaSize).map((l, i) => <tspan key={i} x={PAGE.margin} y={hd.metaTop + i * hd.metaSize * 1.2}>{l}</tspan>) : <tspan x={PAGE.margin} y={hd.metaTop}>{opts.editing ? "+ persona / subtitle" : ""}</tspan>}</text></g>
       {board.panels.map((p, i) => {
         const [x, y] = panelOrigin(board, i);
-        const label = wrap(`${i + 1}${p.label ? ` · ${p.label}` : opts.editing ? " · + name this step" : ""}`, 15.5 * k, PANEL_W)[0];
+        const labelSrc = `${i + 1}${p.label ? ` · ${p.label}` : opts.editing ? " · + name this step" : ""}`;
+        const label = richLines(labelSrc, [wrap(labelSrc, 15.5 * k, PANEL_W)[0]], C.g8, 15.5 * k)[0];
         return (
           <g key={p.id} transform={`translate(${x} ${y})`}>
             <PanelArt board={board} panel={p} opts={opts} />

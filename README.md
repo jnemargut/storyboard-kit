@@ -114,7 +114,10 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 - **Your own screens.** Drop a Figma export on a phone and it turns into a teal sketch that fits the device.
 - **Wireframes, too.** Point a phone at a [Wireframe Kit](https://github.com/jnemargut/wireframe-kit) screen and
   it shows up in teal, and stays in sync when the wireframe changes.
-- **Any picture at all.** Drag in a photo you found and it gets sketchified in grays to match (or not, your call).
+- **Any picture at all.** Drag in or paste a photo you found and it gets sketchified in grays to match (or not,
+  your call).
+- **Bold, italic and strikethrough** anywhere there's text: `**bold**`, `*italic*`, `~~struck~~`, or Cmd+B and
+  Cmd+I in the editor. Strike the "4 min" that turned out to be twelve.
 - **A pen, some shapes and free text** for anything I forgot to draw, in six marker colors (teal stays
   reserved for your product).
 
@@ -132,6 +135,13 @@ kit, [Wireframe Kit](https://github.com/jnemargut/wireframe-kit) (`/wireframe`),
 Change the wireframe and the storyboard catches up on its own. No Wireframe Kit installed? The screen PNG it
 renders next to the file still works.
 
+## Branch it out with Flowchart Kit
+
+A storyboard is one path through someone's day. When you want the branches (what if it's late, what if they
+never open the app), my third kit, [Flowchart Kit](https://github.com/jnemargut/flowchart-kit) (`/flowchart`), is
+a low-fi canvas where panels become cards in a flow, next to stickies, wireframe screens and arrows. Copy a panel
+here, paste it onto a board, and it stays a live card that follows this file.
+
 ## The editor bits
 
 **Editing**
@@ -139,8 +149,8 @@ renders next to the file still works.
 - Click anything to get its toolbar. Drag to move, pull the corner to resize, grab the round handle to rotate.
 - Double-click any text to edit it. Click "+ name this step" under a panel to name it.
 - Cmd+C / Cmd+V / Cmd+D copy, paste and duplicate. Cmd+] and Cmd+[ move things up and down the layers.
-- Copy a whole panel and paste it into Miro, Figma, Slack or a doc as an image. Paste it back into a board and
-  it's a normal, editable panel again. Paste any other image in and it becomes a picture in the panel.
+- Copy a whole panel and paste it into Figma, Slack or a doc as an image, or onto a Flowchart Kit board as a live
+  card. Paste it back into a board and it's a normal, editable panel again. Paste any other image in and it becomes a picture in the panel.
 - Delete deletes, Cmd+Z undoes, arrow keys nudge.
 - **Ask agent** copies a pointer to whatever you clicked, so you can tell your agent "make this angrier."
 
@@ -194,8 +204,9 @@ npm run e2e       # clicks around the real editor in Chrome
 docs and the renderer all read from it. `skills/storyboard/` is generated from `src/`, and it's checked in so
 you can install straight from a clone.
 
-`src/sketch/` is the marker drawing kit (tokens, fonts, the wobble, sketchify, PNG rendering) shared with
-Wireframe Kit, which keeps an exact copy of it. Change it here, then sync it over there.
+`src/sketch/` is the marker drawing kit (tokens, fonts, the wobble, sketchify, PNG rendering, rich text, the
+drawing toolbar, pan and zoom) shared with Wireframe Kit and Flowchart Kit, which each keep an exact copy of it.
+Change it here, then sync it over there.
 
 ## License
 
