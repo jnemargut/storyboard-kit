@@ -6,7 +6,7 @@ You tell Claude Code (or Codex) what someone's day looks like. It sketches a sto
 little editor until it feels true. Then you drop it in your deck and the room starts talking about the person's
 whole day, not just the screens.
 
-![Storyboard Kit sizzle reel](docs/sizzle-99fa3aa.gif)
+![Storyboard Kit sizzle reel](docs/sizzle-f18c309.gif)
 
 ## Why though
 
@@ -47,7 +47,7 @@ A storyboard helps you:
 I built this tool on a Mac, posted about it from the same Mac, and figured designers would love it. Then I
 storyboarded what actually happened next:
 
-![Posting the Tool and Hoping Folks Use It](docs/why-storyboard-d94d7fa.png)
+![Posting the Tool and Hoping Folks Use It](docs/why-storyboard-e37adfd.png)
 
 Built on a big screen, read on a small one. People skimmed it on the train, couldn't try it from their phone,
 and quietly bookmarked it forever. The launch post showed features, but never the moment in someone's day
@@ -173,7 +173,7 @@ or off (`"page": { "legend": { "cast": false } }`, or `"legend": false` to hide 
 
 **Play mode**
 
-![Play mode with sharpie markup](docs/play-e997d3c.png)
+![Play mode with sharpie markup](docs/play-70d6043.png)
 
 Hit **▶ Play** (or P) to present the board one step at a time, with a big pointer the room can follow.
 

@@ -89,6 +89,8 @@ export interface DeviceProps {
    * mirror with scale(-1 1) for someone facing left).
    */
   face?: "screen" | "back" | "side" | "turned";
+  /** A laptop's lid only, without its base (over the shoulder, where the keyboard is drawn lying on the desk). */
+  lidOnly?: boolean;
 }
 
 /**
@@ -177,13 +179,15 @@ function DeviceSide({ type, product }: { type: DeviceType; product: boolean }) {
 }
 
 /** Draws a device centered at the origin in device units. Wrap in a transform to place/scale it. */
-export function Device({ type, href, clipId, product = true, face = "screen" }: DeviceProps) {
+export function Device({ type, href, clipId, product = true, face = "screen", lidOnly }: DeviceProps) {
   if (face === "back" && ["laptop", "phone", "tablet"].includes(type)) return <DeviceBack type={type} product={product} />;
   if (face === "side" && ["laptop", "phone", "tablet"].includes(type)) return <DeviceSide type={type} product={product} />;
   if (face === "turned" && (type === "desktop" || type === "tablet")) return <DeviceTurned type={type} product={product} />;
   const def = DEVICE_DEFS[type];
   const s = def.screen;
-  const B = def.body;
+  const B = lidOnly && type === "laptop"
+    ? body((f, st, sw) => <rect x={-62} y={-88} width={124} height={86} rx={6} fill={f} stroke={st} strokeWidth={sw} />)
+    : def.body;
   return (
     <g>
       <B outline={false} />

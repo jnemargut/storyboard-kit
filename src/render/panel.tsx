@@ -101,7 +101,7 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
   const hand = (p: Pt, r: number) => <circle cx={p[0]} cy={p[1]} r={r} fill={skin} stroke={ink} strokeWidth={2} />;
   const device = devType && (
     <g data-el={`${devId}.screen`} data-kind="device" data-drop={owner ? `char:${owner.id}` : `device:${devId}`} transform={`translate(${dcx} ${dcy}) rotate(${devOv.rotate ?? (sp.kind === "ots" && handheld ? 4 : 0)}) scale(${ds})`}>
-      <Device type={devType} href={href} product={product} clipId={clip(pid, `${devId}-big`)} />
+      <Device type={devType} href={href} product={product} lidOnly={sp.kind === "ots"} clipId={clip(pid, `${devId}-big`)} />
     </g>
   );
   const dw = def ? (def.w * ds) / 2 : 0, dh = def ? (def.h * ds) / 2 : 0;
@@ -143,8 +143,8 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
     const hinge = dcy - 2 * ds;
     const deck = deskTop === undefined ? null : devType === "laptop" ? (
       <g>
-        <path d={`M${dcx - 62 * ds} ${hinge} H${dcx + 62 * ds} L${dcx + 72 * ds} ${hinge + 26} H${dcx - 72 * ds} Z`} fill={C.g4} stroke={ink} strokeWidth={2.2} strokeLinejoin="round" />
-        <path d={`M${dcx - 50 * ds} ${hinge + 7} H${dcx + 50 * ds} M${dcx - 54 * ds} ${hinge + 13} H${dcx + 54 * ds} M${dcx - 20 * ds} ${hinge + 20} H${dcx + 20 * ds}`} stroke={C.g7} strokeWidth={1.4} strokeLinecap="round" />
+        <path d={`M${dcx - 62 * ds} ${hinge} H${dcx + 62 * ds} L${dcx + 64 * ds} ${hinge + 24} H${dcx - 64 * ds} Z`} fill={C.g4} stroke={ink} strokeWidth={2.2} strokeLinejoin="round" />
+        <path d={`M${dcx - 50 * ds} ${hinge + 7} H${dcx + 50 * ds} M${dcx - 51 * ds} ${hinge + 13} H${dcx + 51 * ds} M${dcx - 20 * ds} ${hinge + 19} H${dcx + 20 * ds}`} stroke={C.g7} strokeWidth={1.4} strokeLinecap="round" />
       </g>
     ) : devType === "desktop" ? (
       <path d={`M${dcx - 58} ${deskTop + 24} l7 -14 h102 l7 14 Z`} fill={C.paper} stroke={ink} strokeWidth={2} strokeLinejoin="round" />
