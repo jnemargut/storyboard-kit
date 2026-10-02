@@ -43,10 +43,19 @@ export function hairBack(cast: CastMember, f: Figure, hx: number, hy: number, r:
       return <path d={path} {...st} />;
     }
     case "curly": {
+      if (f.view === "side") {
+        // one scalloped mass hugging the crown and the back of the head, forehead to nape (no loose circles)
+        const cx = hx - d * 0.1 * r, cy = hy - 0.12 * r, rx = 1.14 * r, ry = 1.08 * r;
+        const a0 = -62, a1 = -232, n = 7; // degrees, measured for someone facing right; mirrored by d
+        const pt = (deg: number, k = 1) => { const a = (deg * Math.PI) / 180; return `${(cx + d * Math.cos(a) * rx * k).toFixed(1)} ${(cy + Math.sin(a) * ry * k).toFixed(1)}`; };
+        let path = `M${pt(a0)}`;
+        for (let i = 1; i <= n; i++) path += ` Q${pt(a0 + ((a1 - a0) * (i - 0.5)) / n, 1.13)} ${pt(a0 + ((a1 - a0) * i) / n)}`;
+        path += ` L${hx} ${hy} Z`; // tucks in behind the face
+        return <path d={path} {...st} />;
+      }
       // curls sit on the crown; the outermost stay above the ears so they don't read as earmuffs or buns
-      const bumps = f.view === "side" ? [-1, -0.6, -0.15, 0.3] : [-0.85, -0.42, 0, 0.42, 0.85];
-      const side = f.view === "side";
-      return <g>{bumps.map((k, i) => <circle key={i} cx={hx + k * r * (side ? -d : 1)} cy={hy - (side ? 0.75 : 0.8) * r + Math.abs(k) * (side ? 0.35 : 0.3) * r} r={r * (side ? 0.46 : 0.42)} {...st} />)}</g>;
+      const bumps = [-0.85, -0.42, 0, 0.42, 0.85];
+      return <g>{bumps.map((k, i) => <circle key={i} cx={hx + k * r} cy={hy - 0.8 * r + Math.abs(k) * 0.3 * r} r={r * 0.42} {...st} />)}</g>;
     }
     case "long":
       if (f.view === "side") return <path d={`M${hx - d * 0.15 * r} ${hy} L${hx - d * 0.35 * r} ${hy + 1.45 * r} L${hx - d * 1.15 * r} ${hy + 1.35 * r} L${hx - d * r} ${hy - 0.1 * r} Z`} {...st} />;
@@ -56,10 +65,16 @@ export function hairBack(cast: CastMember, f: Figure, hx: number, hy: number, r:
       if (f.view === "front" && f.angle === "three-quarter") {
         // turned a little: the tail peeks out behind the head on the far side
         const k = -f.dir;
-        return <path d={`M${hx + k * 0.7 * r} ${hy - 0.45 * r} Q${hx + k * 1.45 * r} ${hy + 0.1 * r} ${hx + k * 1.1 * r} ${hy + 1.0 * r} Q${hx + k * 1.0 * r} ${hy + 0.2 * r} ${hx + k * 0.6 * r} ${hy - 0.1 * r} Z`} {...st} />;
+        return <path d={`M${hx + k * 0.55 * r} ${hy - 0.7 * r} Q${hx + k * 1.5 * r} ${hy - 0.2 * r} ${hx + k * 1.18 * r} ${hy + 1.05 * r} Q${hx + k * 0.95 * r} ${hy + 0.25 * r} ${hx + k * 0.5 * r} ${hy - 0.05 * r} Z`} {...st} />;
       }
       if (f.view !== "side") return null; // from behind it's drawn over the head (hairFront)
-      return <path d={`M${hx - d * 0.9 * r} ${hy - 0.35 * r} q${-d * 0.8 * r} ${0.3 * r} ${-d * 0.55 * r} ${1.3 * r}`} fill="none" stroke={ink} strokeWidth={6} strokeLinecap="round" />;
+      // a tapered tail: gathered at the back of the crown, swinging down toward the shoulders
+      return (
+        <g>
+          <path d={`M${hx - d * 0.8 * r} ${hy - 0.62 * r} Q${hx - d * 1.75 * r} ${hy - 0.25 * r} ${hx - d * 1.35 * r} ${hy + 1.25 * r} Q${hx - d * 1.2 * r} ${hy + 0.25 * r} ${hx - d * 0.82 * r} ${hy + 0.05 * r} Z`} {...st} />
+          <path d={`M${hx - d * 1.0 * r} ${hy - 0.5 * r} l${-d * 0.12 * r} ${0.38 * r}`} stroke={ink} strokeWidth={3} strokeLinecap="round" />
+        </g>
+      );
     default:
       return null;
   }
@@ -102,10 +117,11 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
     const ear = !["long", "afro"].includes(cast.hair ?? "short") && <path d={`M${hx - d * 0.12 * r} ${hy - 0.12 * r} q${-d * 0.3 * r} ${-0.04 * r} ${-d * 0.28 * r} ${0.22 * r} q${d * 0.02 * r} ${0.22 * r} ${d * 0.24 * r} ${0.2 * r}`} fill="none" stroke={ink} strokeWidth={1.5} strokeLinecap="round" />;
     return (
       <g>
-        <path d={cap} {...st} {...(cast.hair === "afro" ? { stroke: "none" } : {})} />
+        <path d={cap} {...st} {...(cast.hair === "afro" ? { stroke: st.fill, strokeWidth: 2.4 } : {})} />
         {ear}
         {cast.hair === "bun" && !cast.hat && <circle cx={hx - d * 0.78 * r} cy={hy - 0.85 * r} r={r * 0.42} {...st} />}
-        {cast.hair === "curly" && [0, 1, 2].map((i) => <circle key={i} cx={hx - d * (0.2 + i * 0.35) * r} cy={hy - (0.95 - i * 0.12) * r} r={r * 0.32} {...st} />)}
+        {/* curly: a few small curls along the top of the cap, never past the forehead */}
+        {cast.hair === "curly" && [-80, -112, -144].map((deg) => { const a = (deg * Math.PI) / 180; return <circle key={deg} cx={hx + d * Math.cos(a) * R * 0.98} cy={hy + Math.sin(a) * R * 0.98} r={r * 0.22} {...st} />; })}
       </g>
     );
   }
@@ -151,7 +167,7 @@ export function headExtent(cast: CastMember, f: Figure): { side: number; top: nu
   const grow = (sd: number, tp: number) => { side = Math.max(side, sd); top = Math.max(top, tp); };
   switch (cast.hair) {
     case "afro": grow(1.42, 1.62); break;
-    case "curly": grow(sideView ? 1.2 : 1.5, 1.25); break;
+    case "curly": grow(sideView ? 1.4 : 1.5, 1.3); break;
     case "bun": if (!cast.hat) grow(1.1, 1.9); break;
     case "long": grow(1.2, 1.1); break;
     case "hijab": grow(1.25, 1.25); break;
