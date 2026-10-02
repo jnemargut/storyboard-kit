@@ -25,12 +25,14 @@ export interface CharacterProps {
   chair?: boolean;
   /** Draw the held device over both arms (a laptop lid seen from behind hides the typing hands). */
   heldFront?: boolean;
+  /** Draw the held device behind the body (seen from behind, held in front of them). */
+  heldBehind?: boolean;
   /** Skip one arm (e.g. over-the-shoulder shots redraw it reaching for the device). */
   hideArm?: "left" | "right";
 }
 
 /** Draws a character in local space (feet at 0,0). */
-export function Character({ f, cast, mood, held, chair, hideArm, heldFront }: CharacterProps) {
+export function Character({ f, cast, mood, held, chair, hideArm, heldFront, heldBehind }: CharacterProps) {
   const j = f.j;
   const skin = SKIN[cast.skin ?? "tone-2"];
   const outfit = cast.outfit ?? "jacket";
@@ -89,6 +91,8 @@ export function Character({ f, cast, mood, held, chair, hideArm, heldFront }: Ch
   const armR = hideArm === "right" ? null : arm(j.shR, j.elR, j.hdR, "ar");
 
   const hipY = Math.max(j.hipL[1], j.hipR[1]);
+  const inFront = (hd: Pt, sh: Pt) => f.view === "back" && Math.abs(hd[0]) < Math.abs(sh[0]) + 1 && hd[1] > sh[1] && hd[1] < hipY + 6;
+  const backHidden = { l: inFront(j.hdL, j.shL), r: inFront(j.hdR, j.shR) };
   const seatX = (j.hipL[0] + j.hipR[0]) / 2 + (side ? -2 * f.dir : 0);
   return (
     <g>
@@ -132,6 +136,9 @@ export function Character({ f, cast, mood, held, chair, hideArm, heldFront }: Ch
         );
       })())}
       {hairBack(cast, f, hx, hy, r)}
+      {heldBehind ? held : null}
+      {/* from behind, an arm whose hand is in front of the body (crossed, holding something) is mostly hidden by it */}
+      {backHidden.l ? armL : null}{backHidden.r ? armR : null}
       {farFirst && (side ? armL : null)}
       {legs}
       {!acc.has("wheelchair") && <>{shoe(j.ftL, "fl")}{shoe(j.ftR, "fr")}</>}
@@ -158,7 +165,7 @@ export function Character({ f, cast, mood, held, chair, hideArm, heldFront }: Ch
           </g>
         );
       })()}
-      {farFirst ? (side ? (nearArmOverHead ? null : armR) : <>{armL}{armR}</>) : null}
+      {farFirst ? (side ? (nearArmOverHead ? null : armR) : <>{backHidden.l ? null : armL}{backHidden.r ? null : armR}</>) : null}
       {/* head */}
       <HeadFront f={f} cast={cast} mood={mood} hx={hx} hy={hy} r={r} skin={skin} />
       {acc.has("cane") && !acc.has("wheelchair") && (j.hdL[1] > hipY - 8 && !j.seated
@@ -166,11 +173,11 @@ export function Character({ f, cast, mood, held, chair, hideArm, heldFront }: Ch
         // hand busy (waving, shrugging, seated): the cane leans against the leg
         : (() => { const cx = Math.min(j.ftL[0], j.ftR[0]) - 9; return <path d={`M${cx} 0 L${cx + 6} ${hipY + 6} q2 -6 8 -3`} stroke={ink} strokeWidth={2.4} fill="none" strokeLinecap="round" />; })())}
       {!farFirst && <>{armL}</>}
-      {heldFront ? null : held}
+      {heldFront || heldBehind ? null : held}
       {!farFirst && <>{armR}</>}
       {heldFront ? held : null}
       {nearArmOverHead && armR}
-      {farFirst && held && <circle cx={j.hdR[0]} cy={j.hdR[1]} r={3.4} fill={skin} stroke={ink} strokeWidth={1.4} />}
+      {farFirst && held && !heldBehind && <circle cx={j.hdR[0]} cy={j.hdR[1]} r={3.4} fill={skin} stroke={ink} strokeWidth={1.4} />}
     </g>
   );
 }

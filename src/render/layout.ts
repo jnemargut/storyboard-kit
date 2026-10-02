@@ -21,6 +21,8 @@ export interface HeldPlacement {
   flip?: boolean;
   /** Drawn in front of both arms (a laptop's lid hides the hands typing behind it). */
   front?: boolean;
+  /** Drawn behind the body: seen from behind, held in front of them, so it only peeks out at the side. */
+  behind?: boolean;
 }
 
 export interface CharPlaced {
@@ -122,8 +124,10 @@ const faceFor = (fig: Figure): NonNullable<HeldPlacement["face"]> => (fig.view =
 function holdPlacement(fig: Figure, type: DeviceType, pose: string, href?: string, product = true, table?: number): HeldPlacement {
   const p = placeHeld(fig, type, pose, href, product, table);
   if (type === "watch") return p;
-  const face = faceFor(fig);
-  return { ...p, face, flip: face === "side" && fig.dir < 0, front: face === "back" && type === "laptop" };
+  const face = p.face ?? faceFor(fig);
+  // from behind, something held close in front of the body is hidden by it (a raised or outstretched hand isn't)
+  const j = fig.j, close = Math.abs(j.hdR[0]) < 20 && j.hdR[1] > j.head[1] + 6;
+  return { ...p, face, flip: face === "side" && fig.dir < 0, front: face === "back" && type === "laptop", behind: fig.view === "back" && close };
 }
 
 function placeHeld(fig: Figure, type: DeviceType, pose: string, href: string | undefined, product: boolean, table?: number): HeldPlacement {
@@ -164,7 +168,14 @@ function placeHeld(fig: Figure, type: DeviceType, pose: string, href: string | u
     return { type, href, product, cx: mx + (fig.view === "side" ? 6 * fig.dir : 0), cy: my + 1, scale: HELD_SCALE.laptop!, rot: 0 };
   }
   // from the side a tablet tips back toward the face, like someone reading it
-  const rot = fig.view === "side" ? (type === "tablet" ? -38 : -18) * fig.dir : fig.view === "back" ? 4 : -8;
+  // carried down at the side (hand below the waist): it hangs from the hand
+  if (j.hdR[1] > j.hipR[1] - 6 && (type === "phone" || type === "tablet")) {
+    const h = DEVICE_DEFS[type].h * sc;
+    return { type, href, product, cx: j.hdR[0] + (fig.view === "side" ? 3 * fig.dir : 2), cy: j.hdR[1] + h * 0.3, scale: sc, rot: 0, face: fig.view === "side" ? "back" : "side" };
+  }
+  const rot = fig.view === "side" ? (type === "tablet" ? -28 : -18) * fig.dir : fig.view === "back" ? 4 : -8;
+  // from the side a tablet sits out in front of the hand, clear of the face
+  if (fig.view === "side" && type === "tablet") return { type, href, product, cx: j.hdR[0] + 9 * fig.dir, cy: j.hdR[1] - 3, scale: sc, rot };
   const up = type === "phone" ? 6 : 8;
   return { type, href, product, cx: j.hdR[0] + (fig.view === "side" ? 2 * fig.dir : 0), cy: j.hdR[1] - up, scale: sc, rot };
 }
@@ -212,6 +223,8 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     const raw = heldDeviceOf(c);
     const beside = raw && !isHandheld(raw.type) ? raw : undefined;
     let pose = c.pose ?? (held ? "holding-phone" : beside ? "pointing" : "standing");
+    // only a phone goes to the ear: someone "on a call" with a tablet or laptop is looking at it instead
+    if (pose === "phone-to-ear" && held && held.type !== "phone" && held.type !== "watch") pose = "holding-phone";
     // a seat mark sits people down only when no pose was chosen; an explicit "standing" stands
     if (mark.seated && !c.pose) pose = pose === "holding-phone" && heldDeviceOf(c)?.type === "laptop" ? "sitting-laptop" : "sitting";
     if (panel.scene === "car" && markName === "driver-seat" && !c.pose) pose = "driving";
@@ -225,11 +238,31 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     const table = mark.surface !== undefined && mark.behind && fig.j.seated ? (mark.surface - mark.y) / k0 : undefined;
     const heldP = held ? holdPlacement(fig, held.type, pose, held.screen ? asset(held.screen) : undefined, held.product, table) : undefined;
     if (heldP && pose === "sitting" && (held?.type === "phone" || held?.type === "tablet")) {
-      // seated with a phone or tablet: lift the hand to chest height (a tablet sits a little lower and further out)
+      // seated with a phone or tablet: lift the hand to chest height; from the side it's out in front of them,
+      // from the front or behind it's in front of the chest (not out to one side)
       const tab = held.type === "tablet";
-      fig.j.elR = [fig.j.shR[0] + 6 * fig.dir, fig.j.shR[1] + 18];
-      fig.j.hdR = [fig.j.shR[0] + (tab ? 18 : 14) * fig.dir, fig.j.shR[1] + (tab ? 14 : 8)];
+      if (fig.view === "side") {
+        fig.j.elR = [fig.j.shR[0] + 6 * fig.dir, fig.j.shR[1] + 18];
+        fig.j.hdR = [fig.j.shR[0] + (tab ? 18 : 14) * fig.dir, fig.j.shR[1] + (tab ? 14 : 8)];
+      } else {
+        const k = Math.sign(fig.j.shR[0]) || 1; // from behind, left and right swap on screen
+        fig.j.elR = [fig.j.shR[0] + 5 * k, fig.j.shR[1] + 20];
+        fig.j.hdR = [fig.j.shR[0] - 6 * k, fig.j.shR[1] + (tab ? 22 : 16)];
+      }
       Object.assign(heldP, holdPlacement(fig, held.type, "holding-phone", heldP.href, heldP.product));
+    }
+    if (heldP && held?.type === "laptop" && !fig.j.seated) {
+      // standing with a laptop: held open in front of them on both hands, whatever the pose's arms were doing
+      const j = fig.j, y = j.hipR[1] - 12;
+      if (fig.view === "side") {
+        j.hdR = [j.shR[0] + 20 * fig.dir, y]; j.hdL = [j.shL[0] + 12 * fig.dir, y + 1];
+        j.elR = [j.shR[0] + 4 * fig.dir, y - 14]; j.elL = [j.shL[0] - 1 * fig.dir, y - 13];
+      } else {
+        const kl = Math.sign(j.shL[0]) || -1, kr = Math.sign(j.shR[0]) || 1; // from behind, left and right swap on screen
+        j.hdL = [15 * kl, y]; j.hdR = [15 * kr, y];
+        j.elL = [j.shL[0] + 6 * kl, y - 14]; j.elR = [j.shR[0] + 6 * kr, y - 14];
+      }
+      Object.assign(heldP, holdPlacement(fig, "laptop", "holding-phone", heldP.href, heldP.product));
     }
     if (beside) besides.push({ charId: id, type: beside.type, screen: beside.screen, product: beside.product !== false, x: mark.x + 52 * fig.dir, dir: fig.dir, behind: !!mark.behind });
     chars.push({
@@ -404,20 +437,24 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
 /** Fixed geometry for over-the-shoulder / screen / pov compositions (panel space). */
 export function specialGeometry(sp: NonNullable<Special>) {
   if (sp.kind === "ots") {
+    // the camera sits just behind them: the back of the head and a shoulder fill the lower left, cut off by the
+    // frame, and the screen is in front of them. Held things are up at chest height; laptops and monitors stand
+    // on a desk with the hands on the keys.
     const devType = sp.device?.type ?? "phone";
     const def = DEVICE_DEFS[devType];
-    // something held (phone, tablet, watch) sits at chest height beside the head, only a little bigger than it,
-    // so it reads as "in her hands" rather than a billboard; laptops and the like keep the wider framing
-    const held = !!sp.device && ["phone", "tablet", "watch"].includes(devType);
-    const S = held ? 2.6 : 2.1;
-    const hx = held ? 132 : 104, hy = held ? 150 : 176;
-    const box = held ? { w: devType === "tablet" ? 160 : 104, h: devType === "tablet" ? 116 : 122 } : { w: 170, h: 200 };
-    const ds = Math.min(box.w / def.w, box.h / def.h, held ? 1.3 : 1.7);
-    const dcx = held ? (devType === "tablet" ? 262 : 252) : 272, dcy = held ? 122 : 118;
+    const held = ["phone", "tablet", "watch"].includes(devType);
+    const R = 42, hx = 112, hy = 170;
+    const S = R / sp.char.fig.headR;
+    const deskTop = held ? undefined : 206;
+    let ds: number, dcx: number, dcy: number;
+    if (held) { ds = Math.min((devType === "tablet" ? 176 : 150) / def.h, 150 / def.w); dcx = 268; dcy = 118; }
+    else if (devType === "laptop") { ds = 1.35; dcx = 266; dcy = deskTop! - 8 * ds; }
+    else if (devType === "desktop") { ds = 1.4; dcx = 268; dcy = deskTop! - 56 * ds; }
+    else { ds = Math.min(190 / def.w, 170 / def.h); dcx = 268; dcy = 112; }
     const screen = def.screen ? { x: dcx + def.screen.x * ds, y: dcy + def.screen.y * ds, w: def.screen.w * ds, h: def.screen.h * ds } : undefined;
     return {
-      S, charX: hx - sp.char.fig.j.head[0] * S, charY: hy - sp.char.fig.j.head[1] * S,
-      head: { x: hx, y: hy, r: sp.char.fig.headR * S }, charBox: { x: hx - 60, y: hy - 30, w: 120, h: 120 },
+      S, charX: hx - sp.char.fig.j.head[0] * S, charY: hy - sp.char.fig.j.head[1] * S, deskTop,
+      head: { x: hx, y: hy, r: R }, charBox: { x: hx - 80, y: hy - R, w: 200, h: PANEL_H - hy + R },
       dcx, dcy, ds, screen, devBox: { x: dcx - (def.w * ds) / 2, y: dcy - (def.h * ds) / 2, w: def.w * ds, h: def.h * ds },
     };
   }
@@ -427,7 +464,7 @@ export function specialGeometry(sp: NonNullable<Special>) {
   const ds = Math.min(box.w / def.w, box.h / def.h, handheld ? 2.1 : 3);
   const dcx = 200, dcy = sp.kind === "pov" ? 124 : 128;
   const screen = def.screen ? { x: dcx + def.screen.x * ds, y: dcy + def.screen.y * ds, w: def.screen.w * ds, h: def.screen.h * ds } : undefined;
-  return { S: 1, charX: 0, charY: 0, head: undefined, charBox: undefined, dcx, dcy, ds, screen, devBox: { x: dcx - (def.w * ds) / 2, y: dcy - (def.h * ds) / 2, w: def.w * ds, h: def.h * ds } };
+  return { S: 1, charX: 0, charY: 0, deskTop: undefined as number | undefined, head: undefined, charBox: undefined, dcx, dcy, ds, screen, devBox: { x: dcx - (def.w * ds) / 2, y: dcy - (def.h * ds) / 2, w: def.w * ds, h: def.h * ds } };
 }
 
 // ------------------------------------------------------------------ text + overlay placement

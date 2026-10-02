@@ -4,6 +4,7 @@ import { richLines } from "../sketch/rich";
 import type { Board, LayoutOverride, MarkupStroke, Panel, SceneImage, ScenePanel, TimePanel } from "../types";
 import { isScene } from "../types";
 import { Character } from "./character";
+import { HeadFront, hairBack } from "./head";
 import { DEVICE_DEFS, Device, type Rect } from "./devices";
 import { ADV_TITLE, stackOrder, captionBox, heldDeviceOf, layoutPanel, placeBubbles, specialGeometry, toPanel, wrap, textWidth, type AssetResolver, type CharPlaced, type DevPlaced, type PanelLayout } from "./layout";
 import { BubbleShape, BubbleText, Callout, CaptionShape, CaptionText, GestureMark } from "./overlays";
@@ -46,7 +47,7 @@ function CharEl({ c, pid, cam, layout }: { c: CharPlaced; pid: string; cam: { s:
   ) : undefined;
   return (
     <g data-el={c.id} data-kind="character" transform={`translate(${c.x + dx} ${c.y + dy}) rotate(${c.ov.rotate ?? 0}) scale(${k})`}>
-      <Character f={c.fig} cast={c.cast} mood={c.mood} held={held} heldFront={!!c.held?.front} chair={c.chair} />
+      <Character f={c.fig} cast={c.cast} mood={c.mood} held={held} heldFront={!!c.held?.front} heldBehind={!!c.held?.behind} chair={c.chair} />
     </g>
   );
 }
@@ -115,30 +116,45 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
   if (sp.kind === "ots") {
     const c = sp.char;
     const ov = panel.layout?.[c.id] ?? {};
-    const S = g.S * (ov.scale ?? 1);
-    const cx = g.charX + (ov.dx ?? 0), cy = g.charY + (ov.dy ?? 0);
-    // seen from behind, the near arm reaches forward, away from us: the body hides the upper arm, so only the
-    // forearm shows, coming out from the side of the body up to the hand gripping the phone's lower corner
-    const j = c.fig.j;
-    const nearLeft = j.shL[0] > j.shR[0]; // the shoulder on the phone's side
-    const sh = nearLeft ? j.shL : j.shR;
-    const shoulder: Pt = [cx + sh[0] * S, cy + sh[1] * S];
-    const handP: Pt = [dcx - dw * 0.55, dcy + dh * 0.8];
-    const elbow: Pt = [shoulder[0] - 14, shoulder[1] + 62]; // tucked in at the waist, behind the body
+    const k = ov.scale ?? 1;
+    const ox = ov.dx ?? 0, oy = ov.dy ?? 0;
+    const hx = g.head!.x + ox, hy = g.head!.y + oy, R = g.head!.r * k;
+    const r0 = c.fig.headR;
+    // broad shoulders and the top of the back, running out of the frame (not the little rig torso, scaled up)
+    const top = hy + R * 0.82;
+    // sloping from the neck out to rounded shoulder tips, then straight down out of the frame
+    const shoulders = `M${hx - R * 2.9} ${PANEL_H + 20} L${hx - R * 2.75} ${top + R * 0.95} Q${hx - R * 2.55} ${top + R * 0.12} ${hx - R * 1.5} ${top + R * 0.02} Q${hx - R * 0.6} ${top - R * 0.12} ${hx} ${top - R * 0.12} Q${hx + R * 0.6} ${top - R * 0.12} ${hx + R * 1.5} ${top + R * 0.02} Q${hx + R * 2.55} ${top + R * 0.12} ${hx + R * 2.75} ${top + R * 0.95} L${hx + R * 2.9} ${PANEL_H + 20} Z`;
+    const neck = `M${hx - R * 0.38} ${hy + R * 0.5} V${top + 4} H${hx + R * 0.38} V${hy + R * 0.5} Z`;
+    // forearms come forward from the far side of the body, up to the device: one hand on a phone, both on keys
+    const deskTop = g.deskTop;
+    const keys: Pt[] = deskTop === undefined ? [] : devType === "desktop" ? [[dcx - 34, deskTop + 14], [dcx + 30, deskTop + 14]] : [[dcx - 30 * ds, deskTop + 7], [dcx + 22 * ds, deskTop + 7]];
+    const holdP: Pt = [dcx - dw * 0.42, dcy + dh * 0.86];
+    const forearm = (to: Pt, from: Pt) => arm(from, to, 22);
+    const person = (
+      <g data-el={c.id} data-kind="character">
+        <path d={shoulders} fill={sleeve} stroke={ink} strokeWidth={2.4} strokeLinejoin="round" />
+        <path d={`M${hx - R * 0.6} ${top + 2} Q${hx} ${top + R * 0.35} ${hx + R * 0.6} ${top + 2}`} fill="none" stroke={ink} strokeWidth={1.6} strokeLinecap="round" opacity={0.6} />
+        <path d={neck} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" />
+        <g transform={`translate(${hx} ${hy}) scale(${R / r0}) translate(${-c.fig.j.head[0]} ${-c.fig.j.head[1]})`}>
+          {hairBack(c.cast, c.fig, c.fig.j.head[0], c.fig.j.head[1], r0)}
+          <HeadFront f={c.fig} cast={c.cast} mood={c.mood} hx={c.fig.j.head[0]} hy={c.fig.j.head[1]} r={r0} skin={skin} />
+        </g>
+      </g>
+    );
+    const keyboard = devType === "desktop" && deskTop !== undefined && <path d={`M${dcx - 66} ${deskTop + 22} l8 -12 h116 l8 12 Z`} fill={C.paper} stroke={ink} strokeWidth={2} strokeLinejoin="round" />;
     return (
       <g>
         {desk}
-        {handheld && <g data-el={c.id} data-kind="character">{arm(elbow, handP, 15)}</g>}
-        <g data-el={c.id} data-kind="character" transform={`translate(${cx} ${cy}) scale(${S})`}>
-          <Character f={c.fig} cast={c.cast} mood={c.mood} hideArm={handheld ? (nearLeft ? "left" : "right") : undefined} />
-        </g>
         {device}
-        {handheld && (
+        {keyboard}
+        {owner && (handheld || keys.length > 0) && (
           <g data-el={c.id} data-kind="character">
-            {/* just the back of the hand on the phone's edge: no fingers, the touch mark shows the tap */}
-            <path d={`M${handP[0] - 12} ${handP[1] + 10} Q${handP[0] - 14} ${handP[1] - 8} ${handP[0] - 2} ${handP[1] - 12} Q${handP[0] + 10} ${handP[1] - 12} ${handP[0] + 11} ${handP[1] + 2} Q${handP[0] + 8} ${handP[1] + 14} ${handP[0] - 12} ${handP[1] + 10} Z`} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" />
+            {handheld
+              ? <>{forearm(holdP, [hx + R * 2.3, PANEL_H + 30])}<path d={`M${holdP[0] - 12} ${holdP[1] + 10} Q${holdP[0] - 14} ${holdP[1] - 8} ${holdP[0] - 2} ${holdP[1] - 12} Q${holdP[0] + 10} ${holdP[1] - 12} ${holdP[0] + 11} ${holdP[1] + 2} Q${holdP[0] + 8} ${holdP[1] + 14} ${holdP[0] - 12} ${holdP[1] + 10} Z`} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" /></>
+              : keys.map((p, i) => <g key={i}>{forearm(p, [hx + R * (i ? 2.5 : 1.7), PANEL_H + 30])}{hand(p, 10)}</g>)}
           </g>
         )}
+        {person}
       </g>
     );
   }
