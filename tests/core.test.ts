@@ -331,7 +331,8 @@ describe("layers and signs", () => {
     expect(order(applyOps(two, front) as Board)).toEqual(["a", "b", "shape-0", "watch"]);
     const fwd = applyOps(two, arrangeOps(two, sel, "forward")!) as Board;
     expect(order(fwd)).toEqual(["a", "watch", "b", "shape-0"]);
-    expect(arrangeOps(two, sel, "back")).toBeUndefined();
+    // already at the back of its layer: "to back" now puts it behind the scene's furniture
+    expect(arrangeOps(two, sel, "back")?.[0]).toMatchObject({ path: ["panels", 0, "layout", "watch", "layer"], value: "back" });
   });
   it("a panel's sign overrides the board brand, or blanks it", () => {
     const b: Board = { schemaVersion: 1, title: "Shops", cast: {}, page: { brand: { name: "Brewly" } },
