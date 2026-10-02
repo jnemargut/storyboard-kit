@@ -10,6 +10,8 @@ interface DeviceDef {
   h: number;
   screen: Rect | null;
   body: (props: { outline: boolean }) => ReactNode;
+  /** How far below the origin the base is, when the drawing isn't centered (a laptop: lid up, base at the bottom). */
+  base?: number;
 }
 
 const ink = C.ink;
@@ -26,7 +28,7 @@ export const DEVICE_DEFS: Record<DeviceType, DeviceDef> = {
     body: body((f, s, sw) => <rect x={-55} y={-75} width={110} height={150} rx={10} fill={f} stroke={s} strokeWidth={sw} />),
   },
   laptop: {
-    w: 150, h: 96, screen: { x: -54, y: -80, w: 108, h: 70 },
+    w: 150, h: 96, base: 8, screen: { x: -54, y: -80, w: 108, h: 70 },
     body: body((f, s, sw) => <g><rect x={-62} y={-88} width={124} height={86} rx={6} fill={f} stroke={s} strokeWidth={sw} /><path d="M-75 -2 L75 -2 L68 8 L-68 8 Z" fill={f === "none" ? "none" : C.g4} stroke={s} strokeWidth={sw} strokeLinejoin="round" /></g>),
   },
   desktop: {
@@ -59,6 +61,9 @@ export const DEVICE_DEFS: Record<DeviceType, DeviceDef> = {
   },
 };
 
+/** Distance from a device's origin down to what it stands on, in device units. */
+export const baseOf = (type: DeviceType) => DEVICE_DEFS[type].base ?? DEVICE_DEFS[type].h / 2;
+
 /** Generic teal UI sketch for screens without an uploaded image. */
 function genericUI(s: Rect, product = true): ReactNode {
   const lines = [];
@@ -83,7 +88,36 @@ export interface DeviceProps {
    * the product). "side": seen edge-on from the side, the screen a sliver facing the person (who is on the left;
    * mirror with scale(-1 1) for someone facing left).
    */
-  face?: "screen" | "back" | "side";
+  face?: "screen" | "back" | "side" | "turned";
+}
+
+/**
+ * A monitor or tablet turned three-quarters toward someone on its left: the near (right) edge is taller than the far
+ * one, so the screen visibly faces them while its teal still shows. Mirror with scale(-1 1) for someone on the right.
+ */
+function DeviceTurned({ type, product }: { type: DeviceType; product: boolean }) {
+  const def = DEVICE_DEFS[type];
+  const s = def.screen!;
+  const k = 0.68; // foreshortened width
+  const L = s.x * k - 6, R = (s.x + s.w) * k + 6, T = s.y - 7, B = s.y + s.h + 7, d = (B - T) * 0.09; // far edge shrinks by d top and bottom
+  const outer = `M${L} ${T + d} L${R} ${T} L${R} ${B} L${L} ${B - d} Z`;
+  const iL = L + 7, iR = R - 6, iT = T + 7, iB = B - 7, id = (iB - iT) * 0.09;
+  const inner = `M${iL} ${iT + id} L${iR} ${iT} L${iR} ${iB} L${iL} ${iB - id} Z`;
+  const rows = [0.2, 0.36, 0.52].map((f, i) => {
+    const y0 = iT + id + (iB - iT - 2 * id) * f, y1 = iT + (iB - iT) * f;
+    return <path key={i} d={`M${iL + 8} ${y0} L${iL + (iR - iL) * (i % 2 ? 0.6 : 0.85)} ${y0 + (y1 - y0) * (i % 2 ? 0.6 : 0.85)}`} stroke={product ? C.tealDark : C.g5} strokeWidth={2.4} strokeLinecap="round" />;
+  });
+  const by = iT + id * 0.25 + (iB - iT) * 0.78;
+  return (
+    <g>
+      <g transform={`translate(${OFFSET.x} ${OFFSET.y})`}><path d={outer} fill={C.g7} /></g>
+      <path d={outer} fill={C.g7} stroke={ink} strokeWidth={2.4} strokeLinejoin="round" />
+      <path d={inner} fill={product ? C.tealTint : C.g1} stroke={ink} strokeWidth={1.4} strokeLinejoin="round" />
+      {rows}
+      <path d={`M${iL + 10} ${by + 2} L${iR - 12} ${by - 2}`} stroke={product ? C.teal : C.g4} strokeWidth={7} strokeLinecap="round" />
+      {type === "desktop" && <path d="M-2 31 L-4 52 M10 31 L12 52 M-24 56 H30" stroke={ink} strokeWidth={4} fill="none" strokeLinecap="round" />}
+    </g>
+  );
 }
 
 /** A held device seen from behind: its back, tinted when it's the product, with a camera or a logo. */
@@ -146,6 +180,7 @@ function DeviceSide({ type, product }: { type: DeviceType; product: boolean }) {
 export function Device({ type, href, clipId, product = true, face = "screen" }: DeviceProps) {
   if (face === "back" && ["laptop", "phone", "tablet"].includes(type)) return <DeviceBack type={type} product={product} />;
   if (face === "side" && ["laptop", "phone", "tablet"].includes(type)) return <DeviceSide type={type} product={product} />;
+  if (face === "turned" && (type === "desktop" || type === "tablet")) return <DeviceTurned type={type} product={product} />;
   const def = DEVICE_DEFS[type];
   const s = def.screen;
   const B = def.body;

@@ -2,7 +2,7 @@ import { plainText } from "../sketch/rich";
 import type { Board, Bubble, CastMember, CharacterInPanel, LayoutOverride, ScenePanel } from "../types";
 import { HANDHELD, type DeviceType, type Mood, type Pose } from "../vocab";
 import { autoVariant, figure, type Figure, type Pt } from "./rig";
-import { DEVICE_DEFS, type Rect } from "./devices";
+import { DEVICE_DEFS, type Rect, baseOf } from "./devices";
 import { resolveScene } from "./scenes";
 import { FLOOR_Y, PANEL_H, PANEL_W } from "./tokens";
 
@@ -49,6 +49,9 @@ export interface DevPlaced {
   behind: boolean;
   ov: LayoutOverride;
   tilt?: "left" | "right";
+  /** Turned toward whoever uses it (see Device's face); flip = they're on its right. */
+  face?: "screen" | "back" | "side" | "turned";
+  flip?: boolean;
 }
 
 export interface Anchor {
@@ -93,12 +96,12 @@ export const SNAP = 14;
  * Returns the device's center y, and the surface it landed on (undefined = nothing near enough).
  */
 export function restingY(scene: { marks: Record<string, { surface?: number }>; surfaces?: number[] }, type: DeviceType, spot: { y: number; scale?: number; wall?: boolean }): { y: number; on?: number } {
-  const h = DEVICE_DEFS[type].h * (spot.scale ?? PLACED_SCALE[type] ?? 0.4);
-  if (spot.wall) return { y: spot.y, on: spot.y + h / 2 };
-  const bottom = spot.y + h / 2;
+  const b = baseOf(type) * (spot.scale ?? PLACED_SCALE[type] ?? 0.4);
+  if (spot.wall) return { y: spot.y, on: spot.y + b };
+  const bottom = spot.y + b;
   const tops = [FLOOR_Y, ...Object.values(scene.marks).map((m) => m.surface).filter((v): v is number => typeof v === "number"), ...(scene.surfaces ?? [])];
   const near = tops.map((t) => ({ t, d: Math.abs(t - bottom) })).filter((x) => x.d <= SNAP).sort((a, b) => a.d - b.d)[0];
-  return near ? { y: near.t - h / 2, on: near.t } : { y: spot.y };
+  return near ? { y: near.t - b, on: near.t } : { y: spot.y };
 }
 
 const ovOf = (panel: ScenePanel, id: string): LayoutOverride => panel.layout?.[id] ?? {};
@@ -304,7 +307,7 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     // at a spot with no tabletop: a kiosk stands on the floor; anything smaller sits at hand height, not in the floor
     const h = def.h * s;
     // a mark up in the air (a wall screen's place) is the device's center; a mark on the floor means "near this spot"
-    const y = onSurface ? spot.y - h / 2 : mark ? (mark.y < FLOOR_Y - 1 ? mark.y : d.type === "kiosk" ? FLOOR_Y - h / 2 : FLOOR_Y - 96) : restingY(scene, d.type, { ...spot, scale: s }).y;
+    const y = onSurface ? spot.y - baseOf(d.type) * s : mark ? (mark.y < FLOOR_Y - 1 ? mark.y : d.type === "kiosk" ? FLOOR_Y - h / 2 : FLOOR_Y - 96) : restingY(scene, d.type, { ...spot, scale: s }).y;
     devices.push({ id, type: d.type, product: d.product !== false, href: d.screen ? asset(d.screen) : undefined, x: spot.x, y, s, rot: 0, behind: behindOf(panel, id, !!(spot as { behind?: boolean }).behind), ov: ovOf(panel, id), tilt: d.tilt });
   });
   const proxy: Record<string, string> = {};
@@ -351,6 +354,19 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     if (ch.held?.face !== "back") continue;
     const touched = (panel.gestures ?? []).some((g) => g.on === ch.id);
     if (touched || ch.held.href) Object.assign(ch.held, { face: "screen", front: false });
+  }
+
+  // a screen standing on a desk turns toward the person sitting or standing at it (a laptop goes side-on, a
+  // monitor or tablet three-quarters), unless the designer tilted it, someone's tapping it, or it shows a real design
+  for (const d of devices) {
+    if (d.tilt || d.href || !["desktop", "laptop", "tablet"].includes(d.type)) continue;
+    if ((panel.gestures ?? []).some((g) => g.on === d.id)) continue;
+    const user = chars
+      .filter((c) => c.fig.view !== "back" && Math.abs(d.x - c.x) > 14 && Math.abs(d.x - c.x) < 150 && Math.sign(d.x - c.x) === c.fig.dir)
+      .sort((a, b) => Math.abs(d.x - a.x) - Math.abs(d.x - b.x))[0];
+    if (!user || user.fig.view === "front") continue;
+    d.face = d.type === "laptop" ? "side" : "turned";
+    d.flip = user.x > d.x;
   }
 
   // ---- special compositions
@@ -457,13 +473,16 @@ export function specialGeometry(sp: NonNullable<Special>) {
     const devType = sp.device?.type ?? "phone";
     const def = DEVICE_DEFS[devType];
     const held = ["phone", "tablet", "watch"].includes(devType);
-    const R = 42, hx = 112, hy = 170;
+    const R = 42, hx = 112;
+    // at a desk they sit a little higher in the frame, so the keys are below the shoulders and the arms reach down
+    const hy = held ? 170 : 150;
     const S = R / sp.char.fig.headR;
+    // the desk's far edge; a laptop's hinge sits just in front of it, a monitor's stand on it
     const deskTop = held ? undefined : 206;
     let ds: number, dcx: number, dcy: number;
-    if (held) { ds = Math.min((devType === "tablet" ? 176 : 150) / def.h, 150 / def.w); dcx = 268; dcy = 118; }
-    else if (devType === "laptop") { ds = 1.35; dcx = 266; dcy = deskTop! - 8 * ds; }
-    else if (devType === "desktop") { ds = 1.4; dcx = 268; dcy = deskTop! - 56 * ds; }
+    if (held) { ds = Math.min((devType === "tablet" ? 160 : 136) / def.h, 140 / def.w); dcx = 252; dcy = 124; }
+    else if (devType === "laptop") { ds = 1.2; dcx = 262; dcy = deskTop! + 4 + 2 * ds; }
+    else if (devType === "desktop") { ds = 1.25; dcx = 268; dcy = deskTop! - 4 - 56 * ds; }
     else { ds = Math.min(190 / def.w, 170 / def.h); dcx = 268; dcy = 112; }
     const screen = def.screen ? { x: dcx + def.screen.x * ds, y: dcy + def.screen.y * ds, w: def.screen.w * ds, h: def.screen.h * ds } : undefined;
     return {

@@ -6,7 +6,7 @@ You tell Claude Code (or Codex) what someone's day looks like. It sketches a sto
 little editor until it feels true. Then you drop it in your deck and the room starts talking about the person's
 whole day, not just the screens.
 
-![Storyboard Kit sizzle reel](docs/sizzle-9d88c89.gif)
+![Storyboard Kit sizzle reel](docs/sizzle-a1c6c22.gif)
 
 ## Why though
 
@@ -17,7 +17,7 @@ Storyboard Kit draws all of that in a scrappy marker style where **only your pro
 Everything else is gray, so your product sits inside the rest of someone's life instead of at the center of it.
 You see what comes before it, what happens around it, and where people quietly work around it.
 
-![The Late Latte, an example storyboard](docs/late-latte-caaacad.png)
+![The Late Latte, an example storyboard](docs/late-latte-ca804d5.png)
 
 ## Why storyboard at all?
 
@@ -47,7 +47,7 @@ A storyboard helps you:
 I built this tool on a Mac, posted about it from the same Mac, and figured designers would love it. Then I
 storyboarded what actually happened next:
 
-![Posting the Tool and Hoping Folks Use It](docs/why-storyboard-404bec5.png)
+![Posting the Tool and Hoping Folks Use It](docs/why-storyboard-5aa3096.png)
 
 Built on a big screen, read on a small one. People skimmed it on the train, couldn't try it from their phone,
 and quietly bookmarked it forever. The launch post showed features, but never the moment in someone's day
@@ -95,7 +95,7 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 
 ![Meet the cast](docs/cast-9784af1.png)
 
-![A few of the scenes](docs/scenes-d4680eb.png)
+![A few of the scenes](docs/scenes-0e3f0c3.png)
 
 - **A cast you build from parts.** 4 skin tones, 9 hair styles, 4 body types,
   3 ages, 16 outfits (scrubs, hi-vis, chef whites, lab coat, uniform, overalls and friends), 7 hats, plus
@@ -131,7 +131,7 @@ kit, [Wireframe Kit](https://github.com/jnemargut/wireframe-kit) (`/wireframe`),
 "device": { "type": "phone", "screen": "./order-ahead.wireframe.json#status" }
 ```
 
-![A storyboard using real wireframe screens](docs/in-a-storyboard-0e262d3.png)
+![A storyboard using real wireframe screens](docs/in-a-storyboard-6868cbc.png)
 
 Change the wireframe and the storyboard catches up on its own. No Wireframe Kit installed? The screen PNG it
 renders next to the file still works.
@@ -173,7 +173,7 @@ or off (`"page": { "legend": { "cast": false } }`, or `"legend": false` to hide 
 
 **Play mode**
 
-![Play mode with sharpie markup](docs/play-283ce4d.png)
+![Play mode with sharpie markup](docs/play-7c6e02e.png)
 
 Hit **▶ Play** (or P) to present the board one step at a time, with a big pointer the room can follow.
 

@@ -41,7 +41,7 @@ function Box({ x, w, top, base = FLOOR_Y, fill = C.g4 }: { x: number; w: number;
 }
 
 // device sizes as placed in a scene (layout.ts PLACED_SCALE × DEVICE_DEFS), to sit things on tops exactly
-const H = { desktop: 60, laptop: 40.32, tablet: 36, phone: 20.16, terminal: 23.04, tv: 64.96, kiosk: 128 };
+const H = { desktop: 60, laptop: 6.72 /* the base is 8 units below a laptop's center, not half its height */, tablet: 36, phone: 20.16, terminal: 23.04, tv: 64.96, kiosk: 128 };
 const on = (top: number, h: number) => top - h / 2;
 
 export const PLACE_SCENES: Record<string, SceneDef> = {

@@ -57,7 +57,7 @@ function DevEl({ d, pid, cam }: { d: DevPlaced; pid: string; cam: { s: number } 
   const dx = (d.ov.dx ?? 0) / cam.s, dy = (d.ov.dy ?? 0) / cam.s;
   return (
     <g data-el={d.id} data-kind="device" data-drop={`device:${d.id}`} transform={`translate(${d.x + dx} ${d.y + dy}) rotate(${d.rot + (d.ov.rotate ?? 0)}) scale(${d.s * (d.ov.scale ?? 1)})${d.tilt ? ` skewY(${d.tilt === "left" ? -14 : 14}) scale(0.82 1)` : ""}`}>
-      <Device type={d.type} href={d.href} product={d.product} clipId={clip(pid, d.id)} />
+      <g transform={d.flip ? "scale(-1 1)" : undefined}><Device type={d.type} href={d.href} product={d.product} face={d.face} clipId={clip(pid, d.id)} /></g>
     </g>
   );
 }
@@ -128,18 +128,31 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
     const neck = `M${hx - R * 0.34} ${hy + R * 0.5} V${top + 6} H${hx + R * 0.34} V${hy + R * 0.5} Z`;
     // upper arm creases, so the shoulders read as shoulders
     const creases = `M${hx - W * 0.7} ${top + R * 0.55} q-3 ${R * 0.5} -2 ${R}` + ` M${hx + W * 0.7} ${top + R * 0.55} q3 ${R * 0.5} 2 ${R}`;
-    // a phone is held up in one hand; at a laptop or desktop the hands are on the keys, below and in front of the screen
+    // forearms come out of the body at the shoulder (the upper arm is hidden behind it) and reach a short way
+    // forward: one hand on a phone, both on the keys of a laptop or keyboard
     const deskTop = g.deskTop;
-    const holdP: Pt = [dcx - dw * 0.42, dcy + dh * 0.86];
-    const forearm = (to: Pt, from: Pt) => arm(from, to, 20);
-    const mitt = (p: Pt) => <ellipse cx={p[0]} cy={p[1]} rx={11} ry={7} fill={skin} stroke={ink} strokeWidth={2} />;
-    // the keyboard deck of a laptop (or the keyboard in front of a monitor), seen from just behind and above
-    const deck = deskTop !== undefined && (devType === "laptop"
-      ? <path d={`M${dcx - 66 * ds} ${deskTop - 2} L${dcx + 66 * ds} ${deskTop - 2} L${dcx + 76 * ds} ${deskTop + 22} L${dcx - 76 * ds} ${deskTop + 22} Z`} fill={C.g4} stroke={ink} strokeWidth={2.2} strokeLinejoin="round" />
-      : devType === "desktop" ? <path d={`M${dcx - 64} ${deskTop + 24} l8 -14 h112 l8 14 Z`} fill={C.paper} stroke={ink} strokeWidth={2} strokeLinejoin="round" /> : null);
-    const keyY = deskTop === undefined ? 0 : devType === "laptop" ? deskTop + 13 : deskTop + 18;
-    const keys: Pt[] = deck ? [[dcx - 24, keyY], [dcx + 26, keyY]] : [];
-    const bodyR = hx + W - 6; // forearms come forward from the near side of the body
+    const forearm = (from: Pt, to: Pt) => arm(from, to, 19);
+    const mitt = (p: Pt) => <ellipse cx={p[0]} cy={p[1]} rx={10} ry={6.5} fill={skin} stroke={ink} strokeWidth={2} />;
+    const nearSh: Pt = [hx + W - 6, top + R * 0.62], farSh: Pt = [hx + W * 0.3, top + R * 0.5];
+    const holdP: Pt = [dcx - dw * 0.5 + 6, dcy + dh * 0.82];
+    const otsDesk = deskTop !== undefined && (
+      <g pointerEvents="none">
+        <path d={`M-10 ${deskTop} H${PANEL_W + 10} V${PANEL_H + 10} H-10 Z`} fill={C.g2} stroke={ink} strokeWidth={2.2} strokeLinejoin="round" />
+      </g>
+    );
+    // seen from just behind and above, the keys lie flat on the desk in front of the screen, widening toward us:
+    // a laptop's deck joins its screen at the hinge; a monitor's keyboard sits on its own in front of the stand
+    const hinge = dcy - 2 * ds;
+    const deck = deskTop === undefined ? null : devType === "laptop" ? (
+      <g>
+        <path d={`M${dcx - 62 * ds} ${hinge} H${dcx + 62 * ds} L${dcx + 72 * ds} ${hinge + 26} H${dcx - 72 * ds} Z`} fill={C.g4} stroke={ink} strokeWidth={2.2} strokeLinejoin="round" />
+        <path d={`M${dcx - 50 * ds} ${hinge + 7} H${dcx + 50 * ds} M${dcx - 54 * ds} ${hinge + 13} H${dcx + 54 * ds} M${dcx - 20 * ds} ${hinge + 20} H${dcx + 20 * ds}`} stroke={C.g7} strokeWidth={1.4} strokeLinecap="round" />
+      </g>
+    ) : devType === "desktop" ? (
+      <path d={`M${dcx - 58} ${deskTop + 24} l7 -14 h102 l7 14 Z`} fill={C.paper} stroke={ink} strokeWidth={2} strokeLinejoin="round" />
+    ) : null;
+    const keyY = devType === "laptop" ? hinge + 16 : (deskTop ?? 0) + 18;
+    const keys: Pt[] = deck ? [[dcx - 26, keyY], [dcx + 24, keyY]] : [];
     const person = (
       <g data-el={c.id} data-kind="character">
         <path d={shoulders} fill={sleeve} stroke={ink} strokeWidth={2.4} strokeLinejoin="round" />
@@ -153,14 +166,14 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
     );
     return (
       <g>
-        {desk}
+        {otsDesk}
         {device}
         {deck}
         {owner && (handheld || keys.length > 0) && (
           <g data-el={c.id} data-kind="character">
             {handheld
-              ? <>{forearm(holdP, [bodyR - 4, PANEL_H + 30])}<path d={`M${holdP[0] - 12} ${holdP[1] + 10} Q${holdP[0] - 14} ${holdP[1] - 8} ${holdP[0] - 2} ${holdP[1] - 12} Q${holdP[0] + 10} ${holdP[1] - 12} ${holdP[0] + 11} ${holdP[1] + 2} Q${holdP[0] + 8} ${holdP[1] + 14} ${holdP[0] - 12} ${holdP[1] + 10} Z`} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" /></>
-              : keys.map((p, i) => <g key={i}>{forearm(p, [i ? bodyR + 10 : hx + W * 0.35, PANEL_H + 30])}{mitt(p)}</g>)}
+              ? <>{forearm(nearSh, holdP)}<path d={`M${holdP[0] - 12} ${holdP[1] + 10} Q${holdP[0] - 14} ${holdP[1] - 8} ${holdP[0] - 2} ${holdP[1] - 12} Q${holdP[0] + 10} ${holdP[1] - 12} ${holdP[0] + 11} ${holdP[1] + 2} Q${holdP[0] + 8} ${holdP[1] + 14} ${holdP[0] - 12} ${holdP[1] + 10} Z`} fill={skin} stroke={ink} strokeWidth={2} strokeLinejoin="round" /></>
+              : keys.map((p, i) => <g key={i}>{forearm(i ? nearSh : farSh, p)}{mitt(p)}</g>)}
           </g>
         )}
         {person}
