@@ -80,6 +80,19 @@ export function hairBack(cast: CastMember, f: Figure, hx: number, hy: number, r:
   }
 }
 
+/**
+ * Scruffy tufts for short hair: a few uneven spikes poking out of the cap, so it reads as hair that's been slept
+ * on rather than a buzz cut. `degs` are angles around the head (-90 = straight up); `lean` tips them one way.
+ */
+function tufts(hx: number, hy: number, R: number, r: number, degs: number[], lean: number, st: { fill: string }): ReactNode {
+  return degs.map((deg, i) => {
+    const a = (deg * Math.PI) / 180, w = 0.17, len = r * [0.16, 0.26, 0.14, 0.22, 0.16][i % 5];
+    const p = (ang: number, k: number) => `${(hx + Math.cos(ang) * k).toFixed(1)} ${(hy + Math.sin(ang) * k).toFixed(1)}`;
+    const tip = a + lean * 0.16;
+    return <path key={deg} d={`M${p(a - w, R - 1.5)} L${p(tip, R + len)} L${p(a + w, R - 1.5)}`} fill={st.fill} stroke={ink} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />;
+  });
+}
+
 /** Hair drawn ON TOP of the head: a cap that stops at the hairline so the eyes stay clear. */
 function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: number): ReactNode {
   const fill = hairColor(cast);
@@ -102,6 +115,7 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
           <path d={`M${hx - 0.15 * r} ${hy - 0.8 * r} Q${hx - 0.45 * r} ${hy - 0.1 * r} ${hx - 0.4 * r} ${hy + (cast.hair === "long" ? 1.3 : 0.5) * r} M${hx + 0.25 * r} ${hy - 0.75 * r} Q${hx + 0.45 * r} ${hy - 0.05 * r} ${hx + 0.35 * r} ${hy + (cast.hair === "long" ? 1.4 : 0.55) * r}`}
             fill="none" stroke={ink} strokeWidth={1} strokeLinecap="round" opacity={0.4} />
         )}
+        {cast.hair === "short" && !cast.hat && tufts(hx, hy, r, r, [-128, -104, -80, -56], 1, st)}
         {cast.hair === "bun" && !cast.hat && <circle cx={hx} cy={hy - r - 3} r={r * 0.42} {...st} />}
         {cast.hair === "ponytail" && <path d={`M${hx - 0.22 * r} ${hy + 0.35 * r} Q${hx - 0.3 * r} ${hy + 1.2 * r} ${hx} ${hy + 1.45 * r} Q${hx + 0.3 * r} ${hy + 1.2 * r} ${hx + 0.22 * r} ${hy + 0.35 * r} Z`} {...st} />}
       </g>
@@ -119,6 +133,7 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
       <g>
         <path d={cap} {...st} {...(cast.hair === "afro" ? { stroke: st.fill, strokeWidth: 2.4 } : {})} />
         {ear}
+        {cast.hair === "short" && !cast.hat && tufts(hx, hy, R, r, d > 0 ? [-150, -122, -96, -70] : [-30, -58, -84, -110], -d, st)}
         {cast.hair === "bun" && !cast.hat && <circle cx={hx - d * 0.78 * r} cy={hy - 0.85 * r} r={r * 0.42} {...st} />}
         {/* curly: a few small curls along the top of the cap, never past the forehead */}
         {cast.hair === "curly" && [-80, -112, -144].map((deg) => { const a = (deg * Math.PI) / 180; return <circle key={deg} cx={hx + d * Math.cos(a) * R * 0.98} cy={hy + Math.sin(a) * R * 0.98} r={r * 0.22} {...st} />; })}
@@ -134,7 +149,8 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
   // the cap hugs the head: an arc around the head's own center, from temple to temple
   const sx = Math.sqrt(Math.max(0, R * R - (hy - sideY) ** 2));
   const fringe = cast.hair === "short"
-    ? `Q${hx + o + 0.4 * r} ${hy - 0.66 * r} ${hx + o - 0.08 * r} ${hy - 0.6 * r} Q${hx + o - 0.55 * r} ${hy - 0.56 * r} ${hx - sx} ${sideY}` // soft side part
+    // a choppy, uneven fringe: a few jagged locks across the forehead
+    ? `L${hx + o + 0.62 * r} ${hy - 0.42 * r} L${hx + o + 0.42 * r} ${hy - 0.66 * r} L${hx + o + 0.2 * r} ${hy - 0.4 * r} L${hx + o - 0.04 * r} ${hy - 0.68 * r} L${hx + o - 0.3 * r} ${hy - 0.44 * r} L${hx + o - 0.5 * r} ${hy - 0.64 * r} L${hx - sx} ${sideY}`
     : `Q${hx + o + 0.5 * r} ${hy - 0.62 * r} ${hx + o} ${hy - 0.48 * r} Q${hx + o - 0.5 * r} ${hy - 0.62 * r} ${L} ${hy - 0.08 * r}`;
   const cap = `M${hx - sx} ${sideY} A${R} ${R} 0 0 1 ${hx + sx} ${sideY} ${fringe} Z`;
   // the afro's cap is a half-circle over the whole crown, so no forehead band shows; it merges into the cloud behind
@@ -149,6 +165,7 @@ function hairFront(cast: CastMember, f: Figure, hx: number, hy: number, r: numbe
   return (
     <g>
       <path d={cap} {...st} {...(sideY !== hy - 0.08 * r ? { strokeWidth: 1.3 } : {})} />
+      {cast.hair === "short" && !cast.hat && tufts(hx + o * 0.5, hy, R, r, [-128, -104, -80, -56], f.angle === "three-quarter" ? -f.dir : 1, st)}
       {cast.hair === "bun" && !cast.hat && <circle cx={hx + o * 0.5} cy={hy - r - 3} r={r * 0.42} {...st} />}
     </g>
   );
