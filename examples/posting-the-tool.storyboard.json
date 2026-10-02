@@ -57,8 +57,7 @@
         }
       ],
       "bubbles": [{ "type": "thought", "from": "jon", "text": "GIF, install steps, done. Ship it." }],
-      "gestures": [{ "type": "click", "on": "jon" }],
-      "layout": { "jon.screen": { "dx": -52, "dy": 103 } }
+      "gestures": [{ "type": "click", "on": "jon" }]
     },
     { "id": "next-morning", "type": "time", "text": "Next morning…", "icon": "sun" },
     {
