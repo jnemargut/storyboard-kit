@@ -157,7 +157,8 @@ which of the three kits the thinking needs, then builds the storyboard, the scre
   layers (add Shift for all the way). Drawings come in three line weights, with a white fill for covering things up.
 - Copy a whole panel and paste it into Figma, Slack or a doc as an image, or onto a Flowchart Kit board as a live
   card. Paste it back into a board and it's a normal, editable panel again. Paste any other image in and it becomes a picture in the panel.
-- Delete deletes, Cmd+Z undoes, arrow keys nudge.
+- Delete deletes, Cmd+Z undoes, arrow keys nudge (Shift for bigger steps).
+- The drawing tools have the same letters in every kit: V select, D pen, R box, O oval, L line, A arrow, T text.
 - **Ask agent** copies a pointer to whatever you clicked, so you can tell your agent "make this angrier."
 
 **Journey lanes**

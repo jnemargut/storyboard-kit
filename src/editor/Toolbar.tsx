@@ -89,15 +89,15 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
           <button onClick={() => actions.arrange("forward")} title={`Bring forward (${cmd}])`}>Forward</button>
           <button onClick={() => actions.arrange("backward")} title={`Send backward (${cmd}[)`}>Backward</button>
           <button onClick={() => actions.arrange("back")} title={`Send to back (${cmd}⇧[)`}>To back</button>
-          <span className="sep" />
-          {(() => {
+          {sel.kind !== "shape" && <span className="sep" />}
+          {sel.kind !== "shape" && (() => {
             const pi = panelIndex(board, sel.panel);
             const rot = board.panels[pi]?.layout?.[sel.el]?.rotate ?? 0;
             const turn = (d: number) => commit(layoutOps(pi, sel.el, { rotate: ((rot + d + 540) % 360) - 180 }));
             return (
               <>
-                <button onClick={() => turn(-15)} title="Rotate 15° left (or drag the round handle)">⟲</button>
-                <button onClick={() => turn(15)} title="Rotate 15° right (or drag the round handle)">⟳</button>
+                <button onClick={() => turn(-15)} title="Rotate 15° left (or drag the round handle)">↺ 15°</button>
+                <button onClick={() => turn(15)} title="Rotate 15° right (or drag the round handle)">↻ 15°</button>
                 {rot !== 0 && <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: 0 }))} title="Back to upright">Straighten</button>}
               </>
             );
@@ -353,8 +353,8 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
               <Pick title="Swipe direction" value={String(cur)} options={["0", "45", "90", "135", "180", "225", "270", "315"]}
                 labels={{ "0": "swipe →", "45": "swipe ↘", "90": "swipe ↓", "135": "swipe ↙", "180": "swipe ←", "225": "swipe ↖", "270": "swipe ↑", "315": "swipe ↗" }}
                 onChange={(v) => setAngle(Number(v))} />
-              <button onClick={() => setAngle(cur - 45)} title="Rotate the swipe counter-clockwise">⟲</button>
-              <button onClick={() => setAngle(cur + 45)} title="Rotate the swipe clockwise">⟳</button>
+              <button onClick={() => setAngle(cur - 45)} title="Rotate the swipe counter-clockwise">↺</button>
+              <button onClick={() => setAngle(cur + 45)} title="Rotate the swipe clockwise">↻</button>
             </>
           );
         })()}
@@ -424,7 +424,8 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
           <Swatches value={sh.color ?? "ink"} onChange={(c) => set("color", c === "ink" ? undefined : c)} />
           <button onClick={() => size(1 / 1.2)} title="Smaller">A−</button>
           <button onClick={() => size(1.2)} title="Bigger">A+</button>
-          <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: ((ov.rotate ?? 0) + 15) % 360 }))} title="Rotate 15°">⟳</button>
+          <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: ((ov.rotate ?? 0) + 345) % 360 }))} title="Rotate 15° left">↺</button>
+          <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: ((ov.rotate ?? 0) + 15) % 360 }))} title="Rotate 15° right">↻</button>
           {remove}
         </>,
         reset ?? undefined,
@@ -436,7 +437,8 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
         <Swatches value={sh.color ?? "ink"} onChange={(c) => set("color", c === "ink" ? undefined : c)} />
         {!open && <Pick title="Fill" value={sh.fill ?? "none"} options={ids(SHAPE_FILLS)} labels={{ none: "no fill", light: "light fill", mid: "mid fill", dark: "dark fill", white: "white fill" }} onChange={(v) => set("fill", v === "none" ? undefined : v)} />}
         <Pick title="Line" value={sh.color === "none" ? "none" : sh.weight ?? "normal"} options={[...ids(SHAPE_WEIGHTS), ...(open ? [] : ["none"])]} labels={{ thin: "thin line", normal: "normal line", thick: "thick line", none: "no line" }} onChange={(v) => { if (v === "none") set("color", "none"); else { if (sh.color === "none") set("color", undefined); set("weight", v === "normal" ? undefined : v); } }} />
-        <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: ((ov.rotate ?? 0) + 15) % 360 }))} title="Rotate 15°">⟳</button>
+        <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: ((ov.rotate ?? 0) + 345) % 360 }))} title="Rotate 15° left">↺</button>
+          <button onClick={() => commit(layoutOps(pi, sel.el, { rotate: ((ov.rotate ?? 0) + 15) % 360 }))} title="Rotate 15° right">↻</button>
         {remove}
       </>,
       reset ?? undefined,

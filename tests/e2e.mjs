@@ -279,6 +279,53 @@ try {
   await sleep(400);
   check(read().panels[3].characters.length === nChars + 1, "Cmd+D duplicates the person");
 
+  // the same checklist for a selected drawing in every kit (Wireframe and Flowchart run it too):
+  // any hex color, line thickness, duplicate, layer, cut and paste, undo and redo, delete
+  {
+    const HEX = "#7a3cb5";
+    const mine = () => (read().panels[3].shapes ?? []).filter((s) => s.type === "rect" && s.color === HEX);
+    // Storyboard layers by layout z, the other kits by list order
+    const order = () => JSON.stringify([read().panels[3].shapes, read().panels[3].layout]);
+    const until = async (fn, ms = 5000) => { const t = Date.now(); while (Date.now() - t < ms) { try { if (await fn()) return true; } catch { /* mid-save */ } await sleep(80); } return false; };
+    await page.keyboard.press("Escape");
+    await page.locator(".tabs button", { hasText: "Draw" }).click();
+    // Storyboard's Draw tab shows the colors and thicknesses in a row instead of a pop-up
+    await page.locator(".drawer-body .swatch-row").getByRole("button", { name: /any color/i }).click();
+    await page.getByLabel("Hex color").fill(HEX);
+    await page.getByLabel("Hex color").press("Enter");
+    await page.getByRole("button", { name: "thick line", exact: true }).click();
+    await page.keyboard.press("r");
+    const pb = await page.locator('g[data-panel="in-line"] > rect[data-el="__panel"]').boundingBox();
+    await page.mouse.move(pb.x + pb.width * 0.6, pb.y + pb.height * 0.1); await page.mouse.down();
+    await page.mouse.move(pb.x + pb.width * 0.8, pb.y + pb.height * 0.3, { steps: 5 }); await page.mouse.up();
+    check(await until(() => mine().length === 1 && mine()[0].weight === "thick"), `checklist: a box drawn in any hex color with a thick line ${JSON.stringify(read().panels[3].shapes)}`);
+    await page.keyboard.press("v");
+    await page.keyboard.press("Meta+d");
+    check(await until(() => mine().length === 2), "checklist: Cmd+D duplicates the drawing");
+    const before = order();
+    await page.keyboard.press("Meta+Shift+BracketLeft");
+    check(await until(() => order() !== before), "checklist: Cmd+Shift+[ sends it to the back");
+    const cutShape = (read().panels[3].shapes ?? []).filter((x) => x.type === "rect" && x.color === HEX)[0];
+    await page.keyboard.press("Meta+x");
+    check(await until(() => mine().length === 1), "checklist: Cmd+X cuts it");
+    await page.mouse.move(pb.x + pb.width * 0.5, pb.y + pb.height * 0.5);
+    await page.keyboard.press("Meta+v");
+    // this rides the real system clipboard, which anything else on the Mac can touch: one retry
+    if (!(await until(() => mine().length === 2, 5000)) && mine().length === 1) {
+      await page.evaluate((item) => navigator.clipboard.writeText(JSON.stringify({ storyboardClip: 1, kind: "shape", item })), cutShape);
+      await page.keyboard.press("Meta+v");
+    }
+    check(await until(() => mine().length === 2), "checklist: Cmd+V pastes it back as a drawing");
+    await page.keyboard.press("Meta+z");
+    check(await until(() => mine().length === 1), "checklist: undo");
+    await page.keyboard.press("Meta+Shift+z");
+    check(await until(() => mine().length === 2), "checklist: redo");
+    await page.keyboard.press("Delete");
+    check(await until(() => mine().length === 1), "checklist: Delete removes it");
+    await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: "Close" }).click().catch(() => {});
+  }
+
   // play mode: step through with the keyboard, notes, and back out to the same panel
   await page.mouse.click(5, 990);
   await page.getByRole("button", { name: "▶ Play" }).click();

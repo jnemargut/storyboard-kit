@@ -207,8 +207,11 @@ export function pasteOps(b: Board, raw: unknown, sel: Sel | null): { ops: Op[]; 
   delete item.id;
   if (clip.kind === "image") { item.x = ((item.x as number | undefined) ?? 200) + 12; item.y = ((item.y as number | undefined) ?? 130) + 12; }
   if (clip.kind === "shape" && Array.isArray(item.points)) item.points = (item.points as [number, number][]).map(([x, y]) => [x + 12, y + 12]); // offset so the copy is visible
-  ops.push({ path: ["panels", pi, key, ((p as unknown as Record<string, unknown[]>)[key] ?? []).length], value: item });
-  return { ops, label: `${clip.kind} pasted` };
+  const at = ((p as unknown as Record<string, unknown[]>)[key] ?? []).length;
+  ops.push({ path: ["panels", pi, key, at], value: item });
+  // what you pasted ends up selected (devices are named by type, so they keep the panel)
+  const select: Sel = clip.kind === "device" ? { panel: p.id, el: "__panel", kind: "panel" } : { panel: p.id, el: `${clip.kind}-${at}`, kind: clip.kind as Kind };
+  return { ops, label: `${clip.kind} pasted`, select };
 }
 
 /**
@@ -310,11 +313,11 @@ export function arrangeOps(b: Board, sel: Sel, to: Arrange): Op[] | undefined {
   const up = to === "front" || to === "forward";
   const atEdge = up ? i === group.length - 1 : i === 0;
   // "to front" means in front of everything, furniture included (and "to back" behind it)
-  const allTheWay = (to === "front" && me.behind) || (to === "back" && !me.behind);
+  const crosses = (me.kind === "character" || me.kind === "device") && me.behind === up;
+  const allTheWay = crosses && ((to === "front" && me.behind) || (to === "back" && !me.behind));
   if (atEdge || allTheWay) {
     // already the top (or bottom) of its layer: people and devices can cross the scene's furniture (a seated
     // person behind a table comes in front of it and of the laptop on it; a device goes behind the counter)
-    const crosses = (me.kind === "character" || me.kind === "device") && me.behind === up;
     if (!crosses) return undefined;
     const other = all.filter((it) => it.behind !== me.behind).map((it) => it.z);
     const z = !other.length ? 0 : to === "front" ? Math.max(...other) + 1 : to === "back" ? Math.min(...other) - 1 : up ? Math.min(...other) - 1 : Math.max(...other) + 1;

@@ -296,9 +296,8 @@ export function App() {
       const closed = d.shape.type === "rect" || d.shape.type === "ellipse";
       const shape: Shape = { type: d.shape.type, points: d.shape.points, ...(closed ? { fill: "light" as const } : {}), ...(drawColor !== "ink" ? { color: drawColor } : {}), ...(drawWeight !== "normal" && d.shape.type !== "text" ? { weight: drawWeight as Shape["weight"] } : {}) };
       const id = `shape-${d.index}`;
-      void commit([{ path: ["panels", d.pi, "shapes", d.index], value: shape }], "Shape added").then(() => {
-        if (d.shape.type !== "path") { setTool(null); setSel({ panel: d.pid, el: id, kind: "shape" }); }
-      });
+      void commit([{ path: ["panels", d.pi, "shapes", d.index], value: shape }], "Shape added");
+      if (d.shape.type !== "path") { setTool(null); setSel({ panel: d.pid, el: id, kind: "shape" }); }
       return;
     }
     if (d?.moved && draft) { const ops = draft; setDraft(null); void commit(ops); }
@@ -384,7 +383,9 @@ export function App() {
     const res = pasteOps(board, clip, sel);
     if (!res) return false;
     if (typeof res === "string") { flash(res); return true; }
-    void commit(res.ops, res.label).then(() => res.select && setSel(res.select));
+    // the board updates before the save finishes, so what was pasted can be selected right away
+    void commit(res.ops, res.label);
+    if (res.select) setSel(res.select);
     return true;
   };
   const actions = {
@@ -446,7 +447,8 @@ export function App() {
       if (!d || !clipFor(board, sel)) return;
       onCopy(e);
       void commit(d.ops, "Cut. Paste it anywhere, or Cmd+Z to undo");
-      setSel(null);
+      // keep its panel selected so Cmd+V right away puts it back there
+      setSel(sel.kind === "panel" ? null : { panel: sel.panel, el: "__panel", kind: "panel" });
     };
     const onPaste = (e: ClipboardEvent) => {
       if (typing() || !board) return;
@@ -489,6 +491,9 @@ export function App() {
       if (e.key.toLowerCase() === "p" && !mod && board) { e.preventDefault(); startPlay(); return; }
       if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
       if (e.key === "Escape") { setSel(null); setTool(null); return; }
+      // the drawing tools' letters, the same in every kit: V select, D pen, R box, O oval, L line, A arrow, T text
+      const TOOL_LETTERS: Record<string, ShapeType | null> = { v: null, d: "path", r: "rect", o: "ellipse", l: "line", a: "arrow", t: "text" };
+      if (!mod && !e.altKey && !e.shiftKey && e.key.toLowerCase() in TOOL_LETTERS && board) { e.preventDefault(); setTool(TOOL_LETTERS[e.key.toLowerCase()]); return; }
       if (!sel || !board) return;
       if (mod && e.key.toLowerCase() === "d") { e.preventDefault(); actions.duplicate(); return; }
       if (mod && (e.code === "BracketRight" || e.code === "BracketLeft") && ARRANGEABLE.includes(sel.kind)) {
@@ -506,7 +511,7 @@ export function App() {
         return;
       }
       if (e.key === "Enter" && TEXT_KINDS.includes(sel.kind)) { e.preventDefault(); startEdit(sel); return; }
-      const step = e.shiftKey ? 10 : 2;
+      const step = e.shiftKey ? 10 : 1;
       const arrows: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
       if (arrows[e.key] && sel.kind !== "panel") {
         e.preventDefault();
