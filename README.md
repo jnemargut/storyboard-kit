@@ -119,8 +119,8 @@ Or just click around yourself. Your edits and the agent's edits land in the same
   your call). **Crop…** shows just the part you want.
 - **Bold, italic, underline and strikethrough** anywhere there's text: `**bold**`, `*italic*`, `__underline__`,
   `~~struck~~`, or Cmd+B, Cmd+I and Cmd+U in the editor. Strike the "4 min" that turned out to be twelve.
-- **A pen, some shapes and free text** for anything I forgot to draw, in six marker colors (teal stays
-  reserved for your product).
+- **A pen, some shapes and free text** for anything I forgot to draw, in six marker colors, or any color
+  you pick with the **+** (a hex, or the dropper). Teal stays reserved for your product.
 
 ## Real screens from Wireframe Kit
 

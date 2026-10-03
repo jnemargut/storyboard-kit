@@ -8,6 +8,7 @@ import type { Board } from "../types";
 import type { MarkerColor } from "../vocab";
 import { smooth } from "../render/shapes";
 import { MARKER } from "../render/tokens";
+import { markerHex } from "../sketch/tokens";
 import { Swatches } from "./Swatches";
 import { isScene } from "../types";
 import { feelingOf, stepName, WOBBLE_FILTER } from "../render/board";
@@ -139,7 +140,7 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
         <div className="present-tools" role="group" aria-label="Markup">
           <button className={tool === "pen" ? "on" : ""} aria-pressed={tool === "pen"} onClick={() => setTool(tool === "pen" ? null : "pen")} title="Sharpie: draw over the step (D)">Sharpie</button>
           <span className="pen-color">
-            <button className="pen-dot" style={{ background: MARKER[color] }} onClick={() => setPicking(!picking)} aria-expanded={picking} aria-label={`Sharpie color: ${color}`} title="Sharpie color" />
+            <button className="pen-dot" style={{ background: markerHex(color) }} onClick={() => setPicking(!picking)} aria-expanded={picking} aria-label={`Sharpie color: ${color}`} title="Sharpie color" />
             {picking && <span className="pen-pop"><Swatches value={color} onChange={(c) => { setColor(c); setTool("pen"); setPicking(false); }} label="Sharpie color" /></span>}
           </span>
           <button className={tool === "eraser" ? "on" : ""} aria-pressed={tool === "eraser"} onClick={() => setTool(tool === "eraser" ? null : "eraser")} title="Eraser: click or drag over strokes (E)">Eraser</button>
@@ -160,7 +161,7 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
               <filter id="sb-gray"><feColorMatrix type="saturate" values="0" /></filter>
             </defs>
             <PanelArt board={board} panel={p} opts={{ ...opts, showMarkup: true, markupHit: tool === "eraser" }} />
-            {live && live.length > 1 && <path d={smooth(live)} fill="none" stroke={MARKER[color]} strokeWidth={color === "yellow" ? 12 : 4.5} strokeOpacity={color === "yellow" ? 0.55 : 0.92} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />}
+            {live && live.length > 1 && <path d={smooth(live)} fill="none" stroke={markerHex(color)} strokeWidth={color === "yellow" ? 12 : 4.5} strokeOpacity={color === "yellow" ? 0.55 : 0.92} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />}
           </svg>
           <figcaption>
             <span className="present-step">{i + 1}</span>

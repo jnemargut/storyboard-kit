@@ -37,7 +37,7 @@ const shapeItem = {
     id: { type: "string" }, type: oneOf(SHAPES), fill: oneOf(SHAPE_FILLS),
     points: { type: "array", minItems: 1, items: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2 } },
     text: { type: "string", description: "The words, for a text shape." },
-    color: { anyOf: [oneOf(MARKER_COLORS), { const: "none", description: "No outline." }] },
+    color: { anyOf: [oneOf(MARKER_COLORS), { const: "none", description: "No outline." }, { type: "string", pattern: "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$", description: "Any color as a hex, e.g. \"#e8b04b\"." }] },
     weight: oneOf(SHAPE_WEIGHTS),
     size: { enum: ["s", "m", "l", "xl"], description: "Text size for a text shape." },
   },

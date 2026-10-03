@@ -1,4 +1,5 @@
 import { findUndrawable, undrawableHint } from "./sketch/glyphs";
+import { isHex } from "./sketch/tokens";
 import {
   ACCESSORIES, AGES, ANGLES, BODY, BUBBLES, DEVICES, DIRECTIONS, FACING, GESTURES, HAIR, HAIR_SHADE, HATS, MOODS,
   OUTFITS, PANEL_TYPES, POSES, SCENES, SCENE_MARKS, MARKER_COLORS, SHAPE_FILLS, SHAPE_WEIGHTS, SHAPES, SHOTS, SKIN, TIME_ICONS, ids, type Entry,
@@ -55,7 +56,7 @@ export function validate(input: unknown): Result {
       const sp = `${path}[${j}]`;
       if (!isObj(s)) { err(sp, "must be an object."); return; }
       known(sp, s, ["id", "type", "points", "fill", "text", "color", "weight", "size"]);
-      if (s.color !== "none") oneOf(`${sp}.color`, s.color, MARKER_COLORS, "color");
+      if (s.color !== "none" && !isHex(s.color)) oneOf(`${sp}.color`, s.color, MARKER_COLORS, "color");
       oneOf(`${sp}.weight`, s.weight, SHAPE_WEIGHTS, "weight");
       if (s.size !== undefined && !["s", "m", "l", "xl"].includes(String(s.size))) err(`${sp}.size`, `"${String(s.size)}" isn't a text size.`, "Use s, m, l or xl.");
       oneOf(`${sp}.type`, s.type, SHAPES, "shape");
@@ -176,7 +177,7 @@ export function validate(input: unknown): Result {
       if (!isObj(m)) { err(mp, "must be an object."); return; }
       known(mp, m, ["points", "color"]);
       if (!Array.isArray(m.points) || m.points.length < 2) err(`${mp}.points`, "must be at least two [x, y] points.");
-      oneOf(`${mp}.color`, m.color, MARKER_COLORS, "color");
+      if (!isHex(m.color)) oneOf(`${mp}.color`, m.color, MARKER_COLORS, "color");
     });
 
     if (type === "title") {

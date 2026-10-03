@@ -310,6 +310,11 @@
                     {
                       "const": "none",
                       "description": "No outline."
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+                      "description": "Any color as a hex, e.g. \"#e8b04b\"."
                     }
                   ]
                 },
@@ -400,6 +405,11 @@
                     {
                       "const": "none",
                       "description": "No outline."
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+                      "description": "Any color as a hex, e.g. \"#e8b04b\"."
                     }
                   ]
                 },
@@ -1288,6 +1298,11 @@
                         {
                           "const": "none",
                           "description": "No outline."
+                        },
+                        {
+                          "type": "string",
+                          "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+                          "description": "Any color as a hex, e.g. \"#e8b04b\"."
                         }
                       ]
                     },
