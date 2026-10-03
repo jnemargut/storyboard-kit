@@ -160,7 +160,7 @@ button, select, input, textarea { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) { .present-slide .present-panel { animation: none !important; } }
 
 /* marker color swatches */
-.swatches { display: inline-flex; gap: 4px; align-items: center; }
+.swatches { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; max-width: 100%; }
 .swatch { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--color-paper); box-shadow: 0 0 0 1.5px var(--color-600); padding: 0; cursor: pointer; }
 .swatch.on { box-shadow: 0 0 0 2.5px var(--color-ink); }
 .ctx .swatch, .present .swatch { border-color: var(--color-800); }
