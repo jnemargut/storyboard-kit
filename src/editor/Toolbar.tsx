@@ -146,9 +146,27 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
   const del = deleteOps(board, sel);
   const remove = del ? <button onClick={() => { void commit(del.ops, "Deleted. Cmd+Z to undo"); if (!del.keepSelection) setSel(null); }} title="Delete (or press Delete)">Delete</button> : null;
   const editText = <button onClick={() => startEdit()} title="Or double-click the text. Drag the corner handle to change its size.">Edit text</button>;
+  // the selected device's screen picture and where its crop lives, for "Crop screen…"
+  const scr = (() => {
+    if (!isScene(panel) || sel.kind !== "device") return undefined;
+    const loc = locate(panel, sel.el);
+    if (!loc) return undefined;
+    if (loc.key === "characters") {
+      const d = panel.characters![loc.index].device;
+      return d && typeof d === "object" && d.screen ? { screen: d.screen, crop: d.crop, path: ["panels", pi, "characters", loc.index, "device", "crop"] as (string | number)[] } : undefined;
+    }
+    if (loc.key === "devices") {
+      const d = panel.devices![loc.index];
+      return d?.screen ? { screen: d.screen, crop: d.crop, path: ["panels", pi, "devices", loc.index, "crop"] as (string | number)[] } : undefined;
+    }
+    return undefined;
+  })();
   const screenBtn = (
     <>
       <button className="teal" onClick={() => input.current?.click()} title="Put your own design on this screen">Screen…</button>
+      {scr ? <button onClick={() => setCropping(true)} title="Show only part of the screen picture">{scr.crop ? "Change crop…" : "Crop screen…"}</button> : null}
+      {scr && cropping ? <CropDialog src={`/baked/${scr.screen.replace(/^\.\//, "").split("/").map(encodeURIComponent).join("/")}?raw=1`} crop={scr.crop} onCancel={() => setCropping(false)}
+        onDone={(c) => { setCropping(false); void commit([{ path: scr.path, value: c, ...(c ? {} : { delete: true }) }], c ? "Cropped" : "Uncropped"); }} /> : null}
       <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
     </>
   );
@@ -260,7 +278,7 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
     const loc = locate(panel, sel.el)!;
     const c = panel.characters![loc.index] as CharacterInPanel;
     const held = heldDeviceOf(c);
-    const setDevice = (v: string) => commit([{ path: ["panels", pi, "characters", loc.index, "device"], ...(v ? { value: held?.screen ? { type: v, screen: held.screen } : v } : { delete: true }) }]);
+    const setDevice = (v: string) => commit([{ path: ["panels", pi, "characters", loc.index, "device"], ...(v ? { value: held?.screen ? { ...(typeof c.device === "object" ? c.device : {}), type: v } : v } : { delete: true }) }]);
     return render(
       <>
         <button className={look ? "on" : ""} onClick={() => { setLook(!look); setOpen(false); }} title={`Skin, hair, body, age, outfit, accessories. Changes ${board.cast[c.who]?.name ?? c.who} everywhere.`}>Look…</button>
@@ -358,6 +376,16 @@ export function Toolbar({ board, file, sel, box, commit, setSel, startEdit, uplo
           title="Sketchify: gray marker drawing that matches the storyboard. Off: the original picture.">{sketched ? "Sketchified" : "Original"}</button>
         <button onClick={() => input.current?.click()} title="Swap in a different picture, keeping its place and size">Replace…</button>
         <button onClick={() => setCropping(true)} title="Show only part of the picture">{im.crop ? "Change crop…" : "Crop…"}</button>
+        <button className={im.mirror ? "on" : ""} aria-pressed={!!im.mirror} onClick={() => set("mirror", im.mirror ? undefined : true)} title="Flip it left to right">Mirror</button>
+        <button onClick={() => {
+          // a quarter turn clockwise; the box turns with it, so the picture keeps its size
+          const t = ((im.turn ?? 0) + 90) % 360;
+          void commit([
+            { path: ["panels", pi, "images", loc!.index, "turn"], ...(t ? { value: t } : { delete: true }) },
+            { path: ["panels", pi, "images", loc!.index, "w"], value: im.h ?? 90 },
+            { path: ["panels", pi, "images", loc!.index, "h"], value: im.w ?? 120 },
+          ], "Turned");
+        }} title="Turn it a quarter turn clockwise">Turn ↻</button>
         {cropping ? <CropDialog src={`/files/${im.src.replace(/^\.\//, "")}`} crop={im.crop} onCancel={() => setCropping(false)} onDone={(c) => {
           setCropping(false);
           // keep the picture's width and make its box match the new shape, so nothing gets squashed

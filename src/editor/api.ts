@@ -1,5 +1,5 @@
 import type { Op } from "../sketch/json";
-import { splitCrop } from "../sketch/crop";
+import { splitFix } from "../sketch/crop";
 import type { Board } from "../types";
 import type { Result } from "../validate";
 
@@ -21,6 +21,6 @@ export const api = {
 };
 
 export const assetUrl = (bust: number) => (p0: string) => {
-  const { path: p, crop } = splitCrop(p0);
-  return `/baked/${p.replace(/^\.\//, "").split("/").map(encodeURIComponent).join("/")}?v=${bust}${crop ? `&crop=${crop.join(",")}` : ""}`;
+  const { path: p, crop, orient } = splitFix(p0);
+  return `/baked/${p.replace(/^\.\//, "").split("/").map(encodeURIComponent).join("/")}?v=${bust}${crop ? `&crop=${crop.join(",")}` : ""}${orient?.mirror ? "&mirror=1" : ""}${orient?.turn ? `&turn=${orient.turn}` : ""}`;
 };

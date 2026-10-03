@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { splitCrop } from "../sketch/crop";
+import { splitFix } from "../sketch/crop";
 import { applyOps, type Op } from "../sketch/json";
 import { BoardSVG, legendOf, pageSize, panelOrigin } from "../render/board";
 import type { Board, LayoutOverride, ScenePanel, Shape } from "../types";
@@ -43,6 +43,8 @@ export function App() {
   const [tool, setTool] = useState<ShapeType | null>(null);
   /** Color for new drawings and text. */
   const [drawColor, setDrawColor] = useState<MarkerColor>("ink");
+  /** Line thickness for new drawings. */
+  const [drawWeight, setDrawWeight] = useState<string>("normal");
   /** Play mode: the panel index being shown, or null while editing. */
   const [playing, setPlaying] = useState<number | null>(null);
   // picking a drawing tool drops the selection, so its toolbar can't sit on top of where you draw
@@ -111,7 +113,7 @@ export function App() {
 
   const shown = useMemo(() => (board && draft ? applyOps(board, draft) : board), [board, draft]);
   const size = shown ? pageSize(shown) : { width: 1, height: 1 };
-  const opts = useMemo(() => ({ asset: assetUrl(bust), raw: (p: string) => (splitCrop(p).crop ? `${assetUrl(bust)(p)}&raw=1` : `/files/${p.replace(/^\.\//, "")}?v=${bust}`), sketch: (p: string) => `${assetUrl(bust)(p)}&mode=grey`, wobble: !draft, editing: true }), [bust, draft]);
+  const opts = useMemo(() => ({ asset: assetUrl(bust), raw: (p: string) => (splitFix(p).crop || splitFix(p).orient ? `${assetUrl(bust)(p)}&raw=1` : `/files/${p.replace(/^\.\//, "")}?v=${bust}`), sketch: (p: string) => `${assetUrl(bust)(p)}&mode=grey`, wobble: !draft, editing: true }), [bust, draft]);
 
   // ------------------------------------------------------------ selection geometry
   const measure = useCallback((s: Sel | null): Box | null => {
@@ -292,7 +294,7 @@ export function App() {
       const tiny = d.shape.type === "path" ? d.shape.points.length < 3 : Math.hypot(b[0] - a[0], b[1] - a[1]) < 6;
       if (tiny) return;
       const closed = d.shape.type === "rect" || d.shape.type === "ellipse";
-      const shape: Shape = { type: d.shape.type, points: d.shape.points, ...(closed ? { fill: "light" as const } : {}), ...(drawColor !== "ink" ? { color: drawColor } : {}) };
+      const shape: Shape = { type: d.shape.type, points: d.shape.points, ...(closed ? { fill: "light" as const } : {}), ...(drawColor !== "ink" ? { color: drawColor } : {}), ...(drawWeight !== "normal" && d.shape.type !== "text" ? { weight: drawWeight as Shape["weight"] } : {}) };
       const id = `shape-${d.index}`;
       void commit([{ path: ["panels", d.pi, "shapes", d.index], value: shape }], "Shape added").then(() => {
         if (d.shape.type !== "path") { setTool(null); setSel({ panel: d.pid, el: id, kind: "shape" }); }
@@ -634,7 +636,7 @@ export function App() {
       </div>
       <Drawer board={board} sel={sel} commit={commit} setSel={setSel} flash={flash} tool={tool} setTool={setTool}
         addImage={(f) => addImage(f).catch((err) => flash(`Upload failed: ${(err as Error).message}`))} sketchNew={sketchNew} setSketchNew={setSketchNew}
-        drawColor={drawColor} setDrawColor={setDrawColor} />
+        drawColor={drawColor} setDrawColor={setDrawColor} drawWeight={drawWeight} setDrawWeight={setDrawWeight} />
       {toast && <div className="toast">{toast}</div>}
       {playing !== null && board && (
         <Present board={board} opts={{ asset: opts.asset, raw: opts.raw, sketch: opts.sketch, wobble: true }} start={playing} commit={commit} undo={undo}

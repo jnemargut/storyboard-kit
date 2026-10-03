@@ -163,6 +163,7 @@ button, select, input, textarea { font: inherit; color: inherit; }
 .swatches { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; max-width: 100%; }
 .swatch { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--color-paper); box-shadow: 0 0 0 1.5px var(--color-600); padding: 0; cursor: pointer; }
 .swatch.on { box-shadow: 0 0 0 2.5px var(--color-ink); }
+.swatch.weight { width: 28px; height: 24px; border-radius: 6px; background: var(--color-paper); display: inline-grid; place-items: center; color: var(--color-ink); margin-left: 4px; }
 .ctx .swatch, .present .swatch { border-color: var(--color-800); }
 .ctx .swatch.on, .present .swatch.on { box-shadow: 0 0 0 2.5px var(--color-paper); }
 .swatch-row { gap: 8px; }

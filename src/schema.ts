@@ -142,7 +142,7 @@ export function buildSchema() {
                       variant: { type: "integer", minimum: 1, maximum: 3, description: "Pose variation 1–3 (auto if omitted)." },
                       device: {
                         description: "Device in their hands: phone, tablet, laptop or watch only. Kiosks, car displays, TVs etc. go in the panel's `devices`.",
-                        oneOf: [device, { type: "object", required: ["type"], additionalProperties: false, properties: { type: device, screen: { type: "string" }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn gray, not teal. Default true." } } }],
+                        oneOf: [device, { type: "object", required: ["type"], additionalProperties: false, properties: { type: device, screen: { type: "string" }, crop: { type: "array", items: { type: "number", minimum: 0, maximum: 1 }, minItems: 4, maxItems: 4, description: "Show only part of the screen picture: [left, top, right, bottom] as fractions." }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn gray, not teal. Default true." } } }],
                       },
                     },
                   },
@@ -151,7 +151,7 @@ export function buildSchema() {
                   type: "array",
                   items: {
                     type: "object", required: ["type"], additionalProperties: false,
-                    properties: { id: { type: "string" }, type: device, at: { type: "string" }, tilt: { enum: ["left", "right"], description: "Screen turned away from the viewer." }, screen: { type: "string", description: "Path to a screen image, relative to the storyboard file." }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn gray, not teal. Default true." } },
+                    properties: { id: { type: "string" }, type: device, at: { type: "string" }, tilt: { enum: ["left", "right"], description: "Screen turned away from the viewer." }, screen: { type: "string", description: "Path to a screen image, relative to the storyboard file." }, crop: { type: "array", items: { type: "number", minimum: 0, maximum: 1 }, minItems: 4, maxItems: 4, description: "Show only part of the screen picture: [left, top, right, bottom] as fractions." }, product: { type: "boolean", description: "false = not the product (personal call/text, someone else's app): drawn gray, not teal. Default true." } },
                   },
                 },
                 bubbles: {
@@ -176,6 +176,8 @@ export function buildSchema() {
                       x: { type: "number" }, y: { type: "number" }, w: { type: "number", exclusiveMinimum: 0 }, h: { type: "number", exclusiveMinimum: 0 },
                       sketch: { type: "boolean", description: "false = show the image as-is. Default true." },
                       crop: { type: "array", items: { type: "number", minimum: 0, maximum: 1 }, minItems: 4, maxItems: 4, description: "Show only part of the picture: [left, top, right, bottom] as fractions." },
+                      mirror: { type: "boolean", description: "Flip it left to right." },
+                      turn: { enum: [0, 90, 180, 270], description: "Turn it clockwise, in degrees." },
                     },
                   },
                 },

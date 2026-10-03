@@ -116,11 +116,12 @@ Or just click around yourself. Your edits and the agent's edits land in the same
 - **Wireframes, too.** Point a phone at a [Wireframe Kit](https://github.com/jnemargut/wireframe-kit) screen and
   it shows up in teal, and stays in sync when the wireframe changes.
 - **Any picture at all.** Drag in or paste a photo you found and it gets sketchified in grays to match (or not,
-  your call). **Crop…** shows just the part you want.
+  your call). **Crop…** shows just the part you want, **Mirror** flips it and **Turn** turns it. Screens on
+  phones and laptops crop too.
 - **Bold, italic, underline and strikethrough** anywhere there's text: `**bold**`, `*italic*`, `__underline__`,
   `~~struck~~`, or Cmd+B, Cmd+I and Cmd+U in the editor. Strike the "4 min" that turned out to be twelve.
 - **A pen, some shapes and free text** for anything I forgot to draw, in six marker colors, or any color
-  you pick with the **+** (a hex, or the dropper). Teal stays reserved for your product.
+  you pick with the **+** (a hex, or the dropper), thin, normal or thick. Teal stays reserved for your product.
 
 ## Real screens from Wireframe Kit
 

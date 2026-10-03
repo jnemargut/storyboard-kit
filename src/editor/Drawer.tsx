@@ -194,11 +194,12 @@ function PoseThumb({ pose, cast }: { pose: Pose; cast: CastMember }) {
 
 const TABS = ["People", "Poses", "Bubbles & notes", "Devices", "Gestures", "Draw & images", "Panels", "Cast"] as const;
 
-export function Drawer({ board, sel, commit, setSel, flash, tool, setTool, addImage, sketchNew, setSketchNew, drawColor, setDrawColor }: {
+export function Drawer({ board, sel, commit, setSel, flash, tool, setTool, addImage, sketchNew, setSketchNew, drawColor, setDrawColor, drawWeight, setDrawWeight }: {
   board: Board; sel: Sel | null; commit: (ops: Op[], label?: string) => Promise<void>; setSel: (s: Sel | null) => void; flash: (m: string) => void;
   tool: ShapeType | null; setTool: (t: ShapeType | null) => void;
   addImage: (f: File) => void; sketchNew: boolean; setSketchNew: (v: boolean) => void;
   drawColor: MarkerColor; setDrawColor: (c: MarkerColor) => void;
+  drawWeight: string; setDrawWeight: (w: string) => void;
 }) {
   const imgInput = useRef<HTMLInputElement>(null);
   const [tab, setTab] = useState<(typeof TABS)[number] | null>(null);
@@ -267,6 +268,13 @@ export function Drawer({ board, sel, commit, setSel, flash, tool, setTool, addIm
                 </button>
               ))}
               <label className="check swatch-row">Color <Swatches value={drawColor} onChange={setDrawColor} /></label>
+              <span className="check swatch-row">Line
+                {(["thin", "normal", "thick"] as const).map((w) => (
+                  <button key={w} type="button" className={`swatch weight${drawWeight === w ? " on" : ""}`} title={`${w} line`} aria-label={`${w} line`} aria-pressed={drawWeight === w} onClick={() => setDrawWeight(w)}>
+                    <svg viewBox="0 0 24 24" width={20} height={20}><path d="M4 12 L20 12" stroke="currentColor" strokeWidth={{ thin: 1.3, normal: 2.6, thick: 5 }[w]} strokeLinecap="round" /></svg>
+                  </button>
+                ))}
+              </span>
               <span className="hint">For anything the library doesn't have. Pick a tool, then drag on a scene panel. Select a shape to change its fill, rotate or delete it.</span>
             </>
           )}

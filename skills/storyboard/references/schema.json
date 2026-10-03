@@ -1059,6 +1059,17 @@
                             "screen": {
                               "type": "string"
                             },
+                            "crop": {
+                              "type": "array",
+                              "items": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              },
+                              "minItems": 4,
+                              "maxItems": 4,
+                              "description": "Show only part of the screen picture: [left, top, right, bottom] as fractions."
+                            },
                             "product": {
                               "type": "boolean",
                               "description": "false = not the product (personal call/text, someone else's app): drawn gray, not teal. Default true."
@@ -1111,6 +1122,17 @@
                     "screen": {
                       "type": "string",
                       "description": "Path to a screen image, relative to the storyboard file."
+                    },
+                    "crop": {
+                      "type": "array",
+                      "items": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "minItems": 4,
+                      "maxItems": 4,
+                      "description": "Show only part of the screen picture: [left, top, right, bottom] as fractions."
                     },
                     "product": {
                       "type": "boolean",
@@ -1227,6 +1249,19 @@
                       "minItems": 4,
                       "maxItems": 4,
                       "description": "Show only part of the picture: [left, top, right, bottom] as fractions."
+                    },
+                    "mirror": {
+                      "type": "boolean",
+                      "description": "Flip it left to right."
+                    },
+                    "turn": {
+                      "enum": [
+                        0,
+                        90,
+                        180,
+                        270
+                      ],
+                      "description": "Turn it clockwise, in degrees."
                     }
                   }
                 }

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { withCrop } from "../sketch/crop";
+import { withCrop, withOrient } from "../sketch/crop";
 import { richLines } from "../sketch/rich";
 import type { Board, LayoutOverride, MarkupStroke, Panel, SceneImage, ScenePanel, TimePanel } from "../types";
 import { isScene } from "../types";
@@ -67,7 +67,7 @@ function ImageEl({ id, im, ov, opts, wrap }: { id: string; im: SceneImage; ov: L
   if (ov.hidden) return null;
   const w = im.w ?? 120, h = im.h ?? 90;
   const cx = (im.x ?? PANEL_W / 2) + (ov.dx ?? 0), cy = (im.y ?? PANEL_H / 2) + (ov.dy ?? 0);
-  const src = withCrop(im.src, im.crop);
+  const src = withOrient(withCrop(im.src, im.crop), { mirror: im.mirror, turn: im.turn });
   const href = im.sketch === false ? (opts.raw ?? opts.asset)(src) : (opts.sketch ?? opts.raw ?? opts.asset)(src);
   const body = (
     <g data-el={id} data-kind="image" transform={`translate(${cx} ${cy}) rotate(${ov.rotate ?? 0}) scale(${ov.scale ?? 1})`}>

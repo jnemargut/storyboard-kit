@@ -1,3 +1,4 @@
+import { withCrop } from "../sketch/crop";
 import { plainText } from "../sketch/rich";
 import type { Board, Bubble, CastMember, CharacterInPanel, LayoutOverride, ScenePanel } from "../types";
 import { HANDHELD, type DeviceType, type Mood, type Pose } from "../vocab";
@@ -106,7 +107,7 @@ export function restingY(scene: { marks: Record<string, { surface?: number }>; s
 
 const ovOf = (panel: ScenePanel, id: string): LayoutOverride => panel.layout?.[id] ?? {};
 
-export function heldDeviceOf(c: CharacterInPanel): { type: DeviceType; screen?: string; product?: boolean } | undefined {
+export function heldDeviceOf(c: CharacterInPanel): { type: DeviceType; screen?: string; product?: boolean; crop?: [number, number, number, number] } | undefined {
   if (!c.device) return undefined;
   return typeof c.device === "string" ? { type: c.device } : c.device;
 }
@@ -253,7 +254,7 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     // a table top in front of a seated person (in the figure's own units), for a laptop to stand on
     const k0 = CHAR_SCALE * (mark.scale ?? 1) * fig.scale;
     const table = mark.surface !== undefined && mark.behind && fig.j.seated ? (mark.surface - mark.y) / k0 : undefined;
-    const heldP = held ? holdPlacement(fig, held.type, pose, held.screen ? asset(held.screen) : undefined, held.product, table) : undefined;
+    const heldP = held ? holdPlacement(fig, held.type, pose, held.screen ? asset(withCrop(held.screen, heldDeviceOf(c)?.crop)) : undefined, held.product, table) : undefined;
     if (heldP && pose === "sitting" && (held?.type === "phone" || held?.type === "tablet")) {
       // seated with a phone or tablet: lift the hand to chest height; from the side it's out in front of them,
       // from the front or behind it's in front of the chest (not out to one side)
@@ -308,7 +309,7 @@ export function layoutPanel(board: Board, panel: ScenePanel, asset: AssetResolve
     const h = def.h * s;
     // a mark up in the air (a wall screen's place) is the device's center; a mark on the floor means "near this spot"
     const y = onSurface ? spot.y - baseOf(d.type) * s : mark ? (mark.y < FLOOR_Y - 1 ? mark.y : d.type === "kiosk" ? FLOOR_Y - h / 2 : FLOOR_Y - 96) : restingY(scene, d.type, { ...spot, scale: s }).y;
-    devices.push({ id, type: d.type, product: d.product !== false, href: d.screen ? asset(d.screen) : undefined, x: spot.x, y, s, rot: 0, behind: behindOf(panel, id, !!(spot as { behind?: boolean }).behind), ov: ovOf(panel, id), tilt: d.tilt });
+    devices.push({ id, type: d.type, product: d.product !== false, href: d.screen ? asset(withCrop(d.screen, d.crop)) : undefined, x: spot.x, y, s, rot: 0, behind: behindOf(panel, id, !!(spot as { behind?: boolean }).behind), ov: ovOf(panel, id), tilt: d.tilt });
   });
   const proxy: Record<string, string> = {};
   for (const b of besides) {

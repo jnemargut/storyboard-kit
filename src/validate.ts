@@ -257,7 +257,8 @@ export function validate(input: unknown): Result {
             err(`${cp}.device`, `A ${c.device} can't be held.`, `Only ${HANDHELD.join(", ")} go in a hand. Put it in the scene: "devices": [{ "type": "${c.device}" }] (optionally "at" a mark), and point gestures "on" it.`);
         }
         else if (isObj(c.device)) {
-          known(`${cp}.device`, c.device, ["type", "screen", "product"]);
+          known(`${cp}.device`, c.device, ["type", "screen", "product", "crop"]);
+          if ((c.device as Record<string, unknown>).crop !== undefined && !isCrop((c.device as Record<string, unknown>).crop)) err(`${cp}.device.crop`, "must be [left, top, right, bottom], fractions from 0 to 1.", "e.g. [0, 0.1, 1, 0.6]");
           oneOf(`${cp}.device.type`, c.device.type, DEVICES, "device");
           if (typeof c.device.type === "string" && !(HANDHELD as readonly string[]).includes(c.device.type))
             err(`${cp}.device`, `A ${c.device.type} can't be held.`, `Only ${HANDHELD.join(", ")} go in a hand. Put it in the scene: "devices": [{ "type": "${c.device.type}" }] (optionally "at" a mark), and point gestures "on" it.`);
@@ -271,7 +272,8 @@ export function validate(input: unknown): Result {
     else devs.forEach((d, j) => {
       const dp = `${p}.devices[${j}]`;
       if (!isObj(d)) { err(dp, "must be an object."); return; }
-      known(dp, d, ["id", "type", "at", "screen", "product", "tilt"]);
+      known(dp, d, ["id", "type", "at", "screen", "product", "tilt", "crop"]);
+      if (d.crop !== undefined && !isCrop(d.crop)) err(`${dp}.crop`, "must be [left, top, right, bottom], fractions from 0 to 1.", "e.g. [0, 0.1, 1, 0.6]");
       oneOf(`${dp}.tilt`, d.tilt, ["left", "right"], "tilt");
       oneOf(`${dp}.type`, d.type, DEVICES, "device");
       if (d.type === undefined) err(`${dp}.type`, "is required.");
@@ -337,7 +339,9 @@ export function validate(input: unknown): Result {
     else images.forEach((im, j) => {
       const ip = `${p}.images[${j}]`;
       if (!isObj(im)) { err(ip, "must be an object."); return; }
-      known(ip, im, ["id", "src", "x", "y", "w", "h", "sketch", "crop"]);
+      known(ip, im, ["id", "src", "x", "y", "w", "h", "sketch", "crop", "mirror", "turn"]);
+      if (im.mirror !== undefined && typeof im.mirror !== "boolean") err(`${ip}.mirror`, "must be true or false.");
+      if (im.turn !== undefined && ![0, 90, 180, 270].includes(im.turn as number)) err(`${ip}.turn`, "must be 0, 90, 180 or 270 (clockwise).");
       if (im.crop !== undefined && !isCrop(im.crop)) err(`${ip}.crop`, "must be [left, top, right, bottom], fractions from 0 to 1.", "e.g. [0, 0.1, 1, 0.6]");
       str(`${ip}.src`, im.src, true);
       for (const k of ["x", "y", "w", "h"]) if (im[k] !== undefined && (typeof im[k] !== "number" || !Number.isFinite(im[k] as number))) err(`${ip}.${k}`, "must be a number in panel units (400 wide, 260 tall).");

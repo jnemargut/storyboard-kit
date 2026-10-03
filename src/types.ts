@@ -33,6 +33,8 @@ export interface LayoutOverride {
 export interface HeldDevice {
   type: DeviceType;
   screen?: string;
+  /** Show only part of the screen picture: [left, top, right, bottom] as fractions. */
+  crop?: [number, number, number, number];
   /** false = not the product (a personal call, a text): drawn gray instead of teal. Default true. */
   product?: boolean;
 }
@@ -55,6 +57,8 @@ export interface SceneDevice {
   type: DeviceType;
   at?: string;
   screen?: string;
+  /** Show only part of the screen picture: [left, top, right, bottom] as fractions. */
+  crop?: [number, number, number, number];
   product?: boolean;
   /** Turned away from the viewer (e.g. a dashboard screen seen from the side). */
   tilt?: "left" | "right";
@@ -116,6 +120,10 @@ export interface SceneImage {
   sketch?: boolean;
   /** Show only part of the picture: [left, top, right, bottom] as fractions (the editor's Crop button writes it). */
   crop?: [number, number, number, number];
+  /** Flip it left to right. */
+  mirror?: boolean;
+  /** Turn it clockwise: 90, 180 or 270. */
+  turn?: number;
 }
 
 /** A sharpie stroke drawn over a panel while presenting (crit markup). Panel units. */
