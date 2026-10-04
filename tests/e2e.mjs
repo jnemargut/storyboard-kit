@@ -10,7 +10,8 @@ const dir = mkdtempSync(join(tmpdir(), "sb-e2e-"));
 cpSync("examples/screens", join(dir, "screens"), { recursive: true });
 const file = join(dir, "late-latte.storyboard.json");
 writeFileSync(file, readFileSync("tests/fixtures/late-latte.storyboard.json", "utf8").replaceAll("../../examples/screens/", "./screens/"));
-const read = () => JSON.parse(readFileSync(file, "utf8"));
+// a read can land mid-save (half a file): wait a moment and read again
+const read = () => { for (let i = 0; ; i++) { try { return JSON.parse(readFileSync(file, "utf8")); } catch (e) { if (i > 20) throw e; Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50); } } };
 const shots = process.env.SHOTS ?? ".scratch";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let failures = 0;
