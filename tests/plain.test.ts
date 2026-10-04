@@ -17,7 +17,7 @@ describe("plain words", () => {
 
   it("catches a semicolon, a dash and a colon bolting ideas together", () => {
     expect(plainIssues("Owners shrug at late; hidden damage is what stops them lending", "title").join()).toMatch(/semicolon/);
-    expect(plainIssues("The fee is late — and it misses the damage", "title").join()).toMatch(/dash/);
+    expect(plainIssues(`The fee is late ${String.fromCharCode(8212)} and it misses the damage`, "title").join()).toMatch(/dash/);
     expect(plainIssues("Try first: check the tool at handover", "title").join()).toMatch(/colon/);
     // a quote's lead-in and a time are fine, and notes can use a colon
     expect(plainIssues("PM: \"people never return stuff on time\"", "description")).toEqual([]);
@@ -49,6 +49,6 @@ describe("plain words", () => {
     const md = plainWordsMd("titles, stickies and notes");
     expect(md).toContain("titles, stickies and notes");
     expect(md).toContain("| Instead of | Write |");
-    expect(md).not.toMatch(/—/);
+    expect(md).not.toContain(String.fromCharCode(8212));
   });
 });
