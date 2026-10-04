@@ -48,7 +48,7 @@ Prompt: *"Storyboard Marcus ordering coffee ahead. The app says 4 minutes, it ta
     },
     { "id": "later", "type": "time", "text": "12 minutes later…", "icon": "clock", "label": "Still waiting" },
     {
-      "id": "asks", "scene": "coffee-shop", "shot": "close-up", "label": "The workaround: ask a human",
+      "id": "asks", "scene": "coffee-shop", "shot": "close-up", "label": "She asks the barista instead",
       "characters": [{ "who": "maya", "pose": "standing", "mood": "stressed", "at": "counter" }],
       "bubbles": [{ "type": "speech", "from": "maya", "text": "Sorry, is order 214 ready?" }]
     },
@@ -56,7 +56,7 @@ Prompt: *"Storyboard Marcus ordering coffee ahead. The app says 4 minutes, it ta
       "id": "commute", "scene": "transit", "shot": "wide", "label": "Late for the 8:40",
       "characters": [{ "who": "maya", "pose": "sitting", "mood": "tired", "at": "seat", "device": "phone" }],
       "bubbles": [{ "type": "thought", "from": "maya", "text": "Next time I'll just stand in line." }],
-      "callouts": [{ "text": "Trust lost: she'll skip ordering ahead next time", "target": "maya" }]
+      "callouts": [{ "text": "After this, she stops ordering ahead", "target": "maya" }]
     }
   ]
 }

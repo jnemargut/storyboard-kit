@@ -2,6 +2,7 @@
  * `storyboard critique`: a service-design reality check. Heuristics, not AI: it points at happy-path
  * storytelling and hands the designer (or their agent) concrete revision requests.
  */
+import { plainIssues } from "./sketch/plain";
 import type { Board, ScenePanel } from "./types";
 import { isScene } from "./types";
 import { feelingOf, productShare } from "./render";
@@ -49,6 +50,13 @@ export function critique(b: Board): { findings: Finding[]; share: { withProduct:
 
   const last = scenes[scenes.length - 1];
   if (last && ["screen", "pov", "over-the-shoulder"].includes(last.shot ?? "")) f.push({ id: "ending", title: "It ends on a screen", why: "The outcome that matters is what happens to the person, not the UI state.", ask: `End on ${who}'s outcome: are they on time, relieved, still annoyed, or planning to avoid the product next time?` });
+
+  // plain words: labels, captions and callouts should read like a person talking (bubbles are people talking already)
+  const stiff: string[] = [];
+  const check = (text: string | undefined, kind: "title" | "note") => { const issues = plainIssues(text ?? "", kind); if (issues.length && stiff.length < 4) stiff.push(`"${text}" (${issues[0].replace(/\.$/, "")})`); };
+  check(b.title, "title");
+  for (const p of scenes) { check(p.label, "title"); check(p.caption, "note"); check(p.workaround, "note"); for (const c of p.callouts ?? []) check(c.text, "note"); }
+  if (stiff.length) f.push({ id: "plain", title: "Some of the words read like a slide, not a person talking", why: `For example ${stiff[0]}.`, ask: `Rewrite these the way you'd say them to a teammate, in whole plain sentences: ${stiff.join("; ")}.` });
 
   return { findings: f, share, strengths };
 }

@@ -1,3 +1,4 @@
+import { plainWordsMd } from "./sketch/plain";
 import { SCENE_MARKS, VOCAB, type Entry } from "./vocab";
 
 /** Shorthand used throughout the docs for "run this skill's bundled script". Defined at the top of SKILL.md. */
@@ -59,6 +60,9 @@ path. **Below, \`sb\` is short for that whole command.**
    (\`"./x.storyboard.json#in-line"\`). \`${CLI} render <file>[#panel]\` writes the PNG it shows; Flowchart Kit
    runs it for you when the board changes.
 
+${plainWordsMd("panel labels, captions, callouts, time cards, workarounds and notes")}
+What people say in bubbles is different: write it the way that person would really say or think it.
+
 ## Craft: what makes a storyboard useful
 
 The point is to see the product from inside the customer's life, not to illustrate a happy path.
@@ -76,7 +80,7 @@ The point is to see the product from inside the customer's life, not to illustra
 - **Let the product be absent sometimes.** Panels without a device are fine. That contrast is the point.
 - **Use time cards** ("12 minutes later…") for gaps, and a title card first.
 - **End on the outcome for the person**, not on a UI state. A callout can name the consequence
-  ("Trust lost: he'll skip ordering ahead").
+  ("After this, he stops ordering ahead").
 - 5–9 panels is typical. Keep bubbles under ~12 words.
 - Text anywhere (bubbles, captions, callouts, labels, cards) can use \`**bold**\`, \`*italic*\`,
   \`__underline__\` and \`~~struck out~~\`: bold the word someone stresses, strike the ETA that turned out wrong.

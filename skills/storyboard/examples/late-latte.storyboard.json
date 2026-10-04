@@ -175,7 +175,7 @@
       "id": "asks",
       "scene": "coffee-shop",
       "shot": "close-up",
-      "label": "The workaround: ask a human",
+      "label": "He asks the barista instead",
       "characters": [
         {
           "who": "marcus",
@@ -215,7 +215,7 @@
       ],
       "callouts": [
         {
-          "text": "Trust lost: he'll skip ordering ahead next time",
+          "text": "After this, he stops ordering ahead",
           "target": "marcus"
         }
       ]
