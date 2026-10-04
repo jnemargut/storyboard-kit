@@ -13,6 +13,7 @@ import { Swatches } from "./Swatches";
 import { isScene } from "../types";
 import { feelingOf, stepName, WOBBLE_FILTER } from "../render/board";
 import { PanelArt, type RenderOptions } from "../render/panel";
+import { useQuietControls } from "../sketch/quiet";
 
 const FEEL = ["awful", "bad", "okay", "good", "great"];
 
@@ -31,6 +32,8 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
   const drawing = useRef<{ pts: [number, number][]; erasing: boolean; erased: Set<number> } | null>(null);
   const [i, setI] = useState(Math.min(Math.max(0, start), n - 1));
   const [notes, setNotes] = useState(false);
+  // what's being shown is all that's on screen: the controls show when the mouse moves and step aside when it stops
+  const { awake, tip, onPointerMove: onQuietMove } = useQuietControls(".present-top, .present-nav, .present-strip");
   const [dir, setDir] = useState(0);
   const root = useRef<HTMLDivElement>(null);
 
@@ -132,20 +135,23 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
   };
 
   return (
-    <div ref={root} className={`present${tool ? ` ${tool}` : ""}`} role="dialog" aria-label={`Play mode: ${board.title}`}>
+    <div ref={root} className={`present${tool ? ` ${tool}` : ""}${awake || tool || picking || notes ? "" : " asleep"}`} role="dialog" aria-label={`Play mode: ${board.title}`} onPointerMove={onQuietMove}>
+      {/* the step is all that's on show: the controls step aside when the mouse stops */}
       <div className="present-top">
-        <span className="present-title">{board.title}</span>
         <span className="present-count">{i + 1} / {n}</span>
         <span className="spacer" />
         <div className="present-tools" role="group" aria-label="Markup">
           <button className={tool === "pen" ? "on" : ""} aria-pressed={tool === "pen"} onClick={() => setTool(tool === "pen" ? null : "pen")} title="Sharpie: draw over the step (D)">Sharpie</button>
+          {/* the sharpie's own tools only while you're drawing */}
+          {tool ? <>
           <span className="pen-color">
             <button className="pen-dot" style={{ background: markerHex(color) }} onClick={() => setPicking(!picking)} aria-expanded={picking} aria-label={`Sharpie color: ${color}`} title="Sharpie color" />
             {picking && <span className="pen-pop"><Swatches value={color} onChange={(c) => { setColor(c); setTool("pen"); setPicking(false); }} label="Sharpie color" /></span>}
           </span>
           <button className={tool === "eraser" ? "on" : ""} aria-pressed={tool === "eraser"} onClick={() => setTool(tool === "eraser" ? null : "eraser")} title="Eraser: click or drag over strokes (E)">Eraser</button>
-          <button onClick={clearSlide} disabled={!board.panels[i].markup?.length} title="Remove all markup from this step">Clear step</button>
-          <button onClick={clearAll} disabled={!anyMarkup} title="Remove markup from every step">Clear all</button>
+          {board.panels[i].markup?.length ? <button onClick={clearSlide} title="Remove all markup from this step">Clear step</button> : null}
+          {anyMarkup ? <button onClick={clearAll} title="Remove markup from every step">Clear all</button> : null}
+          </> : null}
         </div>
         <button onClick={() => setNotes(!notes)} aria-pressed={notes} title="Speaker notes (N)">{notes ? "Hide notes" : "Notes"}</button>
         <button onClick={() => (document.fullscreenElement ? void document.exitFullscreen() : void root.current?.requestFullscreen?.())} title="Full screen (F)">Full screen</button>
@@ -187,7 +193,8 @@ export function Present({ board, opts, start, onExit, commit, undo }: {
           </button>
         ))}
       </nav>
-      <div className="present-help">← → to step · D sharpie · E eraser · N notes · F full screen · Esc to exit</div>
+      {/* a hint for the first few seconds only */}
+      <div className={`present-help${tip ? "" : " gone"}`}>← → to step · D sharpie · N notes · F full screen · Esc to exit · move the mouse for the controls</div>
     </div>
   );
 }

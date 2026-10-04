@@ -11,7 +11,7 @@ cpSync("examples/screens", join(dir, "screens"), { recursive: true });
 const file = join(dir, "late-latte.storyboard.json");
 writeFileSync(file, readFileSync("tests/fixtures/late-latte.storyboard.json", "utf8").replaceAll("../../examples/screens/", "./screens/"));
 // a read can land mid-save (half a file): wait a moment and read again
-const read = () => { for (let i = 0; ; i++) { try { return JSON.parse(readFileSync(file, "utf8")); } catch (e) { if (i > 20) throw e; Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50); } } };
+const read = () => { for (let i = 0; ; i++) { try { return JSON.parse(readFileSync(file, "utf8")); } catch (e) { if (i > 80) throw e; Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50); } } };
 const shots = process.env.SHOTS ?? ".scratch";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let failures = 0;
@@ -333,6 +333,15 @@ try {
   await page.locator(".present").waitFor();
   check((await page.locator(".present-count").textContent()) === `1 / ${read().panels.length}`, "Play starts at step 1");
   check((await page.evaluate(() => getComputedStyle(document.querySelector(".present")).cursor)).startsWith("url("), "play mode uses the big pointer");
+  // the step is all that's on show: the controls step aside when the mouse stops and come back when it moves
+  {
+    const until = async (fn, ms = 7000) => { const t = Date.now(); while (Date.now() - t < ms) { if (await fn()) return true; await sleep(100); } return false; };
+    check((await page.locator(".present-top button", { hasText: "Eraser" }).count()) === 0, "the sharpie's extra tools are tucked away until you draw");
+    check(await until(async () => (await page.locator(".present").getAttribute("class")).includes("asleep")), "play's controls step aside when the mouse stops");
+    check((await page.evaluate(() => getComputedStyle(document.querySelector(".present-top")).opacity)) === "0" || await until(async () => (await page.evaluate(() => getComputedStyle(document.querySelector(".present-top")).opacity)) === "0", 2000), "they fade out");
+    await page.mouse.move(400, 400); await page.mouse.move(430, 440);
+    check(await until(async () => !(await page.locator(".present").getAttribute("class")).includes("asleep"), 2000), "moving the mouse brings them back");
+  }
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowRight");
   check((await page.locator(".present-count").textContent()).startsWith("3 /"), "arrow keys step through the board");

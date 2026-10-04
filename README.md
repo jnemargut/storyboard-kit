@@ -17,7 +17,7 @@ Storyboard Kit draws all of that in a scrappy marker style where **only your pro
 Everything else is gray, so your product sits inside the rest of someone's life instead of at the center of it.
 You see what comes before it, what happens around it, and where people quietly work around it.
 
-![The Late Latte, an example storyboard](docs/late-latte-4163c25.png)
+![The Late Latte, an example storyboard](docs/late-latte-f7ca3ba.png)
 
 ## Why storyboard at all?
 
@@ -175,9 +175,10 @@ or off (`"page": { "legend": { "cast": false } }`, or `"legend": false` to hide 
 
 **Play mode**
 
-![Play mode with sharpie markup](docs/play-95f8e9e.png)
+![Play mode with sharpie markup](docs/play-e6eefa6.png)
 
-Hit **▶ Play** (or P) to present the board one step at a time, with a big pointer the room can follow.
+Hit **▶ Play** (or P) to present the board one step at a time, with a big pointer the room can follow. The
+controls fade out when you stop moving the mouse, so the step is all that's on screen.
 
 - Arrow keys move between steps. "From here" in a panel's toolbar starts mid-story.
 - **N** opens speaker notes you can type into as you go.

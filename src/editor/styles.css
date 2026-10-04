@@ -174,3 +174,13 @@ button, select, input, textarea { font: inherit; color: inherit; }
 .present-top button:disabled { opacity: 0.35; cursor: default; }
 .present.pen .present-panel, .present.pen .present-panel * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='7' fill='none' stroke='%231c1c1e' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='7' fill='none' stroke='%23fbfaf7' stroke-width='1.2'/%3E%3Ccircle cx='20' cy='20' r='2' fill='%231c1c1e'/%3E%3C/svg%3E") 20 20, crosshair !important; touch-action: none; }
 .present.eraser .present-panel, .present.eraser .present-panel * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg transform='rotate%28-35 24 24%29'%3E%3Crect x='10' y='16' width='28' height='16' rx='3' fill='%23f1f1ef' stroke='%231c1c1e' stroke-width='3'/%3E%3Crect x='10' y='16' width='10' height='16' rx='3' fill='%23d9363e' stroke='%231c1c1e' stroke-width='3'/%3E%3C/g%3E%3C/svg%3E") 14 30, cell !important; touch-action: none; }
+
+/* Play: the step is all that's on show. The top controls, the side arrows and the step strip fade out when the
+   mouse stops and come back when it moves. They keep their place, so nothing jumps. */
+.present-top, .present-nav, .present-strip, .present-help { transition: opacity 260ms ease; }
+.present.asleep .present-top, .present.asleep .present-nav, .present.asleep .present-strip { opacity: 0; pointer-events: none; }
+.present-help.gone { opacity: 0; }
+.present-top button { border-color: transparent; }
+.present-top button:hover { border-color: var(--color-600); }
+.present-top button[aria-pressed="true"], .present-top button.on { border-color: var(--color-paper); }
+@media (prefers-reduced-motion: reduce) { .present-top, .present-nav, .present-strip, .present-help { transition: none; } }
