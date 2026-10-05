@@ -6,7 +6,7 @@ You tell Claude Code (or Codex) what someone's day looks like. It sketches a sto
 little editor until it feels true. Then you drop it in your deck and the room starts talking about the person's
 whole day, not just the screens.
 
-![Storyboard Kit sizzle reel](docs/sizzle-622798e.gif)
+![Storyboard Kit sizzle reel](docs/sizzle-648e03d.gif)
 
 ## Why though
 
