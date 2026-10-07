@@ -496,8 +496,10 @@ export function specialGeometry(sp: NonNullable<Special>) {
   const def = DEVICE_DEFS[sp.device.type];
   const handheld = ["phone", "tablet", "watch"].includes(sp.device.type);
   const box = { w: sp.kind === "pov" ? 240 : 330, h: 226 };
-  const ds = Math.min(box.w / def.w, box.h / def.h, handheld ? 2.1 : 3);
-  const dcx = 200, dcy = sp.kind === "pov" ? 124 : 128;
+  const laptop = sp.device.type === "laptop";
+  // a laptop fills the frame, screen and all, with just a strip of desk under it (its drawing hangs from the hinge)
+  const ds = laptop ? Math.min(330 / def.w, 204 / def.h) : Math.min(box.w / def.w, box.h / def.h, handheld ? 2.1 : 3);
+  const dcx = 200, dcy = laptop ? 14 + 88 * ds : sp.kind === "pov" ? 124 : 128;
   const screen = def.screen ? { x: dcx + def.screen.x * ds, y: dcy + def.screen.y * ds, w: def.screen.w * ds, h: def.screen.h * ds } : undefined;
   return { S: 1, charX: 0, charY: 0, deskTop: undefined as number | undefined, head: undefined, charBox: undefined, dcx, dcy, ds, screen, devBox: { x: dcx - (def.w * ds) / 2, y: dcy - (def.h * ds) / 2, w: def.w * ds, h: def.h * ds } };
 }

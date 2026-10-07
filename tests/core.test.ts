@@ -178,6 +178,11 @@ describe("service-design layer", () => {
 });
 
 describe("art + scene options", () => {
+  it("an edit aimed past the end of a list adds to the end instead of leaving a gap", () => {
+    const b = applyOps({ list: ["a"] }, [{ path: ["list", 3], value: "b" }]);
+    expect(b.list).toEqual(["a", "b"]);
+    expect(JSON.parse(JSON.stringify(b)).list).toEqual(["a", "b"]);
+  });
   it("pose variants change the drawing but not the pose", () => {
     const one = (v: number) => renderBoardSVG({ schemaVersion: 1, title: "t", cast: { a: {} }, panels: [{ id: "p", scene: "blank", characters: [{ who: "a", variant: v }] }] }, { asset });
     expect(one(1)).not.toBe(one(2));

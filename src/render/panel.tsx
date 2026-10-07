@@ -95,10 +95,6 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
   const def = devType ? DEVICE_DEFS[devType] : undefined;
   // hands only when someone is actually holding it; a phone on a table is shown on its own
   const handheld = !!owner?.held && !!devType && ["phone", "tablet", "watch"].includes(devType);
-  const arm = (from: Pt, to: Pt, w: number) => (
-    <g><line x1={from[0]} y1={from[1]} x2={to[0]} y2={to[1]} stroke={ink} strokeWidth={w + 4} strokeLinecap="round" /><line x1={from[0]} y1={from[1]} x2={to[0]} y2={to[1]} stroke={sleeve} strokeWidth={w} strokeLinecap="round" /></g>
-  );
-  const hand = (p: Pt, r: number) => <circle cx={p[0]} cy={p[1]} r={r} fill={skin} stroke={ink} strokeWidth={2} />;
   const device = devType && (
     <g data-el={`${devId}.screen`} data-kind="device" data-drop={owner ? `char:${owner.id}` : `device:${devId}`} transform={`translate(${dcx} ${dcy}) rotate(${devOv.rotate ?? (sp.kind === "ots" && handheld ? 4 : 0)}) scale(${ds})`}>
       <Device type={devType} href={href} product={product} lidOnly={sp.kind === "ots"} clipId={clip(pid, `${devId}-big`)} />
@@ -179,18 +175,50 @@ function SpecialArt({ L, pid, board, panel }: { L: PanelLayout; pid: string; boa
       </g>
     );
   }
-  if (sp.kind === "screen") {
-    const handP: Pt = [dcx + dw - 4, dcy + dh * 0.3];
-    return <g>{desk}{handheld && arm([PANEL_W + 20, PANEL_H + 20], [handP[0] + 10, handP[1] + 14], 22)}{device}{handheld && hand(handP, 14)}</g>;
+  // A hand holding the device, seen close: a simple hand peeking out from behind its edge (nothing over the front,
+  // no thumb), and only a short stretch of sleeve dropping out of the bottom of the frame. No long arms.
+  const grip = (k: -1 | 1, edge: Pt) => {
+    const [ex, ey] = edge;
+    const wrist: Pt = [ex + k * 13, ey + 30];
+    const out: Pt = [ex + k * 26, PANEL_H + 26];
+    const sleevePath = `M${wrist[0] - 15} ${wrist[1] + 6} L${out[0] - 21} ${out[1]} H${out[0] + 21} L${wrist[0] + 15} ${wrist[1] + 6} Z`;
+    return {
+      behind: (
+        <g>
+          <path d={sleevePath} fill={sleeve} stroke={ink} strokeWidth={2.4} strokeLinejoin="round" />
+          {/* wrist, then the palm tucked behind the device's edge */}
+          <path d={`M${wrist[0] - 11} ${wrist[1] + 8} L${wrist[0] - 10} ${wrist[1] - 8} H${wrist[0] + 10} L${wrist[0] + 11} ${wrist[1] + 8} Z`} fill={skin} stroke={ink} strokeWidth={2.2} strokeLinejoin="round" />
+          <path d={`M${wrist[0] - 15} ${wrist[1] + 7} H${wrist[0] + 15}`} stroke={ink} strokeWidth={2.4} strokeLinecap="round" />
+          <ellipse cx={ex + k * 7} cy={ey + 2} rx={15} ry={21} transform={`rotate(${k * 10} ${ex + k * 7} ${ey + 2})`} fill={skin} stroke={ink} strokeWidth={2.2} />
+        </g>
+      ),
+    };
+  };
+  if (handheld && devType === "watch") {
+    // a watch is worn, not held: the forearm lies across the frame, the strap wraps round the wrist, the hand
+    // is beyond it. (Glancing at a watch, your arm is across your body.)
+    const wh = dh * 0.66, x0 = dcx - dw * 3.4, x1 = dcx + dw * 3;
+    return (
+      <g>
+        <path d={`M-26 ${dcy - wh - 5} L${x0} ${dcy - wh} V${dcy + wh} L-26 ${dcy + wh + 5} Z`} fill={sleeve} stroke={ink} strokeWidth={2.4} strokeLinejoin="round" />
+        <path d={`M${x0 - 2} ${dcy - wh * 0.9} H${x1} V${dcy + wh * 0.9} H${x0 - 2} Z`} fill={skin} stroke={ink} strokeWidth={2.2} strokeLinejoin="round" />
+        <path d={`M${x0} ${dcy - wh - 2} V${dcy + wh + 2}`} stroke={ink} strokeWidth={2.4} strokeLinecap="round" />
+        <ellipse cx={x1 + dw * 1.1} cy={dcy + wh * 0.05} rx={dw * 1.9} ry={wh * 1.12} fill={skin} stroke={ink} strokeWidth={2.2} />
+        {device}
+      </g>
+    );
   }
-  // pov: two hands
-  const lh: Pt = [dcx - dw + 2, dcy + dh * 0.35], rh: Pt = [dcx + dw - 2, dcy + dh * 0.35];
+  if (sp.kind === "screen") {
+    const h = grip(1, [dcx + dw, dcy + dh * 0.42]);
+    return <g>{desk}{handheld && h.behind}{device}</g>;
+  }
+  // pov: both hands
+  const l = grip(-1, [dcx - dw, dcy + dh * 0.42]), rg = grip(1, [dcx + dw, dcy + dh * 0.42]);
   return (
     <g>
       {desk}
-      {handheld && <>{arm([-20, PANEL_H + 20], [lh[0] - 8, lh[1] + 10], 24)}{arm([PANEL_W + 20, PANEL_H + 20], [rh[0] + 8, rh[1] + 10], 24)}</>}
+      {handheld && <>{l.behind}{rg.behind}</>}
       {device}
-      {handheld && <>{hand(lh, 14)}{hand(rh, 14)}</>}
     </g>
   );
 }

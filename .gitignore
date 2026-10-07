@@ -7,3 +7,5 @@ dist
 .bettercompact
 sandbox
 .storyboard
+# local reference art, not part of the kit
+Flat Assets

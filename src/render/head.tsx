@@ -240,13 +240,15 @@ function emanata(mood: Mood, hx: number, hy: number, r: number, side: number, ex
 
 function frontFace(f: Figure, mood: Mood, hx: number, hy: number, r: number): ReactNode {
   const tq = f.angle === "three-quarter";
-  const cx = hx + (tq ? 0.28 * r * f.dir : 0);
-  const sp = (tq ? 0.3 : 0.37) * r; // half eye spacing
-  const ey = hy + 0.05 * r, by = ey - 0.34 * r, my = hy + 0.5 * r, mw = 0.36 * r;
+  const cx = hx + (tq ? 0.2 * r * f.dir : 0);
+  const sp = (tq ? 0.32 : 0.38) * r; // half eye spacing
+  // features spread down the face: brows, eyes, a nose between and below them, the mouth under that
+  const ey = hy - 0.06 * r, by = ey - 0.36 * r, my = hy + 0.6 * r, mw = 0.36 * r;
   const s = line(2);
-  const dot = (x: number, big = false) => <ellipse cx={x} cy={ey} rx={big ? 2.4 : 1.5} ry={big ? 2.8 : 2} fill={big ? C.paper : ink} stroke={big ? ink : "none"} strokeWidth={1.8} />;
+  const dot = (x: number, big = false) => <ellipse cx={x} cy={ey} rx={big ? 2.5 : 1.75} ry={big ? 2.9 : 2.3} fill={big ? C.paper : ink} stroke={big ? ink : "none"} strokeWidth={1.8} />;
   let eyes: ReactNode = <>{dot(cx - sp)}{dot(cx + sp)}</>;
-  let brows: string | null = null;
+  // everyone has eyebrows: soft arcs when nothing much is going on
+  let brows: string | null = `M${cx - sp - 2.8} ${by + 0.6} q2.8 -2 5.6 -0.3 M${cx + sp - 2.8} ${by + 0.3} q2.8 -2 5.6 0.3`;
   let mouth: ReactNode = <path d={`M${cx - mw * 0.7} ${my} h${mw * 1.4}`} {...s} />;
   switch (mood) {
     case "happy":
@@ -303,7 +305,8 @@ function frontFace(f: Figure, mood: Mood, hx: number, hy: number, r: number): Re
       {eyes}
       {brows && <path d={brows} {...line(2.1)} />}
       {mouth}
-      {tq && <path d={`M${cx + 0.12 * r * f.dir} ${hy + 0.12 * r} l${0.16 * r * f.dir} ${0.22 * r} l${-0.16 * r * f.dir} ${0.05 * r}`} {...line(1.5)} />}
+      {/* a small hooked nose, toward the side they face */}
+      <path d={`M${cx + 0.04 * r * f.dir} ${hy + 0.1 * r} q${0.26 * r * f.dir} ${0.16 * r} ${0.02 * r * f.dir} ${0.28 * r}`} {...line(1.7)} />
     </g>
   );
 }
@@ -429,6 +432,10 @@ export function HeadFront({ f, cast, mood, hx, hy, r, skin, markSide }: { f: Fig
         : cast.hair === "afro" && !back
           ? <g><circle cx={hx} cy={hy} r={r} fill={skin} /><path d={`M${hx - r * 0.97} ${hy + r * 0.25} A${r} ${r} 0 0 0 ${hx + r * 0.97} ${hy + r * 0.25}`} {...line(2.1)} /></g>
           : !hijab && <circle cx={hx} cy={hy} r={r} fill={skin} stroke={ink} strokeWidth={2.1} />}
+      {!back && !side && !hijab && !["long", "afro", "curly"].includes(cast.hair ?? "short") && (() => {
+        const k = f.angle === "three-quarter" ? -f.dir : -1, ex = hx + k * r * 0.97;
+        return <path d={`M${ex} ${hy - 0.12 * r} q${k * 0.36 * r} ${0.02 * r} ${k * 0.3 * r} ${0.3 * r} q${-k * 0.1 * r} ${0.2 * r} ${-k * 0.3 * r} ${0.14 * r}`} fill={skin} stroke={ink} strokeWidth={1.7} strokeLinejoin="round" strokeLinecap="round" />;
+      })()}
       {acc.has("beard") && !back && <Beard f={f} hx={hx} hy={hy} r={r} fill={hairColor(cast)} />}
       {!back && (side ? sideFace(f, mood, hx, hy, r) : frontFace(f, mood, hx, hy, r))}
       {hairFront(cast, f, hx, hy, r)}
